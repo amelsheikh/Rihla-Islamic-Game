@@ -1,48 +1,50 @@
-// Grey-box scenery: the road surface, the car, block-out landmarks, placeholder trees and place labels.
-// Everything here is a stand-in with the right position and rough size; Phase 1b replaces the looks.
-import RAPIER from '@dimforge/rapier3d-compat';
+// The road surface, the car and its passengers, and the floating place names.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { CAR, type Vehicle } from '../physics/vehicle';
 import type { World } from '../world/world';
+import type { Named } from './buildings';
+import { applySunShade, type SunShade } from './sunshade';
+import { roadSurface } from './textures';
 
-function rng(seed: number) { return () => ((seed = (seed * 16807) % 2147483647) / 2147483647); }
 
 // ------------------------------------------------------------------ road
-export function buildRoad(world: World): THREE.Mesh {
-  const n = world.n, hw = world.halfWidth, sh = world.shoulder, offs = [-(hw + sh), -hw, hw, hw + sh], drop = [0.4, 0, 0, 0.4];
-  const pos = new Float32Array(n * 4 * 3), uv = new Float32Array(n * 4 * 2), idx: number[] = [];
-  for (let i = 0; i < n; i++) {
-    const a = Math.max(0, i - 1), b = Math.min(n - 1, i + 1);
-    let dx = world.px[b] - world.px[a], dz = world.pz[b] - world.pz[a];
-    const l = Math.hypot(dx, dz); dx /= l; dz /= l;
-    for (let k = 0; k < 4; k++) {
-      const j = i * 4 + k;
-      // Right of the direction of travel is (-dz, dx).
-      pos[j * 3] = world.px[i] - dz * offs[k]; pos[j * 3 + 1] = world.py[i] - drop[k]; pos[j * 3 + 2] = world.pz[i] + dx * offs[k];
-      uv[j * 2] = [0, 0.12, 0.88, 1][k]; uv[j * 2 + 1] = world.along[i] / 9;
+/** The road surface, plus a dusty verge on each side that fades into the ground. */
+export function buildRoad(world: World, shade: SunShade): THREE.Group {
+  const n = world.n, hw = world.halfWidth, group = new THREE.Group();
+  const strip = (offs: number[], us: number[], alphas: number[] | null, yOf: (i: number, k: number, x: number, z: number) => number) => {
+    const m = offs.length, pos = new Float32Array(n * m * 3), uv = new Float32Array(n * m * 2), col = new Float32Array(n * m * 4), idx: number[] = [];
+    for (let i = 0; i < n; i++) {
+      const a = Math.max(0, i - 1), b = Math.min(n - 1, i + 1);
+      let dx = world.px[b] - world.px[a], dz = world.pz[b] - world.pz[a];
+      const l = Math.hypot(dx, dz); dx /= l; dz /= l;
+      for (let k = 0; k < m; k++) {
+        const j = i * m + k, x = world.px[i] - dz * offs[k], z = world.pz[i] + dx * offs[k]; // right of travel is (-dz, dx)
+        pos[j * 3] = x; pos[j * 3 + 1] = yOf(i, k, x, z); pos[j * 3 + 2] = z;
+        uv[j * 2] = us[k]; uv[j * 2 + 1] = world.along[i] / 8;
+        col.set([1, 1, 1, alphas ? alphas[k] : 1], j * 4);
+      }
+      if (i < n - 1) for (let k = 0; k < m - 1; k++) { const p = i * m + k, q = p + m; idx.push(p, p + 1, q, p + 1, q + 1, q); }
     }
-    if (i < n - 1) for (let k = 0; k < 3; k++) { const p = i * 4 + k, q = p + 4; idx.push(p, p + 1, q, p + 1, q + 1, q); }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g.setAttribute('color', new THREE.BufferAttribute(col, 4));
+    g.setIndex(idx); g.computeVertexNormals();
+    return g;
+  };
+  const tex = roadSurface();
+  const surface = new THREE.MeshStandardMaterial({ map: tex.map, normalMap: tex.normalMap, roughness: 0.92 });
+  applySunShade(surface, shade);
+  const road = new THREE.Mesh(strip([-(hw + 0.5), -hw, hw, hw + 0.5], [0, 0.06, 0.94, 1], null, (i, k) => world.py[i] - (k === 0 || k === 3 ? 0.12 : 0)), surface);
+  const vergeMat = new THREE.MeshStandardMaterial({ map: tex.map, roughness: 0.95, vertexColors: true, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 });
+  applySunShade(vergeMat, shade);
+  for (const side of [-1, 1]) {
+    const verge = new THREE.Mesh(strip([side * (hw + 0.3), side * (hw + 1.6), side * (hw + 4.2)].sort((a, b) => a - b), side < 0 ? [0.02, 0.05, 0.08] : [0.92, 0.95, 0.98], side < 0 ? [0, 0.75, 0.9] : [0.9, 0.75, 0],
+      (i, k, x, z) => world.groundY(x, z) + 0.05), vergeMat);
+    verge.receiveShadow = true; verge.matrixAutoUpdate = false; verge.renderOrder = 1; group.add(verge);
   }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
-  g.setIndex(idx);
-  g.computeVertexNormals();
-  // A packed-stone road: pale, with two lighter wheel tracks and darker verges.
-  const cv = document.createElement('canvas'); cv.width = 128; cv.height = 256;
-  const c = cv.getContext('2d')!, r = rng(11);
-  for (let y = 0; y < 256; y += 2) for (let x = 0; x < 128; x += 2) {
-    const u = x / 128, verge = Math.min(1, Math.min(u, 1 - u) / 0.12);
-    const track = Math.max(0, 1 - Math.abs(Math.abs(u - 0.5) - 0.13) / 0.06);
-    const v = 96 + verge * 26 + track * 16 + (r() - 0.5) * 20;
-    c.fillStyle = `rgb(${v + 14},${v + 2},${v - 22})`; c.fillRect(x, y, 2, 2);
-  }
-  const map = new THREE.CanvasTexture(cv);
-  map.wrapT = THREE.RepeatWrapping; map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 8;
-  const mesh = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map, roughness: 0.9 }));
-  mesh.receiveShadow = true; mesh.matrixAutoUpdate = false;
-  return mesh;
+  road.receiveShadow = true; road.matrixAutoUpdate = false;
+  group.add(road);
+  return group;
 }
 
 // ------------------------------------------------------------------ car
@@ -96,6 +98,14 @@ export class CarModel {
     }
     p.add(new THREE.TorusGeometry(CAR.wheelRadius - 0.06, 0.06, 6, 18), dark, 0, 0.35, 1.78); // spare wheel
     p.add(new THREE.TorusGeometry(0.19, 0.02, 6, 16), wood, 0.32, 0.78, -0.28, -0.9); // steering wheel
+    // Jiddo Ibrahim at the wheel in his tarbush, and the young traveller beside him. No faces are drawn.
+    const skin = new THREE.MeshStandardMaterial({ color: 0xc69a74, roughness: 0.8 });
+    const robe = new THREE.MeshStandardMaterial({ color: 0x5b6470, roughness: 0.9 }), tunic = new THREE.MeshStandardMaterial({ color: 0xe8e2d2, roughness: 0.9 });
+    const fez = new THREE.MeshStandardMaterial({ color: 0x9c1f24, roughness: 0.7 }), cap = new THREE.MeshStandardMaterial({ color: 0xf2efe6, roughness: 0.9 });
+    p.add(new THREE.CapsuleGeometry(0.2, 0.42, 3, 8), robe, 0.32, 0.72, 0.1); p.add(new THREE.SphereGeometry(0.135, 10, 8), skin, 0.32, 1.2, 0.08);
+    p.add(new THREE.CylinderGeometry(0.105, 0.125, 0.17, 10), fez, 0.32, 1.37, 0.08);
+    p.add(new THREE.CapsuleGeometry(0.16, 0.26, 3, 8), tunic, -0.34, 0.62, 0.1); p.add(new THREE.SphereGeometry(0.12, 10, 8), skin, -0.34, 0.98, 0.08);
+    p.add(new THREE.SphereGeometry(0.125, 10, 6, 0, 6.3, 0, 1.3), cap, -0.34, 1.0, 0.08);
     this.group.add(p.build());
 
     for (let i = 0; i < 4; i++) {
@@ -122,175 +132,32 @@ export class CarModel {
   }
 }
 
-// ------------------------------------------------------------------ block-out buildings
-const STONE = 0xcfc3a4, WHITE = 0xe9e4d6, LEAD = 0x565b62, TILE = 0x4d7d98, GREEN = 0x4f6f3a, TRUNK = 0x6b5a45, OLIVE = 0x66754d;
-
-export class Blockout {
+// ------------------------------------------------------------------ place names
+export class Labels {
   readonly group = new THREE.Group();
-  readonly labels = new THREE.Group();
-  private boxes: { m: THREE.Matrix4; c: number }[] = [];
-  private domes: { m: THREE.Matrix4; c: number }[] = [];
-  private cyls: { m: THREE.Matrix4; c: number }[] = [];
-  private cones: { m: THREE.Matrix4; c: number }[] = [];
-  private blobs: { m: THREE.Matrix4; c: number }[] = [];
-
-  constructor(private world: World, private rapier: RAPIER.World | null) {}
-
-  private mat(x: number, y: number, z: number, sx: number, sy: number, sz: number, yaw = 0) {
-    return new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), new THREE.Vector3(sx, sy, sz));
+  constructor(named: Named[]) {
+    for (const nm of named) {
+      const cv = document.createElement('canvas'); cv.width = 512; cv.height = 160;
+      const g = cv.getContext('2d')!;
+      g.fillStyle = 'rgba(30,24,16,0.72)'; g.beginPath(); g.roundRect(4, 4, 504, 152, 22); g.fill();
+      g.strokeStyle = '#c9a54a'; g.lineWidth = 4; g.stroke();
+      g.fillStyle = '#f4e9cf'; g.textAlign = 'center';
+      g.font = '52px Amiri, "Noto Naskh Arabic", serif'; g.direction = 'rtl'; g.fillText(nm.ar, 256, 66, 480);
+      g.font = '36px Georgia, serif'; g.direction = 'ltr'; g.fillText(nm.en, 256, 124, 480);
+      const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthWrite: false, fog: false, sizeAttenuation: false, transparent: true }));
+      sp.scale.set(0.2 * nm.size, 0.0625 * nm.size, 1); sp.position.set(nm.x, nm.y, nm.z);
+      sp.userData.far = nm.size < 0.7 ? 900 : 3200;
+      this.group.add(sp);
+    }
   }
-  /** A box standing on the terrain; `y` is the height of its base. */
-  box(x: number, y: number, z: number, sx: number, sy: number, sz: number, yaw = 0, c = STONE, solid = true) {
-    this.boxes.push({ m: this.mat(x, y + sy / 2, z, sx, sy, sz, yaw), c });
-    if (solid && this.rapier) this.rapier.createCollider(RAPIER.ColliderDesc.cuboid(sx / 2, sy / 2 + 2, sz / 2).setTranslation(x, y + sy / 2 - 2, z).setRotation({ x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) }));
-  }
-  dome(x: number, y: number, z: number, r: number, c = WHITE, tall = 1) { this.domes.push({ m: this.mat(x, y, z, r, r * tall, r), c }); }
-  cyl(x: number, y: number, z: number, r: number, h: number, c = STONE) { this.cyls.push({ m: this.mat(x, y + h / 2, z, r, h, r), c }); }
-  palm(x: number, z: number, h: number) {
-    const y = this.world.terrainY(x, z);
-    this.cyls.push({ m: this.mat(x, y + h / 2, z, 0.22, h, 0.22), c: TRUNK });
-    this.cones.push({ m: this.mat(x, y + h + 0.3, z, 2.6, 1.6, 2.6), c: GREEN });
-  }
-  tree(x: number, z: number, s: number) {
-    const y = this.world.terrainY(x, z);
-    this.blobs.push({ m: this.mat(x, y + s * 0.7, z, s * 1.2, s, s * 1.2), c: OLIVE });
-  }
-  private clearOfRoad(x: number, z: number, margin: number) { const h = this.world.nearestRoad(x, z); return !h || h.dist > this.world.halfWidth + margin; }
-
-  label(x: number, y: number, z: number, en: string, ar: string, size = 1) {
-    const cv = document.createElement('canvas'); cv.width = 512; cv.height = 160;
-    const g = cv.getContext('2d')!;
-    g.fillStyle = 'rgba(30,24,16,0.72)'; g.beginPath(); g.roundRect(4, 4, 504, 152, 22); g.fill();
-    g.strokeStyle = '#c9a54a'; g.lineWidth = 4; g.stroke();
-    g.fillStyle = '#f4e9cf'; g.textAlign = 'center';
-    g.font = '52px Amiri, "Noto Naskh Arabic", serif'; g.direction = 'rtl'; g.fillText(ar, 256, 66);
-    g.font = '38px Georgia, serif'; g.direction = 'ltr'; g.fillText(en, 256, 124);
-    const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
-    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthWrite: false, fog: false, sizeAttenuation: false, transparent: true }));
-    sp.scale.set(0.2 * size, 0.0625 * size, 1); sp.position.set(x, y, z);
-    this.labels.add(sp);
-  }
-
-  /** Labels keep a fixed size on screen; hide the ones that are very close or very far. */
-  updateLabels(cam: THREE.Vector3) {
-    if (!this.labels.visible) return;
-    for (const sp of this.labels.children as THREE.Sprite[]) {
-      const d = sp.position.distanceTo(cam);
-      sp.material.opacity = Math.min(1, Math.max(0, (d - 70) / 60)) * Math.min(1, Math.max(0, (3200 - d) / 500));
+  /** Names keep a fixed size on screen; the very near and the very far are hidden. */
+  update(cam: THREE.Vector3) {
+    if (!this.group.visible) return;
+    for (const sp of this.group.children as THREE.Sprite[]) {
+      const d = sp.position.distanceTo(cam), far = sp.userData.far as number;
+      sp.material.opacity = Math.min(1, Math.max(0, (d - 70) / 60)) * Math.min(1, Math.max(0, (far - d) / (far * 0.15)));
       sp.visible = sp.material.opacity > 0.02;
     }
-  }
-
-  /** Lay out every block-out in the corridor. */
-  populate() {
-    const w = this.world, P = (id: string) => w.data.places.find((p) => p.id === id)!, r = rng(42);
-    const ty = (x: number, z: number) => w.terrainY(x, z);
-
-    // Al-Quds: the city wall as a ring of boxes following the ground, with towers at the corners.
-    const wall = w.data.walls;
-    for (let i = 0; i < wall.length; i++) {
-      const [ax, az] = wall[i], [bx, bz] = wall[(i + 1) % wall.length], len = Math.hypot(bx - ax, bz - az), steps = Math.ceil(len / 11), yaw = Math.atan2(-(bz - az), bx - ax);
-      for (let s = 0; s < steps; s++) {
-        const x = ax + ((bx - ax) * (s + 0.5)) / steps, z = az + ((bz - az) * (s + 0.5)) / steps;
-        const base = Math.min(ty(x, z), ty(ax + ((bx - ax) * s) / steps, az + ((bz - az) * s) / steps)) - 1;
-        this.box(x, base, z, len / steps + 0.4, 10, 2.4, yaw);
-      }
-      this.box(ax, ty(ax, az) - 1, az, 6, 14, 6, yaw);
-    }
-    const inside = (x: number, z: number) => {
-      let c = false;
-      for (let i = 0, j = wall.length - 1; i < wall.length; j = i++) {
-        const [xi, zi] = wall[i], [xj, zj] = wall[j];
-        if (zi > z !== zj > z && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) c = !c;
-      }
-      return c;
-    };
-    const dome = P('dome-of-the-rock'), qibli = P('al-qibli');
-    // The Dome of the Rock: octagon, drum, and the dark lead-covered dome it had in 1910.
-    {
-      const y = ty(dome.x, dome.z);
-      this.cyls.push({ m: this.mat(dome.x, y + 2.5, dome.z, 19, 5, 19, Math.PI / 8), c: WHITE });
-      this.cyls.push({ m: this.mat(dome.x, y + 8, dome.z, 19, 6, 19, Math.PI / 8), c: TILE });
-      this.cyl(dome.x, y + 11, dome.z, 10.5, 6, TILE);
-      this.dome(dome.x, y + 17, dome.z, 10.8, LEAD, 1.08);
-      this.cyl(dome.x, y + 28, dome.z, 0.25, 3.5, 0xb8923c);
-      if (this.rapier) this.rapier.createCollider(RAPIER.ColliderDesc.cylinder(8, 19).setTranslation(dome.x, y + 6, dome.z));
-    }
-    {
-      const y = ty(qibli.x, qibli.z);
-      this.box(qibli.x, y, qibli.z, 30, 9, 42, 0, WHITE);
-      this.dome(qibli.x, y + 9, qibli.z + 14, 6, LEAD);
-    }
-    const [minX, maxX, minZ, maxZ] = [Math.min(...wall.map((p) => p[0])), Math.max(...wall.map((p) => p[0])), Math.min(...wall.map((p) => p[1])), Math.max(...wall.map((p) => p[1]))];
-    for (let i = 0; i < 900; i++) {
-      const x = minX + r() * (maxX - minX), z = minZ + r() * (maxZ - minZ);
-      if (!inside(x, z) || Math.hypot(x - dome.x, z - (dome.z + qibli.z) / 2) < 95 || Math.hypot(x - dome.x, z - dome.z) < 80) continue;
-      const s = 7 + r() * 8, h = 5 + r() * 6;
-      this.box(x, ty(x, z) - 1, z, s, h, 6 + r() * 8, r() * 0.5, r() > 0.5 ? STONE : WHITE, false);
-      if (r() > 0.55) this.dome(x, ty(x, z) + h - 1, z, s * 0.3, WHITE);
-    }
-    // Villages and khans beside the road.
-    const hamlet = (id: string, count: number, radius: number, margin: number) => {
-      const p = P(id);
-      for (let i = 0, placed = 0; i < count * 6 && placed < count; i++) {
-        const a = r() * 7, d = Math.sqrt(r()) * radius, x = p.x + Math.cos(a) * d, z = p.z + Math.sin(a) * d;
-        if (!this.clearOfRoad(x, z, margin)) continue;
-        const s = 6 + r() * 5, h = 3.5 + r() * 2.5;
-        this.box(x, ty(x, z) - 1.5, z, s, h + 1.5, 6 + r() * 4, r() * 3, r() > 0.4 ? STONE : WHITE);
-        if (r() > 0.7) this.dome(x, ty(x, z) + h, z, s * 0.28, WHITE);
-        placed++;
-      }
-    };
-    hamlet('al-eizariya', 26, 85, 6);
-    hamlet('ariha', 70, 240, 6);
-    const khan = (id: string) => {
-      const p = P(id), y = ty(p.x, p.z) - 1.5, s = 30;
-      for (const [dx, dz, sx, sz] of [[0, -s / 2, s, 3], [0, s / 2, s, 3], [-s / 2, 0, 3, s], [s / 2, 0, 3, s]]) this.box(p.x + dx, y, p.z + dz, sx, 7.5, sz, 0, STONE);
-    };
-    khan('khan-al-ahmar'); khan('khan-al-hatruri');
-    {
-      // Maqam al-Nabi Musa: a walled compound with many small white domes and a minaret.
-      const p = P('nabi-musa'), y = ty(p.x, p.z) - 1.5, s = 46;
-      for (const [dx, dz, sx, sz] of [[0, -s / 2, s, 4], [0, s / 2, s, 4], [-s / 2, 0, 4, s], [s / 2, 0, 4, s]]) this.box(p.x + dx, y, p.z + dz, sx, 8, sz, 0, WHITE);
-      for (let i = 0; i < 9; i++) this.dome(p.x - 16 + (i % 3) * 16, y + 8, p.z - 16 + Math.floor(i / 3) * 16, 4.2, WHITE);
-      this.cyl(p.x + 20, y, p.z - 20, 1.6, 17, WHITE); this.dome(p.x + 20, y + 17, p.z - 20, 1.7, WHITE, 1.4);
-    }
-    // Date palms of the Ariha oasis and scattered trees on the western hills.
-    const ar = P('ariha');
-    for (let i = 0; i < 900; i++) {
-      const a = r() * 7, d = Math.sqrt(r()) * 480, x = ar.x + Math.cos(a) * d, z = ar.z + Math.sin(a) * d;
-      if (this.clearOfRoad(x, z, 3)) this.palm(x, z, 6 + r() * 5);
-    }
-    const ni = w.near.info;
-    for (let i = 0; i < 14000 && this.blobs.length < 3200; i++) {
-      const x = ni.x0 + 200 + r() * 2300, z = ni.z0 + 200 + r() * (ni.rows * ni.cell - 400);
-      if (x > 500 + r() * 900 || inside(x, z) || !this.clearOfRoad(x, z, 3)) continue;
-      if (Math.abs(ty(x + 3, z) - ty(x - 3, z)) + Math.abs(ty(x, z + 3) - ty(x, z - 3)) > 3.5) continue;
-      this.tree(x, z, 1.2 + r() * 1.1);
-    }
-    // The sea-level marker stone beside the road.
-    {
-      const s = w.roadAt(w.data.road.seaLevelAt), x = s.x - s.dz * (w.halfWidth + 2.5), z = s.z + s.dx * (w.halfWidth + 2.5);
-      this.box(x, ty(x, z) - 0.5, z, 1.1, 3, 0.5, Math.atan2(-s.dz, s.dx), WHITE);
-      this.label(x, ty(x, z) + 7, z, 'Sea level · 0 m', 'مستوى سطح البحر', 0.8);
-    }
-    for (const p of w.data.places) this.label(p.x, p.y + (p.kind === 'city' || p.kind === 'landmark' ? 46 : 26), p.z, p.name.en, p.name.ar, p.kind === 'city' ? 1.2 : 0.9);
-    this.finish();
-  }
-
-  private finish() {
-    const mat = new THREE.MeshStandardMaterial({ roughness: 0.9 });
-    const make = (geo: THREE.BufferGeometry, list: { m: THREE.Matrix4; c: number }[], shadow: boolean) => {
-      if (!list.length) return;
-      const im = new THREE.InstancedMesh(geo, mat, list.length), col = new THREE.Color();
-      list.forEach((it, i) => { im.setMatrixAt(i, it.m); im.setColorAt(i, col.setHex(it.c)); });
-      im.castShadow = shadow; im.receiveShadow = true; im.computeBoundingSphere();
-      this.group.add(im);
-    };
-    make(new THREE.BoxGeometry(1, 1, 1), this.boxes, true);
-    make(new THREE.SphereGeometry(1, 14, 6, 0, Math.PI * 2, 0, Math.PI / 2), this.domes, true);
-    make(new THREE.CylinderGeometry(1, 1, 1, 8), this.cyls, true);
-    make(new THREE.ConeGeometry(1, 1, 7), this.cones, true);
-    make(new THREE.IcosahedronGeometry(1, 0), this.blobs, false);
   }
 }

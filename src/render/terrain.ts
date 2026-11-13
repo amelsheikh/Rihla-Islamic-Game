@@ -4,6 +4,9 @@ import * as THREE from 'three';
 import type { Heightmap } from '../world/heightmap';
 import { V_SCALE } from '../world/warp';
 import type { World } from '../world/world';
+import { applySunShade, SunShade } from './sunshade';
+import { groundDetail } from './textures';
+import type { Plant } from './vegetation';
 
 const CHUNK = 128; // cells per chunk side
 const STRIDES = [1, 2, 4, 8, 16];
@@ -26,7 +29,7 @@ const C = {
 };
 
 /** Colour and object-space normal textures for a height grid, one texel per `step` cells. */
-function bake(hm: Heightmap, world: World, texW: number, texH: number) {
+function bake(hm: Heightmap, world: World, texW: number, texH: number, plants: Plant[]) {
   const { x0, z0, cell, cols, rows } = hm.info, W = cols * cell, D = rows * cell;
   const albedo = new Uint8Array(texW * texH * 4), normal = new Uint8Array(texW * texH * 4);
   const ariha = world.data.places.find((p) => p.id === 'ariha')!, waterY = world.data.waterY;
@@ -53,6 +56,22 @@ function bake(hm: Heightmap, world: World, texW: number, texH: number) {
     albedo[i] = Math.min(255, col[0] * shade); albedo[i + 1] = Math.min(255, col[1] * shade); albedo[i + 2] = Math.min(255, col[2] * shade); albedo[i + 3] = 255;
     normal[i] = (-dx * l * 0.5 + 0.5) * 255; normal[i + 1] = (l * 0.5 + 0.5) * 255; normal[i + 2] = (-dz * l * 0.5 + 0.5) * 255; normal[i + 3] = 255;
   }
+  // The road as a dusty line, and a dark dot under every tree: both read well from far away.
+  const dab = (x: number, z: number, rad: number, col: number[], k: number) => {
+    const c0 = Math.round((x - x0) / ex), r0 = Math.round((z - z0) / ez), n = Math.ceil(rad / ex);
+    for (let a = -n; a <= n; a++) for (let b = -n; b <= n; b++) {
+      const c = c0 + a, r = r0 + b;
+      if (c < 0 || r < 0 || c >= texW || r >= texH) continue;
+      const w = k * Math.max(0, 1 - Math.hypot(a * ex, b * ez) / (rad + ex * 0.5)), i = (r * texW + c) * 4;
+      for (let j = 0; j < 3; j++) albedo[i + j] += (col[j] - albedo[i + j]) * w;
+    }
+  };
+  if (ex < 10) for (let i = 0; i < world.n; i++) dab(world.px[i], world.pz[i], world.halfWidth + 3.5, [176, 158, 124], 0.55);
+  for (const p of plants) {
+    if (p.kind === 'olive') dab(p.x, p.z, 2.6 * p.scale, [72, 84, 52], 0.75);
+    else if (p.kind === 'palm') dab(p.x, p.z, 2.4, [60, 86, 44], 0.7);
+    else if (p.kind === 'cypress') dab(p.x, p.z, 1.6, [44, 62, 42], 0.8);
+  }
   const tex = (data: Uint8Array, srgb: boolean) => {
     const t = new THREE.DataTexture(data, texW, texH, THREE.RGBAFormat);
     t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
@@ -63,34 +82,27 @@ function bake(hm: Heightmap, world: World, texW: number, texH: number) {
   return { map: tex(albedo, true), normalMap: tex(normal, false) };
 }
 
-function detailTexture() {
-  const S = 256, d = new Uint8Array(S * S * 4), raw = new Float32Array(S * S);
-  let lo = 1, hi = 0;
-  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
-    // Tiling noise: blend four shifted copies.
-    const u = x / S, v = y / S, f = (a: number, b: number) => fbm(a * 14, b * 14) * 0.6 + hash2(Math.floor(a * S), Math.floor(b * S)) * 0.4;
-    const n = f(u, v) * (1 - u) * (1 - v) + f(u - 1, v) * u * (1 - v) + f(u, v - 1) * (1 - u) * v + f(u - 1, v - 1) * u * v;
-    raw[y * S + x] = n; lo = Math.min(lo, n); hi = Math.max(hi, n);
-  }
-  // Blending flattens the contrast; stretch it back to the full range.
-  for (let i = 0; i < S * S; i++) { d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = ((raw[i] - lo) / (hi - lo)) * 255; d[i * 4 + 3] = 255; }
-  const t = new THREE.DataTexture(d, S, S, THREE.RGBAFormat);
-  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.minFilter = THREE.LinearMipmapLinearFilter; t.magFilter = THREE.LinearFilter; t.generateMipmaps = true; t.needsUpdate = true;
-  return t;
-}
-
-function terrainMaterial(tex: { map: THREE.Texture; normalMap: THREE.Texture }, detail: THREE.Texture, sizeX: number, sizeZ: number) {
-  const m = new THREE.MeshStandardMaterial({ map: tex.map, normalMap: tex.normalMap, normalMapType: THREE.ObjectSpaceNormalMap, roughness: 0.96, metalness: 0 });
-  m.onBeforeCompile = (shader) => {
-    shader.uniforms.detailMap = { value: detail };
-    shader.uniforms.detailScale = { value: new THREE.Vector2(sizeX / 11, sizeZ / 11) };
-    shader.fragmentShader = 'uniform sampler2D detailMap;\nuniform vec2 detailScale;\n' + shader.fragmentShader.replace(
-      '#include <map_fragment>',
-      `#include <map_fragment>
-       float dn = texture2D(detailMap, vMapUv * detailScale).r * 0.6 + texture2D(detailMap, vMapUv * detailScale * 4.7).r * 0.4;
-       diffuseColor.rgb *= 0.66 + 0.68 * dn;`,
-    );
-  };
+function terrainMaterial(tex: { map: THREE.Texture; normalMap: THREE.Texture }, detail: ReturnType<typeof groundDetail>, sizeX: number, sizeZ: number, shade: SunShade) {
+  const m = new THREE.MeshStandardMaterial({ map: tex.map, normalMap: tex.normalMap, normalMapType: THREE.ObjectSpaceNormalMap, roughness: 0.95, metalness: 0 });
+  applySunShade(m, shade, (shader) => {
+    shader.uniforms.rockTex = { value: detail.rock }; shader.uniforms.soilTex = { value: detail.soil };
+    shader.uniforms.detailScale = { value: new THREE.Vector2(sizeX / 7, sizeZ / 7) };
+    shader.fragmentShader = 'uniform sampler2D rockTex;\nuniform sampler2D soilTex;\nuniform vec2 detailScale;\nvec4 rihlaD;\nfloat rihlaFade;\n' + shader.fragmentShader
+      .replace('#include <map_fragment>', `#include <map_fragment>
+        {
+          // Close to the camera the ground gets rock or stony-soil detail, chosen by how steep it is.
+          vec2 duv = vMapUv * detailScale;
+          float steep = smoothstep(0.93, 0.74, texture2D(normalMap, vNormalMapUv).y * 2.0 - 1.0);
+          rihlaD = mix(texture2D(soilTex, duv * 1.9), texture2D(rockTex, duv), steep);
+          float broad = texture2D(rockTex, duv * 0.11).a;
+          rihlaFade = 1.0 - smoothstep(60.0, 420.0, gl_FragCoord.z / gl_FragCoord.w);
+          diffuseColor.rgb *= mix(1.0, 0.6 + 0.8 * rihlaD.a, rihlaFade) * (0.82 + 0.36 * broad);
+        }`)
+      .replace('#include <normal_fragment_maps>', `
+        vec3 rihlaN = texture2D(normalMap, vNormalMapUv).xyz * 2.0 - 1.0;
+        rihlaN = normalize(rihlaN + vec3(rihlaD.x * 2.0 - 1.0, 0.0, rihlaD.y * 2.0 - 1.0) * 0.75 * rihlaFade);
+        normal = normalize(normalMatrix * rihlaN);`);
+  });
   return m;
 }
 
@@ -104,13 +116,13 @@ export class Terrain {
   private readonly indexCache = new Map<number, THREE.BufferAttribute>();
   private readonly textures: THREE.Texture[] = [];
 
-  constructor(world: World) {
+  constructor(world: World, plants: Plant[], readonly shade: SunShade, readonly farShade: SunShade) {
     this.near = world.near;
-    const ni = world.near.info, fi = world.far.info, detail = detailTexture();
-    const nearTex = bake(world.near, world, ni.cols + 1, ni.rows + 1);
-    const farTex = bake(world.far, world, fi.cols * 2 + 1, fi.rows * 2 + 1);
+    const ni = world.near.info, fi = world.far.info, detail = groundDetail();
+    const nearTex = bake(world.near, world, ni.cols + 1, ni.rows + 1, plants);
+    const farTex = bake(world.far, world, fi.cols * 2 + 1, fi.rows * 2 + 1, []);
     this.textures.push(nearTex.map, nearTex.normalMap, farTex.map, farTex.normalMap);
-    this.material = terrainMaterial(nearTex, detail, ni.cols * ni.cell, ni.rows * ni.cell);
+    this.material = terrainMaterial(nearTex, detail, ni.cols * ni.cell, ni.rows * ni.cell, shade);
     for (let cz = 0; cz < ni.rows / CHUNK; cz++) for (let cx = 0; cx < ni.cols / CHUNK; cx++) this.chunks.push({ cx, cz, level: -1, mesh: null });
 
     // Far terrain: one mesh. Inside the near rectangle it is sunk so the detailed terrain covers it.
@@ -132,7 +144,7 @@ export class Terrain {
     g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
     g.setIndex(new THREE.BufferAttribute(idx.slice(0, k), 1));
     g.computeBoundingSphere();
-    const far = new THREE.Mesh(g, terrainMaterial(farTex, detail, fi.cols * fi.cell, fi.rows * fi.cell));
+    const far = new THREE.Mesh(g, terrainMaterial(farTex, detail, fi.cols * fi.cell, fi.rows * fi.cell, farShade));
     far.receiveShadow = false; far.matrixAutoUpdate = false;
     this.group.add(far);
   }

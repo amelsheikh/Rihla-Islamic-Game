@@ -19,6 +19,7 @@
       <div id="banner" class="panel"><div id="banner-title"></div><div id="banner-sub"></div></div>
       <div id="hint"></div>
       <button id="menu-btn" class="panel" data-t="menu"></button>
+      <div id="actions"><button id="reset-btn" class="panel" data-t="reset"></button><button id="journal-btn" class="panel" data-t="journal" hidden></button></div>
       <div id="touch">
         <button data-touch="left">◀</button><button data-touch="right">▶</button>
         <span class="gap"></span>
@@ -39,6 +40,7 @@
           <label><span data-t="time"></span><input id="set-time" type="range" min="0" max="24" step="0.25" /></label>
           <label><span data-t="timeFlow"></span><select id="set-flow"><option value="0" data-t="flow.0"></option><option value="60" data-t="flow.60"></option><option value="600" data-t="flow.600"></option></select></label>
           <label><span data-t="labels"></span><input id="set-labels" type="checkbox" /></label>
+          <label><span data-t="volume"></span><input id="set-volume" type="range" min="0" max="1" step="0.05" /></label>
         </div>
         <button id="start" class="primary" disabled data-t="loading"></button>
         <div class="row"><button id="restart" data-t="restart"></button><button id="bench" data-t="benchmark"></button></div>
@@ -46,6 +48,7 @@
         <p class="note" data-t="greybox"></p>
       </div>
     </div>
+    <div id="page" hidden><div class="parchment"><div id="page-body"></div><button id="page-close" class="primary"></button></div></div>
     <div id="bench-panel" hidden>
       <div class="card">
         <h1 data-t="bench.title"></h1>

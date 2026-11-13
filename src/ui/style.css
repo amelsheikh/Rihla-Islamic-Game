@@ -15,12 +15,28 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #1e1810; col
 #banner { top: 22%; inset-inline-start: 50%; transform: translateX(-50%); text-align: center; padding: 14px 34px; opacity: 0; transition: opacity 0.6s; pointer-events: none; max-width: 86vw; }
 [dir='rtl'] #banner { transform: translateX(50%); }
 #banner.show { opacity: 1; } #banner-title { font-size: 34px; } #banner-sub { font-size: 18px; opacity: 0.9; }
-#hint { bottom: 18px; inset-inline-end: 18px; font-size: 15px; opacity: 0.85; text-shadow: 0 1px 3px #000; max-width: 46vw; text-align: end; }
+#hint { bottom: 18px; inset-inline-end: 18px; font-size: 18px; opacity: 0.95; text-shadow: 0 1px 3px #000; max-width: 46vw; text-align: end; }
 #debug { top: 70px; inset-inline-start: 14px; margin: 0; font: 12px/1.4 ui-monospace, monospace; background: rgba(0, 0, 0, 0.6); padding: 8px; border-radius: 6px; direction: ltr; }
 #touch { display: none; bottom: 18px; left: 0; right: 0; padding: 0 18px; gap: 12px; align-items: flex-end; direction: ltr; }
 #touch button { width: 76px; height: 76px; border-radius: 50%; border: 2px solid var(--gold); background: var(--panel); color: var(--ink); font-size: 28px; }
 #touch button.down { background: rgba(201, 165, 74, 0.5); } #touch .gap { flex: 1; }
 @media (pointer: coarse) { #touch { display: flex; } #dash { bottom: 112px; } #hint { display: none; } }
+#actions { top: 70px; inset-inline-end: 14px; display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+#actions button { color: var(--ink); font: inherit; font-size: 16px; cursor: pointer; }
+#page { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(20, 15, 9, 0.72); padding: 16px; overflow: auto; }
+#page[hidden] { display: none; }
+.parchment { background: #f1e6c8; background-image: radial-gradient(ellipse at center, #f6edd4 0%, #e9dab2 100%); color: #33281a; border: 3px double #8a6a2a; outline: 1px solid #c9a54a; outline-offset: 5px; border-radius: 6px; padding: 26px 34px; width: min(720px, 100%); max-height: 92vh; overflow: auto; text-align: start; box-shadow: 0 12px 60px rgba(0, 0, 0, 0.7); user-select: text; -webkit-user-select: text; }
+.parchment h1 { margin: 0 0 4px; font-size: 32px; font-weight: 400; text-align: center; color: #5a3d12; }
+.parchment h2 { margin: 18px 0 4px; font-size: 15px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: #8a6a2a; }
+[dir='rtl'] .parchment h2 { letter-spacing: 0; font-size: 18px; }
+.parchment p { margin: 8px 0; font-size: 19px; line-height: 1.55; }
+.parchment .ancestor { font-style: italic; font-size: 21px; border-inline-start: 3px solid #c9a54a; padding-inline-start: 14px; }
+.parchment .verse { text-align: center; background: rgba(138, 106, 42, 0.1); border-radius: 10px; padding: 14px 16px; margin: 10px 0; }
+.parchment .verse .ar { font-size: 27px; line-height: 2; direction: rtl; }
+.parchment .verse .ref { font-size: 15px; color: #8a6a2a; }
+.parchment .facts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
+.parchment .facts span { border: 1px solid #8a6a2a; border-radius: 20px; padding: 3px 14px; font-size: 16px; }
+.parchment button { display: block; margin: 18px auto 0; color: #f4e9cf; }
 #overlay, #bench-panel { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(20, 15, 9, 0.6); padding: 16px; overflow: auto; }
 #overlay[hidden], #bench-panel[hidden], #hud[hidden] { display: none; }
 .card { background: #2a2116; border: 2px solid var(--gold); border-radius: 18px; padding: 22px 30px; width: min(560px, 100%); text-align: center; box-shadow: 0 10px 50px rgba(0, 0, 0, 0.6); }

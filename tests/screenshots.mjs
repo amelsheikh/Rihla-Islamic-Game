@@ -13,6 +13,7 @@ fs.mkdirSync(out, { recursive: true });
 
 // name, distance along the road (m), hour, facing back up the road?, camera
 const SHOTS = [
+  ['quds-panorama', { place: 'mount-of-olives', dx: -40, dy: 14, yaw: 1.5708, pitch: -0.1 }, 8, false, 'free'],
   ['quds-morning', 60, 8.5, true, 'chase'],
   ['quds-sunset', 330, 17.7, true, 'chase'],
   ['wilderness-noon', 3300, 12, false, 'chase'],
@@ -31,12 +32,15 @@ page.on('pageerror', (e) => errors.push(String(e)));
 await page.goto(base + '?autostart=1', { waitUntil: 'load' });
 await page.waitForFunction(() => window.__rihla?.ready, null, { timeout: 120000 });
 await page.evaluate(() => { window.__rihla.quality('high'); });
+page.setDefaultTimeout(240000);
 for (const [name, s, hour, reverse, cam] of SHOTS) {
   if (only && !only.includes(name)) continue;
   await page.evaluate(([s, hour, reverse, cam]) => {
     const r = window.__rihla;
     r.setTime(hour, 0); r.camera(cam);
-    r.teleport(s < 0 ? r.world.data.road.seaLevelAt - 14 : s, reverse);
+    if (typeof s === 'object') { const p = r.world.data.places.find((q) => q.id === s.place); r.teleport(200, false); r.freeCam(p.x + s.dx, p.y + s.dy, p.z, s.yaw, s.pitch); }
+    else r.teleport(s < 0 ? r.world.data.road.seaLevelAt - 14 : s, reverse);
+    r.rebake();
   }, [s, hour, reverse, cam]);
   const f0 = await page.evaluate(() => window.__rihla.stats().frame);
   await page.waitForFunction((f) => window.__rihla.stats().frame > f + 14, f0, { timeout: 120000 });

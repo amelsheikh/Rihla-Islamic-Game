@@ -16,6 +16,8 @@ Nothing on this list is treated as settled.
 | H7 | The Dead Sea surface is set to 392 m below sea level for 1910 (it is near 430 m below today, and was much higher a century ago). The brief's "−430 m" is today's figure. | The altimeter reading at the shore, and where the shoreline falls. | Confirm the 1910 level with a source. |
 | H8 | The line of the Ottoman carriage road from Al-Quds to Ariha. The game's road passes the real waypoints (Al-Eizariya, Khan al-Ahmar, Khan al-Hatruri) but its exact line between them is found by the computer on the compressed terrain. | "Learning the roads" should mean the real road. | Compare with a period map. |
 | H9 | The name "Khan al-Hatruri" for the inn on the Jericho road, and its relation to Khan al-Ahmar. | Place names shown to players. | Confirm with a source. |
+| H10 | Positions, shapes and 1910 state of the Al-Quds skyline buildings in `content/landmarks/al-quds.json` (minarets of the Haram, Bab al-Rahma, the Holy Sepulchre, the Church of the Redeemer, the Citadel, the Hurva and Tiferet Yisrael synagogues, the Church of Mary Magdalene, the Russian tower). | The skyline should be the real one of 1910. | Check against period photographs. |
+| H11 | Facts on the first journal page: Al-Quds about 750 m, Ariha about 250 m below sea level, the rain-shadow explanation, Ariha among the oldest cities, the Dead Sea shore the lowest dry land. | Taught to children as fact. | Confirm each. |
 
 ## Religious
 
@@ -25,3 +27,6 @@ Nothing on this list is treated as settled.
 | R2 | Presenting the 99 Names of Allah as things to find in a game. | Owner and scholar to approve the treatment (see open questions). |
 | R3 | The "Barakah points" name for a score. | Scholar to confirm the wording is appropriate. |
 | R4 | Adhan recordings specific to each place: Al-Aqsa's adhan in Al-Quds, and later Makkah's and Madinah's in their own places (owner's request). Each needs a real recording with permission to use it; no synthetic voice. | To be researched in Phase 2; owner to approve each source. |
+| R5 | The inscription band on the Dome of the Rock is drawn as a plain frieze. Real calligraphy must be made by an artist and reviewed; it must not be imitated with made-up lettering. | Open. |
+| R6 | All Arabic text (interface, story, journal) was written by the developer. | Needs review by a native reader. |
+| R7 | Surah Al-Isra 17:1 on the first journal page: the Arabic text, and the English meaning, which was written for this game and should be replaced by a published translation. | To be reviewed by a scholar. |

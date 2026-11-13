@@ -5,21 +5,21 @@ import type { DriveMode } from '../physics/vehicle';
 
 export type Lang = 'en' | 'ar';
 export type Quality = 'low' | 'medium' | 'high' | 'ultra';
-export interface Preset { pixelRatio: number; shadows: number; lod: number; anisotropy: number; environment: boolean; antialias: boolean }
+export interface Preset { pixelRatio: number; shadows: number; lod: number; anisotropy: number; environment: boolean; /** Anti-aliasing samples for the finishing effects; 0 turns them off. */ postfx: number; /** Milliseconds per frame spent refreshing hill shadows. */ shadeBudget: number }
 
 export const PRESETS: Record<Quality, Preset> = {
-  low: { pixelRatio: 0.7, shadows: 0, lod: 0.55, anisotropy: 2, environment: false, antialias: false },
-  medium: { pixelRatio: 1, shadows: 1024, lod: 0.8, anisotropy: 4, environment: true, antialias: true },
-  high: { pixelRatio: 1.5, shadows: 2048, lod: 1.15, anisotropy: 8, environment: true, antialias: true },
-  ultra: { pixelRatio: 2, shadows: 4096, lod: 1.8, anisotropy: 16, environment: true, antialias: true },
+  low: { pixelRatio: 0.7, shadows: 0, lod: 0.5, anisotropy: 2, environment: false, postfx: 0, shadeBudget: 0.8 },
+  medium: { pixelRatio: 1, shadows: 1024, lod: 0.75, anisotropy: 4, environment: true, postfx: 0, shadeBudget: 1.5 },
+  high: { pixelRatio: 1.25, shadows: 2048, lod: 1, anisotropy: 8, environment: true, postfx: 4, shadeBudget: 2.5 },
+  ultra: { pixelRatio: 2, shadows: 4096, lod: 1.6, anisotropy: 16, environment: true, postfx: 4, shadeBudget: 4 },
 };
 export const QUALITIES: Quality[] = ['low', 'medium', 'high', 'ultra'];
 
-export interface Settings { lang: Lang; quality: Quality | 'auto'; mode: DriveMode; labels: boolean }
+export interface Settings { lang: Lang; quality: Quality | 'auto'; mode: DriveMode; labels: boolean; volume: number }
 const KEY = 'rihla.settings.v1';
 
 export function loadSettings(): Settings {
-  const def: Settings = { lang: (navigator.language || '').startsWith('ar') ? 'ar' : 'en', quality: 'auto', mode: 'family', labels: true };
+  const def: Settings = { lang: (navigator.language || '').startsWith('ar') ? 'ar' : 'en', quality: 'auto', mode: 'family', labels: true, volume: 0.7 };
   try { return { ...def, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return def; }
 }
 export function saveSettings(s: Settings) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* private window: settings last for this visit only */ } }
@@ -31,6 +31,12 @@ export function guessQuality(): Quality {
   if (mobile) return (nav.deviceMemory ?? 4) >= 6 ? 'medium' : 'low';
   return (nav.hardwareConcurrency ?? 4) >= 8 ? 'high' : 'medium';
 }
+
+/** What the player has done so far. Kept in the browser; proper save slots come in Phase 2. */
+export interface Progress { introSeen: boolean; pages: string[] }
+const SAVE_KEY = 'rihla.progress.v1';
+export function loadProgress(): Progress { try { return { introSeen: false, pages: [], ...JSON.parse(localStorage.getItem(SAVE_KEY) || '{}') }; } catch { return { introSeen: false, pages: [] }; } }
+export function saveProgress(p: Progress) { try { localStorage.setItem(SAVE_KEY, JSON.stringify(p)); } catch { /* not saved in a private window */ } }
 
 const STRINGS: Record<Lang, Record<string, string>> = { en, ar };
 let current: Lang = 'en';

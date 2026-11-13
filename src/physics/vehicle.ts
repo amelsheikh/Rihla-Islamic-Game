@@ -201,10 +201,12 @@ export class Vehicle {
     this.rpm += (targetRpm - this.rpm) * Math.min(1, dt * 6);
 
     // Upside down or on its side and stopped: note it, so the game can offer to right the car.
-    this.flippedFor = this.up.y < 0.3 && sp < 2 ? this.flippedFor + dt : 0;
+    this.flippedFor = this.up.y < 0.55 && sp < 3 ? this.flippedFor + dt : 0;
   }
 
-  get needsRescue() { return this.flippedFor > 1.5 || this.pos.y < this.world.data.waterY - 3; }
+  get needsRescue() { return this.flippedFor > 1 || this.pos.y < this.world.data.waterY - 3; }
+  /** How long the car has been lying on its side or roof, in seconds. */
+  get tippedFor() { return this.flippedFor; }
 
   /** Lift the car back onto the nearest stretch of road. */
   rescue() {

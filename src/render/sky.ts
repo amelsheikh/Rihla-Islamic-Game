@@ -13,11 +13,13 @@ export class SkySystem {
   timeScale = 60;
   dayOfYear = 95; // early April: spring in the hills
   readonly sunDir = new THREE.Vector3();
+  /** Direction to whichever of the sun and moon is lighting the land. */
+  readonly lightDir = new THREE.Vector3(0, 1, 0);
   readonly light = new THREE.DirectionalLight(0xffffff, 3);
   readonly hemi = new THREE.HemisphereLight(0xbfd4ff, 0x8a7a5c, 0.5);
   /** 0 by day, 1 in full night. */
   night = 0;
-  shadowRange = 70;
+  shadowRange = 85;
   private readonly sky = new Sky();
   private readonly stars: THREE.Points;
   private readonly moon: THREE.Mesh;
@@ -91,9 +93,10 @@ export class SkySystem {
 
     // One shadow-casting light: the sun by day, the moon at night, fading through zero at the changeover.
     const sunUp = up > -0.06, dir = sunUp ? this.sunDir : this.moonDir;
+    this.lightDir.copy(dir);
     const warm = new THREE.Color(1.0, 0.56, 0.3).lerp(new THREE.Color(1.0, 0.96, 0.9), high);
     if (sunUp) { this.light.color.copy(warm); this.light.intensity = 3.0 * sstep(-0.06, 0.08, up); }
-    else { this.light.color.setRGB(0.62, 0.72, 1.0); this.light.intensity = 0.55 * sstep(-0.06, -0.2, up); }
+    else { this.light.color.setRGB(0.62, 0.72, 1.0); this.light.intensity = 0.9 * sstep(-0.06, -0.2, up); }
     const r = this.shadowRange, texel = (2 * r) / this.light.shadow.mapSize.x;
     this.light.target.position.set(Math.round(focus.x / texel) * texel, focus.y, Math.round(focus.z / texel) * texel);
     this.light.position.copy(this.light.target.position).addScaledVector(dir, 400);
@@ -106,6 +109,7 @@ export class SkySystem {
 
     const fog = this.scene.fog as THREE.FogExp2;
     const dusk = new THREE.Color(0.8, 0.52, 0.36), noon = new THREE.Color(0.56, 0.68, 0.84), dark = new THREE.Color(0.012, 0.018, 0.04);
+    fog.density = 0.00009 * (1 + 1.8 * sstep(60, -150, camera.position.y));
     fog.color.copy(dusk).lerp(noon, high).multiplyScalar(0.25 + 0.75 * day).lerp(dark, this.night);
 
     (this.stars.material as THREE.PointsMaterial).opacity = this.night;
@@ -116,7 +120,7 @@ export class SkySystem {
     (this.moon.material as THREE.MeshBasicMaterial).opacity = this.night;
     this.moon.position.copy(camera.position).addScaledVector(this.moonDir, 10000);
     this.moon.lookAt(camera.position);
-    this.renderer.toneMappingExposure = 0.44 + 0.7 * (1 - sstep(-0.02, 0.3, up));
+    this.renderer.toneMappingExposure = 0.4 + 0.74 * (1 - sstep(-0.02, 0.3, up));
     u.time.value += dt * 40;
 
     // Re-capture the sky as ambient light and reflections when the sun has moved enough.
