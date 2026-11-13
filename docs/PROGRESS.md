@@ -98,13 +98,27 @@
 - Arabic text was written by the developer and needs a native reader's review (`NEEDS_REVIEW.md` R6).
 - Touch controls and the gamepad are still untested on real devices.
 
-## Direction
+## Direction: move to a game engine
 
-During Phase 1b the owner asked for the game to look like Forza Horizon, with real cars and realistic scenes.
-That cannot be reached by continuing this browser build alone. The options put to the owner are recorded in
-`DESIGN.md` section 10; no further phase should start until the owner chooses.
+The owner chose a realistic engine build that also runs on tablets, with modern cars and walking. See
+`DESIGN.md` section 11. The browser phases 2 to 7 in the table above are on hold.
 
-## Still open with the owner
+### Waiting for the owner
 
-- The direction above.
-- Who supplies or approves adhan recordings, and who reviews religious texts and the Arabic.
+1. **Engine:** confirm Unity 6 with the Universal Render Pipeline (recommended), or choose Unreal Engine 5.
+2. **Story with modern cars:** (a) Jiddo's modern car travels back to the land as it was around 1910, so the
+   world stays borderless and historical; or (b) the game is set in the present day. Recommended: (a).
+3. **Setup on the PC:** install Unity Hub and Unity 6, clone this repository, and open a Claude Code session
+   in that folder.
+4. **Asset budget:** realistic cars, trees, buildings and characters are bought from asset stores.
+5. Still open from before: adhan recordings, and reviewers for religious texts and Arabic.
+
+### Engine phases (proposed)
+
+| Phase | Result |
+|---|---|
+| E0 — Setup | Unity project in this repository; terrain and road exported from the existing pipeline and imported; a placeholder car driving the Jericho road on the PC |
+| E1 — Vertical slice | Al-Quds to Ariha with realistic ground, vegetation, sky, one modern car with proper handling and sound, and getting out to walk |
+| E2 — Al-Quds on foot | The Old City and the Haram at close to true size, walkable, with the journal and the adhan |
+| E3 — Tablets | Reduced settings, touch controls, a tablet build |
+| E4 onwards | The rest of Palestine, then the other regions, as in the brief |

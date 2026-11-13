@@ -182,3 +182,51 @@ Options:
    machine rather than only in this cloud session. Phones and tablets become a separate, reduced version.
 3. **Both, in order.** Finish the journey, story and teaching content in the browser, where it is cheap to
    change, then rebuild the visuals in an engine using the same data.
+
+## 11. Decision: move to a game engine (owner, after Phase 1b)
+
+The owner chose option 2 from section 10, with these requirements:
+
+- A realistic, Forza Horizon style look on a PC with a dedicated graphics card (the owner has one).
+- The game must also run on tablets.
+- Modern cars, not cars of 1910.
+- The player can get out of the car and walk.
+
+### Proposed engine: Unity 6 with the Universal Render Pipeline (awaiting the owner's confirmation)
+
+| Question | Unity 6 (URP) | Unreal Engine 5 |
+|---|---|---|
+| Best possible look on a gaming PC | Very good | The best; closest to Forza |
+| Tablets from the same project | Yes, this is what URP is for | Possible, but its best features are switched off there and builds are heavy |
+| Assets to buy (cars, trees, buildings, characters) | Largest store | Large store, plus free scanned rocks and ground |
+| Driving and walking kits | Many | Many |
+| Can be built and driven by Claude Code on the owner's PC | Yes, Unity has a command line and editor scripting | Much harder; most work is in visual editors |
+
+Unity is proposed because tablets are a firm requirement and because the work can be automated from a Claude
+Code session running on the owner's PC. The honest cost: on a PC, Unity with this pipeline looks very good but
+a step below Unreal.
+
+### What changes in the design
+
+- **Cars:** realistic modern cars without real badges or names. Real makes need a licence from each
+  manufacturer; unbranded look-alikes from an asset store do not.
+- **Story:** modern cars do not belong in 1910. Two ways to keep the idea of one land without borders are
+  put to the owner in `docs/PROGRESS.md`.
+- **On foot:** a walking mode everywhere, not only at sacred sites. The rule that cars never enter sacred
+  precincts stays.
+- **World scale:** on foot, a city compressed to a few hundred metres feels small. Cities and landmarks need
+  to be built at or near true size, with the compression kept for the open road between them.
+
+### What carries over from the browser build
+
+- `tools/build-terrain.ts`: real elevation data, the warped map and the routed road. It will gain an export
+  of height maps and road lines in the formats Unity reads.
+- `content/`: places, landmarks, the journal, religious texts and both languages.
+- `src/physics/vehicle.ts` as a reference for handling, and the tests as a reference for behaviour.
+- The browser build stays in the repository as the working prototype for story and teaching content.
+
+### Where the work happens
+
+This cloud session has no graphics card and cannot run Unity, and the owner's PC does not offer its folders to
+cloud sessions. Engine work therefore runs in a Claude Code session on the owner's PC, in a clone of this
+repository, where Unity is installed. `CLAUDE.md` tells that session where to start.

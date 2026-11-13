@@ -8,3 +8,5 @@
 - Commit with clear messages and push before ending a session; cloud sessions are temporary.
 - Religious and cultural guidelines in section 5 of the brief are strict and never optional.
 - Never invent historical or religious facts; add uncertain ones to `NEEDS_REVIEW.md`.
+- **Direction (decided after Phase 1b):** the game is moving from the browser build to a game engine for a realistic look, with tablets, modern cars and walking. Read `DESIGN.md` sections 10 and 11 and the "Direction" part of `docs/PROGRESS.md` before doing anything. Do not continue the browser phases unless the owner asks.
+- Engine work needs the editor and a graphics card, so it runs in a session on the owner's PC, not in a cloud session.
