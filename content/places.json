@@ -1,0 +1,24 @@
+{
+  "note": "Coordinates are approximate and listed for review in NEEDS_REVIEW.md (H6).",
+  "places": [
+    { "id": "al-quds", "kind": "city", "lon": 35.2318, "lat": 31.7782, "name": { "en": "Al-Quds (Jerusalem)", "ar": "القدس" } },
+    { "id": "dome-of-the-rock", "kind": "landmark", "lon": 35.2354, "lat": 31.778, "name": { "en": "Dome of the Rock", "ar": "قبة الصخرة" } },
+    { "id": "al-qibli", "kind": "landmark", "lon": 35.2357, "lat": 31.7762, "name": { "en": "Al-Qibli Mosque", "ar": "المصلى القبلي" } },
+    { "id": "bab-al-asbat", "kind": "gate", "lon": 35.2369, "lat": 31.7809, "name": { "en": "Bab al-Asbat", "ar": "باب الأسباط" } },
+    { "id": "mount-of-olives", "kind": "viewpoint", "lon": 35.245, "lat": 31.7785, "name": { "en": "Mount of Olives", "ar": "جبل الزيتون" } },
+    { "id": "al-eizariya", "kind": "village", "lon": 35.2625, "lat": 31.7712, "name": { "en": "Al-Eizariya", "ar": "العيزرية" } },
+    { "id": "khan-al-ahmar", "kind": "khan", "lon": 35.336, "lat": 31.7958, "name": { "en": "Khan al-Ahmar", "ar": "الخان الأحمر" } },
+    { "id": "khan-al-hatruri", "kind": "khan", "lon": 35.359, "lat": 31.8172, "name": { "en": "Khan al-Hatruri", "ar": "خان الحتروري" } },
+    { "id": "wadi-al-qilt", "kind": "nature", "lon": 35.414, "lat": 31.8436, "name": { "en": "Wadi al-Qilt", "ar": "وادي القلط" } },
+    { "id": "nabi-musa", "kind": "landmark", "lon": 35.4317, "lat": 31.7866, "name": { "en": "Maqam al-Nabi Musa", "ar": "مقام النبي موسى" } },
+    { "id": "jabal-quruntul", "kind": "nature", "lon": 35.431, "lat": 31.874, "name": { "en": "Jabal Quruntul", "ar": "جبل قرنطل" } },
+    { "id": "ariha", "kind": "city", "lon": 35.459, "lat": 31.856, "name": { "en": "Ariha (Jericho)", "ar": "أريحا" } },
+    { "id": "dead-sea", "kind": "nature", "lon": 35.505, "lat": 31.74, "name": { "en": "The Dead Sea", "ar": "البحر الميت" } }
+  ],
+  "oldCityWalls": [
+    [35.2276, 31.7766], [35.2262, 31.779], [35.227, 31.78], [35.2304, 31.7817], [35.2338, 31.7831],
+    [35.2368, 31.7835], [35.2369, 31.7809], [35.2371, 31.7753], [35.2343, 31.7748], [35.2296, 31.7727],
+    [35.2272, 31.773]
+  ],
+  "deadSeaLevel1910": -392
+}

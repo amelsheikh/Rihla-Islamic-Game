@@ -1,7 +1,9 @@
 node_modules/
 dist/
+dist-single/
 .vite/
 *.log
 .DS_Store
 playwright-report/
 test-results/
+tools/.cache/

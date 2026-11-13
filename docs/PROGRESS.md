@@ -2,8 +2,8 @@
 
 | Phase | Status | Notes |
 |---|---|---|
-| 0 — Design and plan (brief section 9, step 1) | Proposed, awaiting owner's go-ahead | See `DESIGN.md` and `NEEDS_REVIEW.md` |
-| 1a — Foundation (grey-box Al-Quds to Ariha) | Not started | |
+| 0 — Design and plan (brief section 9, step 1) | Done | Owner approved all recommendations |
+| 1a — Foundation (grey-box Al-Quds to Ariha) | Built, awaiting owner's review | See below |
 | 1b — Vertical slice: Al-Quds to Ariha | Not started | |
 | 2 — Core systems | Not started | |
 | 3 — Complete Palestine | Not started | |
@@ -12,19 +12,49 @@
 | 6 — Egypt and Sinai | Not started | |
 | 7 — Polish and release | Not started | |
 
-## Open questions for the owner (asked in Phase 0)
+## Phase 1a: what works
 
-Each has a recommended answer; "go with your recommendations" is a valid reply.
+- Real terrain from Al-Quds (about 715 m) down to the Dead Sea shore (about 390 m below sea level), with the
+  far landscape out to the mountains east of the Dead Sea.
+- A 9.5 km road through Al-Eizariya, Khan al-Ahmar, Khan al-Hatruri, the sea-level marker and Ariha.
+- One car with spring, damper and tyre physics; Family and Simulation modes; reverse; handbrake; rescue.
+- Day and night: moving sun, clouds, stars, crescent moon, headlamps, shadows near the car.
+- HUD in English and Arabic (right-to-left, Eastern Arabic digits): speed, true elevation, distance to
+  Ariha, nearest place, clock, compass; banners on arriving at a place and on crossing sea level.
+- Block-out landmarks: the walls of Al-Quds, the Dome of the Rock with its 1910 lead dome, Al-Qibli Mosque,
+  villages, two khans, Maqam al-Nabi Musa, the palms of Ariha.
+- Four quality presets with automatic selection, a performance test, a details overlay (F3).
+- Keyboard, gamepad and basic touch controls. Chase, bonnet and free cameras. Autopilot.
+- A single-file build that opens by double-click.
 
-1. **World scale.** Approve about 1:8 horizontal and 1:2.5 vertical compression, with the altimeter showing true elevations? Recommended: yes.
-2. **Dome of the Rock in 1910.** Historically accurate dark lead dome, or the gold dome people recognise today? Recommended: accurate lead dome, with a journal note explaining the later gold covering.
-3. **Era.** Fixed 1910 CE / 1328 AH? Recommended: yes.
-4. **Characters.** Names for the boy and girl, and the ancestor: a traveller of the 1300s (the age of Ibn Battuta), or a great-great-grandmother of about 1800? Recommended: Yusuf and Maryam; the 1300s ancestor.
-5. **Music.** Voices, percussion and nature sounds only, with instruments as an option that is off by default? Recommended: yes.
-6. **Adhan.** Who supplies a recording with permission? Until then it is a silent on-screen notice.
-7. **The 99 Names.** Recommended: inscriptions discovered on foot at viewpoints, never objects on the road that a car drives through. Needs a scholar's approval.
-8. **Makkah and Madinah.** Recommended: leave both out of the driving world for now; the Hejaz Railway chapter ends on arrival at the Madinah station.
-9. **Devices.** Which laptop and tablet will the children actually use? That sets the performance target.
-10. **Playing the builds.** Make the repository public and use GitHub Pages (free), or keep it private and use another host?
-11. **Arabic style.** Recommended: simple Modern Standard Arabic for narration, light Palestinian dialect for characters.
-12. **Scholarly reviewer.** Who reviews the religious texts before release?
+## Phase 1a: checks run
+
+| Check | Result |
+|---|---|
+| `npm test`: autopilot drives the whole road, both modes | Passed: 9.5 km in 12.5 minutes, never more than 0.7 m from the centre line, no rollovers |
+| `node tests/play.mjs`: start, drive by keyboard, menu, Arabic, performance test, on the single-file build | Passed, no console errors |
+| Screenshots at 8 places and times | Taken; see `docs/screenshots/phase-1a.jpg` |
+| Draw calls (High) | 46 to 123 (budget 350) |
+| Triangles (High, including the shadow pass) | 430k to 670k (budget 1.5 million) |
+| Download size | 7.8 MB (budget 40 MB) |
+| Frame rate | **Not measured.** This environment has no graphics card. The owner runs the in-game performance test on their laptop. |
+
+## Phase 1a: known issues
+
+- Everything visual is a placeholder: flat ground colours, blob trees, box buildings.
+- No sound yet.
+- The drive from Al-Quds to Ariha takes about 10 minutes, longer than the brief's 3 to 6.
+- Twilight is dim just after sunset.
+- Touch controls are untested on a real phone or tablet.
+- The road simply stops at the Dead Sea shore.
+- Place coordinates and the road's line need checking against maps (`NEEDS_REVIEW.md` H6, H8).
+
+## Next: Phase 1b
+
+The same road made beautiful: ground materials, olive trees and desert scrub, the Al-Quds skyline and walls,
+the khan, post-processing, shadows across the whole view, sound, and the first journal page.
+
+## Still open with the owner
+
+- Who supplies or approves adhan recordings (to be researched in Phase 2), and who reviews religious texts.
+- Whether to shorten the Al-Quds to Ariha drive.

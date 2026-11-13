@@ -1,7 +1,7 @@
 # Rihla: Roads Without Borders — Technical Design
 
-Status: Phase 0 proposal, awaiting the owner's go-ahead. No code has been written.
-This file is kept up to date as decisions change.
+Status: approved by the owner. Phase 1a is built. This file is kept up to date as decisions change.
+Section 9 lists what Phase 1a actually built and where it differs from this plan.
 
 ## 1. Stack
 
@@ -125,6 +125,30 @@ foundations that might still change.
 | Download size and tablet memory. | Streaming, compressed textures (KTX2), strict budgets checked in every phase. |
 | Scope: seven regions and many systems. | One phase at a time, each ending playable. Phase 1 proves the look and feel before the world grows. |
 
-## 8. Decisions waiting for the owner
+## 8. Decisions made by the owner
 
-See `docs/PROGRESS.md` for the list of open questions and the recommended answer to each.
+- World scale, the 1910 setting, the lead-covered Dome of the Rock, Yusuf and Maryam with a 1300s ancestor,
+  the music policy, the treatment of the 99 Names, and the Arabic style: all as recommended in Phase 0.
+- The repository stays private for now. Builds are reviewed by running the game locally or from the
+  single-file build (`npm run build:single`).
+- **Adhan is specific to each place.** Every mosque in the content data names its own recording: Al-Aqsa's
+  adhan in Al-Quds, and Makkah's and Madinah's when those places are added. Finding recordings that may be
+  used is Phase 2 work.
+- The game must teach: the land, the roads and the historical sites come first in every design choice.
+- Devices: a laptop now; tablets and phones later. Touch controls exist from Phase 1a but are basic.
+
+## 9. Phase 1a as built
+
+- **World:** the corridor from Al-Quds to Ariha and the Dead Sea shore. Near terrain is a 5.4 x 3.5 km grid at
+  3 m; far terrain is a 13.8 x 12.7 km grid at 36 m, out to the mountains east of the Dead Sea.
+- **City bubbles:** `src/world/warp.ts` magnifies Al-Quds (to about 1:2.5) and Ariha so they have room.
+- **Road:** the pipeline finds the road line itself. It searches the compressed terrain for a line through the
+  real waypoints that avoids steep slopes and sharp turns, then smooths it, limits the slope to 13% and cuts
+  the road bed into the terrain. Result: 9.5 km, with 7.6 km from Al-Quds to Ariha.
+- **Wheels and ground:** the wheels roll on an exact mathematical road surface, not on the terrain grid, so
+  the road is smooth whatever the terrain resolution. A small terrain collider follows the car for the chassis.
+- **Differences from the plan, all to be closed in Phase 1b:** tone mapping is ACES (AgX looked washed out with
+  this sky); the `postprocessing` library is not in yet; there is one shadow map around the car, not three
+  cascades; there is no sound; no floating origin yet (not needed at this world size).
+- **Drive time:** about 10 minutes from Al-Quds to Ariha at 45 km/h. That is longer than the 3-6 minutes the
+  brief aims for between neighbouring cities. It can be shortened by raising the compression or the speeds.

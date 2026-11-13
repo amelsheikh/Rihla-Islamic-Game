@@ -1,0 +1,21 @@
+{
+  "id": "quds-ariha",
+  "name": { "en": "The Jericho Road", "ar": "طريق أريحا" },
+  "width": 5.6,
+  "surface": "macadam",
+  "note": "Waypoints are approximate (see NEEDS_REVIEW.md H6). The pipeline finds a drivable line through them on the real terrain.",
+  "waypoints": [
+    { "id": "bab-al-asbat", "lon": 35.2382, "lat": 31.7808 },
+    { "id": "kidron", "lon": 35.2398, "lat": 31.7788 },
+    { "id": "ras-al-amud", "lon": 35.2442, "lat": 31.7722 },
+    { "id": "al-eizariya", "lon": 35.2625, "lat": 31.7705 },
+    { "id": "wadi-al-hod", "lon": 35.3, "lat": 31.78 },
+    { "id": "khan-al-ahmar", "lon": 35.336, "lat": 31.795 },
+    { "id": "khan-al-hatruri", "lon": 35.359, "lat": 31.8165 },
+    { "id": "descent", "lon": 35.397, "lat": 31.814 },
+    { "id": "nabi-musa-junction", "lon": 35.438, "lat": 31.806 },
+    { "id": "plain", "lon": 35.455, "lat": 31.828 },
+    { "id": "ariha", "lon": 35.459, "lat": 31.854 },
+    { "id": "dead-sea-shore", "lon": 35.5, "lat": 31.745, "stopAtWater": true }
+  ]
+}

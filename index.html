@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#1e1810" />
+    <title>Rihla: Roads Without Borders</title>
+  </head>
+  <body>
+    <canvas id="view"></canvas>
+    <div id="hud" hidden>
+      <div id="place" class="panel"><span id="place-ar"></span><span id="place-en"></span></div>
+      <div id="clock" class="panel"><span id="clock-time"></span><span id="compass"></span></div>
+      <div id="dash" class="panel">
+        <div class="big"><span id="speed">0</span><small data-t="kmh"></small></div>
+        <div id="alt"></div>
+        <div id="trip"></div>
+      </div>
+      <div id="banner" class="panel"><div id="banner-title"></div><div id="banner-sub"></div></div>
+      <div id="hint"></div>
+      <button id="menu-btn" class="panel" data-t="menu"></button>
+      <div id="touch">
+        <button data-touch="left">◀</button><button data-touch="right">▶</button>
+        <span class="gap"></span>
+        <button data-touch="brake">■</button><button data-touch="gas">▲</button>
+      </div>
+      <pre id="debug" hidden></pre>
+    </div>
+    <div id="overlay">
+      <div class="card">
+        <h1 data-t="title"></h1>
+        <p class="sub" data-t="subtitle"></p>
+        <div id="menu-rows">
+          <label><span data-t="language"></span><select id="set-lang"><option value="en">English</option><option value="ar">العربية</option></select></label>
+          <label><span data-t="mode"></span><select id="set-mode"><option value="family" data-t="mode.family"></option><option value="simulation" data-t="mode.simulation"></option></select></label>
+          <label><span data-t="quality"></span><select id="set-quality">
+            <option value="auto" data-t="q.auto"></option><option value="low" data-t="q.low"></option><option value="medium" data-t="q.medium"></option>
+            <option value="high" data-t="q.high"></option><option value="ultra" data-t="q.ultra"></option></select></label>
+          <label><span data-t="time"></span><input id="set-time" type="range" min="0" max="24" step="0.25" /></label>
+          <label><span data-t="timeFlow"></span><select id="set-flow"><option value="0" data-t="flow.0"></option><option value="60" data-t="flow.60"></option><option value="600" data-t="flow.600"></option></select></label>
+          <label><span data-t="labels"></span><input id="set-labels" type="checkbox" /></label>
+        </div>
+        <button id="start" class="primary" disabled data-t="loading"></button>
+        <div class="row"><button id="restart" data-t="restart"></button><button id="bench" data-t="benchmark"></button></div>
+        <p class="controls" data-t="controls"></p>
+        <p class="note" data-t="greybox"></p>
+      </div>
+    </div>
+    <div id="bench-panel" hidden>
+      <div class="card">
+        <h1 data-t="bench.title"></h1>
+        <p id="bench-status"></p>
+        <textarea id="bench-result" readonly rows="9" hidden></textarea>
+        <div class="row"><button id="bench-copy" hidden data-t="bench.copy"></button><button id="bench-close" hidden data-t="bench.close"></button></div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
