@@ -37,7 +37,13 @@
 | Draw calls (High) | 46 to 123 (budget 350) |
 | Triangles (High, including the shadow pass) | 430k to 670k (budget 1.5 million) |
 | Download size | 7.8 MB (budget 40 MB) |
-| Frame rate | **Not measured.** This environment has no graphics card. The owner runs the in-game performance test on their laptop. |
+| Frame rate, owner's laptop (Intel UHD integrated graphics, 1912x914, Edge) | Low 60 fps (1% low 52), Medium 60 (58), High 60 (58), Ultra 42 (27). 60 is the screen's limit, so the spare capacity on High is unknown. |
+
+## Phase 1a: owner's feedback
+
+- Controls work and the game feels nice.
+- Graphics, boundaries and collisions feel artificial. To address in Phase 1b: buildings and walls are plain boxes with box-shaped collisions, the ground off the road is uniformly smooth, and nothing marks the road's edge.
+- The laptop has integrated graphics, and the drop on Ultra comes from the larger shadow map and longer detail distances. Phase 1b must treat Medium and High on this laptop as the target and keep shadows and post-processing cheap.
 
 ## Phase 1a: known issues
 
