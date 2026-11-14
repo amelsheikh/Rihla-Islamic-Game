@@ -18,6 +18,8 @@ Nothing on this list is treated as settled.
 | H9 | The name "Khan al-Hatruri" for the inn on the Jericho road, and its relation to Khan al-Ahmar. | Place names shown to players. | Confirm with a source. |
 | H10 | Positions, shapes and 1910 state of the Al-Quds skyline buildings in `content/landmarks/al-quds.json` (minarets of the Haram, Bab al-Rahma, the Holy Sepulchre, the Church of the Redeemer, the Citadel, the Hurva and Tiferet Yisrael synagogues, the Church of Mary Magdalene, the Russian tower). | The skyline should be the real one of 1910. | Check against period photographs. |
 | H11 | Facts on the first journal page: Al-Quds about 750 m, Ariha about 250 m below sea level, the rain-shadow explanation, Ariha among the oldest cities, the Dead Sea shore the lowest dry land. | Taught to children as fact. | Confirm each. |
+| H12 | The timeline of the Dome of the Rock in `content/history.json`: built 72 AH / 691–692 CE under Abd al-Malik ibn Marwan; brought down by an earthquake in 1015 and rebuilt by 1023; used as a church under the Crusaders 1099–1187 and restored by Salah al-Din; tiled by Sultan Suleiman about 1550; lead-covered about 1910; given its golden covering in 1959–1964 and 1993–1994. | Taught to children as fact. | Confirm each date and statement. |
+| H13 | The game is now set in the present day. The Dead Sea is drawn at about 411 m below sea level, the level in the elevation data (from about the year 2000); it is lower today. The journal page's figures (Al-Quds about 750 m, Ariha about 250 m below) are unchanged. | The altimeter at the shore. | Decide whether to lower the water to today's level. |
 
 ## Religious
 

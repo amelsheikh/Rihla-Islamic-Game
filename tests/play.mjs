@@ -17,8 +17,10 @@ const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 const errors = [];
 page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
 page.on('pageerror', (e) => errors.push(String(e)));
+page.setDefaultTimeout(300000);
 await page.goto(url);
 await page.waitForFunction(() => window.__rihla?.ready, null, { timeout: 120000 });
+await page.evaluate(() => window.__rihla.quality('low'));
 await page.screenshot({ path: `${out}/menu.png` });
 await page.click('#start');
 await page.waitForSelector('#page', { state: 'visible', timeout: 60000 });
@@ -31,6 +33,15 @@ await page.waitForFunction(() => window.__rihla.stats().speed > 3, null, { timeo
 await page.keyboard.up('ArrowUp');
 check(true, 'the car pulls away under keyboard control');
 check((await page.textContent('#alt')).includes('above sea level'), 'HUD shows true elevation: ' + (await page.textContent('#alt')));
+// Near Al-Quds the History button opens the story of the Dome of the Rock.
+await page.waitForSelector('#history-btn', { state: 'visible', timeout: 120000 });
+await page.click('#history-btn');
+await page.waitForSelector('#page', { state: 'visible', timeout: 60000 });
+check((await page.textContent('#page-body')).includes('691'), 'the History button opens the timeline of the Dome of the Rock');
+await page.screenshot({ path: `${out}/history.png` });
+await page.click('#page-body .era button');
+check(await page.isHidden('#page'), 'choosing "See it as it was" closes the card and changes the view');
+await page.waitForFunction(() => window.__rihla.sound.level() > 0.001, null, { timeout: 120000 }).catch(() => null); // the sound fades back in after a card closes
 const level = await page.evaluate(() => window.__rihla.sound.level());
 check(level > 0.001 && level < 0.9, 'the engine can be heard and is not distorted (level ' + level.toFixed(3) + ')');
 // Tip the car over, then use the Reset button.

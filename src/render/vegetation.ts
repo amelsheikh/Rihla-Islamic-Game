@@ -77,14 +77,6 @@ export function placePlants(world: World): Plant[] {
     if (inCity(x, z) || r() > sstep(0.25, 0.8, slope(x, z)) * 0.6 + 0.04) continue;
     add('rock', x, z, 0.35 + r() * r() * 1.6, 1.5);
   }
-  // Whitewashed kerb stones along both edges of the road, as a gentle guide.
-  for (let s = 8; s < world.roadLength - 6; s += 9) {
-    const p = world.roadAt(s), off = world.halfWidth + 0.45;
-    for (const side of [-1, 1]) {
-      const x = p.x - p.dz * off * side, z = p.z + p.dx * off * side;
-      out.push({ kind: 'kerb', x, y: world.groundY(x, z), z, scale: 1, yaw: Math.atan2(-p.dz, p.dx), tint: r() });
-    }
-  }
   return out;
 }
 

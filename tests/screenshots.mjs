@@ -15,6 +15,8 @@ fs.mkdirSync(out, { recursive: true });
 const SHOTS = [
   ['quds-panorama', { place: 'mount-of-olives', dx: -40, dy: 14, yaw: 1.5708, pitch: -0.1 }, 8, false, 'free'],
   ['quds-morning', 60, 8.5, true, 'chase'],
+  ['car-side', { car: 3300, dx: 5.5, dy: 1.3, dz: -3.5, yaw: 2.14, pitch: -0.12 }, 16, false, 'free'],
+  ['car-rear', { car: 5200, dx: -4.2, dy: 1.5, dz: 4.6, yaw: -0.74, pitch: -0.14 }, 10, false, 'free'],
   ['quds-sunset', 330, 17.7, true, 'chase'],
   ['wilderness-noon', 3300, 12, false, 'chase'],
   ['wilderness-sunrise', 4300, 6.3, false, 'chase'],
@@ -38,7 +40,8 @@ for (const [name, s, hour, reverse, cam] of SHOTS) {
   await page.evaluate(([s, hour, reverse, cam]) => {
     const r = window.__rihla;
     r.setTime(hour, 0); r.camera(cam);
-    if (typeof s === 'object') { const p = r.world.data.places.find((q) => q.id === s.place); r.teleport(200, false); r.freeCam(p.x + s.dx, p.y + s.dy, p.z, s.yaw, s.pitch); }
+    if (typeof s === 'object' && s.car) { r.teleport(s.car, false); const p = r.car.body.translation(); r.freeCam(p.x + s.dx, p.y + s.dy, p.z + s.dz, s.yaw, s.pitch); }
+    else if (typeof s === 'object') { const p = r.world.data.places.find((q) => q.id === s.place); r.teleport(200, false); r.freeCam(p.x + s.dx, p.y + s.dy, p.z, s.yaw, s.pitch); }
     else r.teleport(s < 0 ? r.world.data.road.seaLevelAt - 14 : s, reverse);
     r.rebake();
   }, [s, hour, reverse, cam]);

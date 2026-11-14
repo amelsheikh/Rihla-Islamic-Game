@@ -1,8 +1,8 @@
 {
   "id": "quds-ariha",
   "name": { "en": "The Jericho Road", "ar": "طريق أريحا" },
-  "width": 5.6,
-  "surface": "macadam",
+  "width": 7,
+  "surface": "asphalt",
   "note": "Waypoints are approximate (see NEEDS_REVIEW.md H6). The pipeline finds a drivable line through them on the real terrain.",
   "waypoints": [
     { "id": "bab-al-asbat", "lon": 35.2382, "lat": 31.7808 },

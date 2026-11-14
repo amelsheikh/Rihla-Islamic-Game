@@ -6,10 +6,11 @@ import quds from '../../content/landmarks/al-quds.json';
 import { toGame } from '../world/warp';
 import type { World } from '../world/world';
 import { applySunShade, type SunShade } from './sunshade';
-import { leadSheet, octagonFace, openings, plaster, stoneWall } from './textures';
+import type { Photos } from './photo';
+import { leadSheet, octagonFace, openings, plaster } from './textures';
 
 type Mat = 'stone' | 'plaster' | 'lead' | 'tile' | 'opening' | 'gold';
-const TEX: Record<Mat, number> = { stone: 4, plaster: 3, lead: 3, tile: 1, opening: 1, gold: 3 };
+const TEX: Record<Mat, number> = { stone: 3.2, plaster: 3, lead: 3, tile: 1, opening: 1, gold: 3 };
 function rng(seed: number) { return () => ((seed = (seed * 16807) % 2147483647) / 2147483647); }
 
 class Kit {
@@ -128,10 +129,10 @@ class Kit {
     this.opening(2, x + (w / 2) * cs, g + h - 2.2, z - (w / 2) * sn, 1.1, 1.4, yaw + Math.PI / 2);
   }
 
-  build(shade: SunShade): THREE.Group {
-    const g = new THREE.Group(), st = stoneWall(), pl = plaster(), ld = leadSheet(), oc = octagonFace(), op = openings();
+  build(shade: SunShade, photos: Photos): THREE.Group {
+    const g = new THREE.Group(), st = { map: photos.ashlar.color, normalMap: photos.ashlar.normal }, pl = plaster(), ld = leadSheet(), oc = octagonFace(), op = openings();
     const mats: Record<Mat, THREE.MeshStandardMaterial> = {
-      stone: new THREE.MeshStandardMaterial({ map: st.map, normalMap: st.normalMap, roughness: 0.9, vertexColors: true }),
+      stone: new THREE.MeshStandardMaterial({ map: st.map, normalMap: st.normalMap, roughness: 0.9, vertexColors: true, color: 0xfff0d8 }),
       plaster: new THREE.MeshStandardMaterial({ map: pl.map, roughness: 0.85, vertexColors: true }),
       lead: new THREE.MeshStandardMaterial({ map: ld.map, roughness: 0.55, metalness: 0.35, vertexColors: true }),
       gold: new THREE.MeshStandardMaterial({ color: 0xd9a93a, roughness: 0.32, metalness: 0.9, vertexColors: true }),
@@ -154,11 +155,12 @@ class Kit {
 export interface Named { x: number; y: number; z: number; en: string; ar: string; size: number }
 
 /** Build every place in the corridor. Returns one group per place (so far-off places are skipped when drawing). */
-export function buildPlaces(world: World, rapier: RAPIER.World | null, shade: SunShade): { group: THREE.Group; named: Named[] } {
+export function buildPlaces(world: World, rapier: RAPIER.World | null, shade: SunShade, photos: Photos): { group: THREE.Group; named: Named[]; setDomeEra: (old: boolean) => void } {
   const root = new THREE.Group(), named: Named[] = [], P = (id: string) => world.data.places.find((p) => p.id === id)!, ty = (x: number, z: number) => world.terrainY(x, z);
   const r = rng(77);
   const clear = (x: number, z: number, m: number) => { const h = world.nearestRoad(x, z); return !h || h.dist > world.halfWidth + m; };
-  const finish = (kit: Kit) => root.add(kit.build(shade));
+  const finish = (kit: Kit) => { const g = kit.build(shade, photos); root.add(g); return g; };
+  let domeThen: THREE.Group | null = null, domeNow: THREE.Group | null = null;
 
   // ---------------------------------------------------------------- Al-Quds
   {
@@ -183,7 +185,10 @@ export function buildPlaces(world: World, rapier: RAPIER.World | null, shade: Su
       kit.box('stone', d.x, y - 1.5, d.z, 74, 3.1, 66, 0, [1.04, 1.03, 1], true, 'plaster');
       kit.drum('tile', d.x, y + 1.6, d.z, 19.5, 11.5, 8, undefined, true, 19.5, 'lead');
       kit.drum('tile', d.x, y + 13.1, d.z, 10.6, 6.2, 16, [0.8, 0.95, 1.05], false, 10.6, null);
-      kit.dome('lead', d.x, y + 19.3, d.z, 10.9, 'pointed', undefined, 24);
+      // The great dome is built twice: gilded as it is today, and lead-covered as it was around 1910.
+      const now = new Kit(null), then = new Kit(null);
+      now.dome('gold', d.x, y + 19.3, d.z, 10.9, 'pointed', undefined, 24); then.dome('lead', d.x, y + 19.3, d.z, 10.9, 'pointed', undefined, 24);
+      domeNow = finish(now); domeThen = finish(then); domeThen.visible = false;
       kit.drum('gold', d.x, y + 19.3 + 12.6, d.z, 0.22, 3.2, 6);
       kit.dome('gold', d.x, y + 19.3 + 14, d.z, 0.55, 'round', undefined, 8);
       // The small Dome of the Chain to the east.
@@ -295,6 +300,6 @@ export function buildPlaces(world: World, rapier: RAPIER.World | null, shade: Su
     finish(kit);
   }
   for (const p of world.data.places) if (p.id !== 'dome-of-the-rock' && p.id !== 'al-qibli') named.push({ x: p.x, y: p.y + (p.kind === 'city' ? 62 : 26), z: p.z, en: p.name.en, ar: p.name.ar, size: p.kind === 'city' ? 1.2 : 0.9 });
-  (root.userData as any).pageSpot = pageSpot;
-  return { group: root, named };
+  void pageSpot;
+  return { group: root, named, setDomeEra: (old) => { if (domeNow && domeThen) { domeNow.visible = !old; domeThen.visible = old; } } };
 }

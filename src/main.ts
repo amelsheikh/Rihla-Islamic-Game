@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { Sound } from './audio/sound';
 import { Input } from './core/input';
 import { guessQuality, lang, loadProgress, loadSettings, num, PRESETS, QUALITIES, saveProgress, saveSettings, setLang, t, type Quality } from './core/settings';
-import { pageOpen, PAGES, showIntro, showPage } from './game/journal';
+import { HISTORY, pageOpen, PAGES, showHistory, showIntro, showPage } from './game/journal';
 import farUrl from './generated/far.rhm?url';
 import nearUrl from './generated/near.rhm?url';
 import worldJson from './generated/world.json';
@@ -14,7 +14,9 @@ import { Autopilot } from './physics/autopilot';
 import { Vehicle, type Controls } from './physics/vehicle';
 import { buildPlaces } from './render/buildings';
 import { PostFx } from './render/postfx';
-import { buildRoad, CarModel, Labels } from './render/scenery';
+import { CarModel } from './render/car';
+import { loadPhotos } from './render/photo';
+import { buildRoad, Labels } from './render/scenery';
 import { SunShade } from './render/sunshade';
 import { placePlants, Vegetation } from './render/vegetation';
 import { buildWater } from './render/water';
@@ -43,11 +45,12 @@ $('start').textContent = t('loading');
 
 async function boot() {
   const data = worldJson as unknown as WorldData;
-  const [, nearBuf, farBuf] = await Promise.all([
+  const [, nearBuf, farBuf, , photos] = await Promise.all([
     RAPIER.init(),
     fetch(nearUrl).then((r) => r.arrayBuffer()),
     fetch(farUrl).then((r) => r.arrayBuffer()),
     document.fonts.load('40px Amiri', 'القدس').catch(() => null),
+    loadPhotos(),
   ]);
   const world = new World(data, await Heightmap.decode(data.near, nearBuf), await Heightmap.decode(data.far, farBuf));
 
@@ -77,11 +80,11 @@ async function boot() {
   car.placeOnRoad(START);
   const pilot = new Autopilot(world, car);
   const plants = placePlants(world);
-  const terrain = new Terrain(world, plants, shade, farShade);
+  const terrain = new Terrain(world, plants, shade, farShade, photos);
   const vegetation = new Vegetation(world, plants, shade, rapier);
-  const places = buildPlaces(world, rapier, shade);
+  const places = buildPlaces(world, rapier, shade, photos);
   const labels = new Labels(places.named);
-  scene.add(terrain.group, buildRoad(world, shade), vegetation.group, places.group, labels.group);
+  scene.add(terrain.group, buildRoad(world, shade, photos, rapier), vegetation.group, places.group, labels.group);
   sky.update(0, new THREE.Vector3(), camera);
   shade.bakeNow(sky.lightDir); farShade.bakeNow(sky.lightDir);
 
@@ -168,7 +171,10 @@ async function boot() {
     fwd.set(0, 0, -1).applyQuaternion(currQ);
     const bearing = (Math.atan2(fwd.x, -fwd.z) * 180) / Math.PI;
     hud.compass.textContent = (lang() === 'ar' ? ['ش', 'ش ق', 'ق', 'ج ق', 'ج', 'ج غ', 'غ', 'ش غ'] : ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'])[Math.round(((bearing + 360) % 360) / 45) % 8];
-    hud.hint.textContent = car.needsRescue ? t('rescue') : '';
+    hud.hint.textContent = car.needsRescue ? t('rescue') : seeingThen ? t('showingThen') : '';
+    // The History button appears near a place whose story through time has been written.
+    historySite = Object.keys(HISTORY).find((id) => { const p = world.data.places.find((q) => q.id === id); return p && Math.hypot(p.x - currPos.x, p.z - currPos.z) < 900; }) ?? '';
+    $('history-btn').hidden = !historySite;
     // In Family mode the car is put back by itself after a few seconds.
     if (car.mode === 'family' && car.tippedFor > 4) resetCar();
     if (near.dist < 90 && near.place.id !== lastPlace && near.place.kind !== 'nature') { lastPlace = near.place.id; banner(lang() === 'ar' ? near.place.name.ar : near.place.name.en, lang() === 'ar' ? near.place.name.en : near.place.name.ar); }
@@ -186,7 +192,13 @@ async function boot() {
   }
 
   // ---------------------------------------------------------------- menu
-  const resetCar = () => { car.rescue(); pilot.sync(); snapPose(); banner(t('rescued'), '', 2.5); };
+  let historySite = '', seeingThen = false;
+  $('history-btn').onclick = () => {
+    if (!historySite || paused) return;
+    paused = true;
+    showHistory(HISTORY[historySite], (look) => { seeingThen = look === 'then'; places.setDomeEra(seeingThen); }, () => { paused = false; });
+  };
+  const resetCar = () => { car.rescue(); pilot.sync(); snapPose(); terrain.update(currPos, true); banner(t('rescued'), '', 2.5); };
   $('reset-btn').onclick = () => { if (!paused) resetCar(); ($('reset-btn') as HTMLButtonElement).blur(); };
   $('journal-btn').onclick = () => { if (pageFound() && !paused) { paused = true; showPage(page, () => { paused = false; }); } };
   const overlay = $('overlay'), startBtn = $<HTMLButtonElement>('start');
@@ -212,7 +224,7 @@ async function boot() {
     if (!progress.introSeen && !bench) { paused = true; showIntro(() => { progress.introSeen = true; saveProgress(progress); paused = false; }); }
   };
   $('menu-btn').onclick = () => openMenu(true);
-  $('restart').onclick = () => { car.placeOnRoad(START); pilot.sync(); snapPose(); lastPlace = ''; openMenu(false); };
+  $('restart').onclick = () => { car.placeOnRoad(START); pilot.sync(); snapPose(); terrain.update(currPos, true); lastPlace = ''; openMenu(false); };
   $('bench').onclick = () => startBench();
   startBtn.disabled = false; startBtn.textContent = t('start');
 
@@ -247,7 +259,7 @@ async function boot() {
     const low = sorted.slice(0, Math.max(1, Math.floor(sorted.length / 100))).reduce((s, x) => s + x, 0) / Math.max(1, Math.floor(sorted.length / 100));
     b.rows.push(`${QUALITIES[b.index].padEnd(7)} avg ${(1 / avg).toFixed(0).padStart(3)} fps | 1% low ${(1 / low).toFixed(0).padStart(3)} fps | calls ${(b.calls / b.samples).toFixed(0)} | tris ${(b.tris / b.samples / 1000).toFixed(0)}k`);
     if (++b.index < QUALITIES.length) return benchStage();
-    const text = [`RIHLA-BENCH 1b`, `${innerWidth}x${innerHeight} dpr ${devicePixelRatio}`, String(gpuName()), navigator.userAgent, ...b.rows].join('\n');
+    const text = [`RIHLA-BENCH R1`, `${innerWidth}x${innerHeight} dpr ${devicePixelRatio}`, String(gpuName()), navigator.userAgent, ...b.rows].join('\n');
     applyQuality(b.saved.quality); sky.time = b.saved.time; sky.timeScale = b.saved.scale;
     autopilot = false; paused = true; bench = null;
     $('bench-status').textContent = t('bench.done');
@@ -281,13 +293,13 @@ async function boot() {
       return;
     }
     if (camMode === 'bonnet') {
-      camera.position.set(0, 1.3, -0.35).applyQuaternion(quat).add(pos);
+      camera.position.set(0.36, 0.62, -0.25).applyQuaternion(quat).add(pos);
       camera.quaternion.copy(quat);
       camera.fov = 68; camera.updateProjectionMatrix();
       return;
     }
     const flat = Math.hypot(fwd.x, fwd.z) || 1;
-    v3.set(pos.x - (fwd.x / flat) * 8.2, pos.y + 3.1, pos.z - (fwd.z / flat) * 8.2);
+    v3.set(pos.x - (fwd.x / flat) * 7.4, pos.y + 2.5, pos.z - (fwd.z / flat) * 7.4);
     const k = camSnap ? 1 : 1 - Math.exp(-dt * 4.5);
     camPos.lerp(v3, k);
     camPos.y = Math.max(camPos.y, world.groundY(camPos.x, camPos.z) + 1.2);
@@ -336,7 +348,7 @@ async function boot() {
     }
     const alpha = acc / DT;
     pos.lerpVectors(prevPos, currPos, alpha); quat.slerpQuaternions(prevQ, currQ, alpha);
-    carModel.update(car, pos, quat, sky.night);
+    carModel.update(car, pos, quat, sky.night, !paused && ctl.brake > 0.05 && car.speed > 0.5);
     pageMarker.visible = !pageFound();
     if (pageMarker.visible) { pageMarker.getObjectByName('scroll')!.rotation.y += dt * 1.2; pageMarker.getObjectByName('scroll')!.position.y = 1.75 + Math.sin(now / 600) * 0.12; }
     sound.update(dt, { rpm: car.rpm, throttle: paused ? 0 : ctl.throttle, speed: car.speed, onRoad: car.wheels[2].surface === 'road', slip: Math.max(car.wheels[2].slip, car.wheels[3].slip), grounded: !car.airborne, night: sky.night, paused: paused || document.visibilityState !== 'visible' });
@@ -372,16 +384,16 @@ async function boot() {
   (window as any).__rihla = {
     ready: true, world, car, sky, renderer, scene,
     start: () => { progress.introSeen = true; sound.start(); openMenu(false); },
-    sound, progress, pageMarker,
+    sound, progress, pageMarker, setDomeEra: (old: boolean) => places.setDomeEra(old),
     setTime: (h: number, scale = 0) => { sky.time = h; sky.timeScale = scale; },
-    teleport: (s: number, reverse = false) => { car.placeOnRoad(s, reverse); pilot.sync(); snapPose(); for (let i = 0; i < 4; i++) terrain.update(currPos); vegetation.update(currPos); },
+    teleport: (s: number, reverse = false) => { car.placeOnRoad(s, reverse); pilot.sync(); snapPose(); terrain.update(currPos, true); vegetation.update(currPos); },
     rebake: () => { sky.update(0, currPos, camera); shade.bakeNow(sky.lightDir); farShade.bakeNow(sky.lightDir); },
     autopilot: (on: boolean) => { autopilot = on; pilot.sync(); },
     camera: (m: typeof camMode) => { camMode = m; camSnap = true; },
     quality: (q: Quality) => applyQuality(q),
     labels: (on: boolean) => { labels.group.visible = on; },
     stats: () => ({ fps, frame, calls: renderer.info.render.calls, triangles: renderer.info.render.triangles, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, speed: car.speed, progress: pilot.progress, y: currPos.y }),
-    freeCam: (x: number, y: number, z: number, yaw: number, pitch: number) => { camMode = 'free'; camera.position.set(x, y, z); freeYaw = yaw; freePitch = pitch; },
+    freeCam: (x: number, y: number, z: number, yaw: number, pitch: number) => { camMode = 'free'; camera.position.set(x, y, z); freeYaw = yaw; freePitch = pitch; terrain.update(camera.position, true); },
     bench: startBench,
   };
   if (params.has('autostart')) { progress.introSeen = true; openMenu(false); }

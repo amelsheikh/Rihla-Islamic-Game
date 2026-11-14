@@ -5,7 +5,7 @@ import type { Heightmap } from '../world/heightmap';
 import { V_SCALE } from '../world/warp';
 import type { World } from '../world/world';
 import { applySunShade, SunShade } from './sunshade';
-import { groundDetail } from './textures';
+import type { Photos } from './photo';
 import type { Plant } from './vegetation';
 
 const CHUNK = 128; // cells per chunk side
@@ -66,7 +66,7 @@ function bake(hm: Heightmap, world: World, texW: number, texH: number, plants: P
       for (let j = 0; j < 3; j++) albedo[i + j] += (col[j] - albedo[i + j]) * w;
     }
   };
-  if (ex < 10) for (let i = 0; i < world.n; i++) dab(world.px[i], world.pz[i], world.halfWidth + 3.5, [176, 158, 124], 0.55);
+  if (ex < 10) for (let i = 0; i < world.n; i++) dab(world.px[i], world.pz[i], world.halfWidth + 3, [150, 138, 116], 0.6);
   for (const p of plants) {
     if (p.kind === 'olive') dab(p.x, p.z, 2.6 * p.scale, [72, 84, 52], 0.75);
     else if (p.kind === 'palm') dab(p.x, p.z, 2.4, [60, 86, 44], 0.7);
@@ -82,25 +82,31 @@ function bake(hm: Heightmap, world: World, texW: number, texH: number, plants: P
   return { map: tex(albedo, true), normalMap: tex(normal, false) };
 }
 
-function terrainMaterial(tex: { map: THREE.Texture; normalMap: THREE.Texture }, detail: ReturnType<typeof groundDetail>, sizeX: number, sizeZ: number, shade: SunShade) {
-  const m = new THREE.MeshStandardMaterial({ map: tex.map, normalMap: tex.normalMap, normalMapType: THREE.ObjectSpaceNormalMap, roughness: 0.95, metalness: 0 });
+function terrainMaterial(tex: { map: THREE.Texture; normalMap: THREE.Texture }, photos: Photos, sizeX: number, sizeZ: number, shade: SunShade) {
+  const m = new THREE.MeshStandardMaterial({ map: tex.map, normalMap: tex.normalMap, normalMapType: THREE.ObjectSpaceNormalMap, roughness: 0.94, metalness: 0 });
   applySunShade(m, shade, (shader) => {
-    shader.uniforms.rockTex = { value: detail.rock }; shader.uniforms.soilTex = { value: detail.soil };
-    shader.uniforms.detailScale = { value: new THREE.Vector2(sizeX / 7, sizeZ / 7) };
-    shader.fragmentShader = 'uniform sampler2D rockTex;\nuniform sampler2D soilTex;\nuniform vec2 detailScale;\nvec4 rihlaD;\nfloat rihlaFade;\n' + shader.fragmentShader
+    const u = shader.uniforms;
+    for (const k of ['rock', 'soil', 'mud'] as const) { u[k + 'C'] = { value: photos[k].color }; u[k + 'N'] = { value: photos[k].normal }; u[k + 'Mean'] = { value: photos[k].mean }; }
+    u.detailScale = { value: new THREE.Vector2(sizeX / 5, sizeZ / 5) };
+    shader.vertexShader = 'varying float vTerrY;\n' + shader.vertexShader.replace('vVisUv = (rihlaWorld.xz', 'vTerrY = rihlaWorld.y;\n       vVisUv = (rihlaWorld.xz');
+    shader.fragmentShader = `uniform sampler2D rockC; uniform sampler2D rockN; uniform sampler2D soilC; uniform sampler2D soilN; uniform sampler2D mudC; uniform sampler2D mudN;
+      uniform vec3 rockMean; uniform vec3 soilMean; uniform vec3 mudMean; uniform vec2 detailScale; varying float vTerrY; vec2 rihlaDn; float rihlaFade;\n` + shader.fragmentShader
       .replace('#include <map_fragment>', `#include <map_fragment>
         {
-          // Close to the camera the ground gets rock or stony-soil detail, chosen by how steep it is.
+          // The baked map gives each place its broad colour. Close to the camera, scanned photographs of
+          // rock (steep ground), stony soil (gentler ground) and cracked mud (the valley floor) give the detail.
           vec2 duv = vMapUv * detailScale;
-          float steep = smoothstep(0.93, 0.74, texture2D(normalMap, vNormalMapUv).y * 2.0 - 1.0);
-          rihlaD = mix(texture2D(soilTex, duv * 1.9), texture2D(rockTex, duv), steep);
-          float broad = texture2D(rockTex, duv * 0.11).a;
-          rihlaFade = 1.0 - smoothstep(60.0, 420.0, gl_FragCoord.z / gl_FragCoord.w);
-          diffuseColor.rgb *= mix(1.0, 0.6 + 0.8 * rihlaD.a, rihlaFade) * (0.82 + 0.36 * broad);
+          float steep = smoothstep(0.94, 0.78, texture2D(normalMap, vNormalMapUv).y * 2.0 - 1.0);
+          float mud = smoothstep(-100.0, -128.0, vTerrY) * (1.0 - steep);
+          vec3 det = mix(mix(texture2D(soilC, duv).rgb / soilMean, texture2D(mudC, duv * 0.7).rgb / mudMean, mud), texture2D(rockC, duv * 0.55).rgb / rockMean, steep);
+          vec3 broad = texture2D(soilC, duv * 0.09).rgb / soilMean;
+          rihlaDn = mix(mix(texture2D(soilN, duv).xy, texture2D(mudN, duv * 0.7).xy, mud), texture2D(rockN, duv * 0.55).xy, steep) * 2.0 - 1.0;
+          rihlaFade = 1.0 - smoothstep(90.0, 700.0, gl_FragCoord.z / gl_FragCoord.w);
+          diffuseColor.rgb *= mix(vec3(1.0), det, rihlaFade) * mix(vec3(1.0), broad, 0.55);
         }`)
       .replace('#include <normal_fragment_maps>', `
         vec3 rihlaN = texture2D(normalMap, vNormalMapUv).xyz * 2.0 - 1.0;
-        rihlaN = normalize(rihlaN + vec3(rihlaD.x * 2.0 - 1.0, 0.0, rihlaD.y * 2.0 - 1.0) * 0.75 * rihlaFade);
+        rihlaN = normalize(rihlaN + vec3(rihlaDn.x, 0.0, -rihlaDn.y) * 0.9 * rihlaFade);
         normal = normalize(normalMatrix * rihlaN);`);
   });
   return m;
@@ -116,9 +122,9 @@ export class Terrain {
   private readonly indexCache = new Map<number, THREE.BufferAttribute>();
   private readonly textures: THREE.Texture[] = [];
 
-  constructor(world: World, plants: Plant[], readonly shade: SunShade, readonly farShade: SunShade) {
+  constructor(world: World, plants: Plant[], readonly shade: SunShade, readonly farShade: SunShade, photos: Photos) {
     this.near = world.near;
-    const ni = world.near.info, fi = world.far.info, detail = groundDetail();
+    const ni = world.near.info, fi = world.far.info, detail = photos;
     const nearTex = bake(world.near, world, ni.cols + 1, ni.rows + 1, plants);
     const farTex = bake(world.far, world, fi.cols * 2 + 1, fi.rows * 2 + 1, []);
     this.textures.push(nearTex.map, nearTex.normalMap, farTex.map, farTex.normalMap);
@@ -194,7 +200,7 @@ export class Terrain {
   }
 
   /** Choose a level of detail for every chunk from the camera position. Cheap; call a few times a second. */
-  update(cam: THREE.Vector3) {
+  update(cam: THREE.Vector3, all = false) {
     const { x0, z0, cell } = this.near.info, size = CHUNK * cell;
     let rebuilt = 0;
     for (const ch of this.chunks) {
@@ -203,7 +209,7 @@ export class Terrain {
       const d = Math.hypot(dx, dz) / this.lodScale;
       const level = d < 190 ? 0 : d < 520 ? 1 : d < 1150 ? 2 : d < 2300 ? 3 : 4;
       if (level === ch.level) continue;
-      if (rebuilt >= 6 && ch.mesh) continue; // spread rebuilding over several updates
+      if (!all && rebuilt >= 6 && ch.mesh) continue; // spread rebuilding over several updates, except after a jump
       if (ch.mesh) { this.group.remove(ch.mesh); const g = ch.mesh.geometry; g.setIndex(null); g.dispose(); }
       ch.mesh = this.build(ch.cx, ch.cz, level); ch.level = level;
       this.group.add(ch.mesh); rebuilt++;

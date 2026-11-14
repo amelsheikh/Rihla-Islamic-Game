@@ -98,27 +98,67 @@
 - Arabic text was written by the developer and needs a native reader's review (`NEEDS_REVIEW.md` R6).
 - Touch controls and the gamepad are still untested on real devices.
 
-## Direction: move to a game engine
+## Direction: a realistic browser game (current)
 
-The owner chose a realistic engine build that also runs on tablets, with modern cars and walking. See
-`DESIGN.md` section 11. The browser phases 2 to 7 in the table above are on hold.
+After weighing a game engine, the owner chose to stay in the browser for now and push realism as far as it
+goes there. Everything is built and checked in the cloud session; nothing needs the owner's own computer.
+The earlier engine plan is kept in `DESIGN.md` sections 10 and 11 for later.
 
-### Waiting for the owner
+The owner's purpose, in their words: to teach their children, explore their historical home with them, and
+connect them to their roots and to Islamic history. Teaching comes first; graphics serve it.
 
-1. **Engine:** confirm Unity 6 with the Universal Render Pipeline (recommended), or choose Unreal Engine 5.
-2. **Story with modern cars:** (a) Jiddo's modern car travels back to the land as it was around 1910, so the
-   world stays borderless and historical; or (b) the game is set in the present day. Recommended: (a).
-3. **Setup on the PC:** install Unity Hub and Unity 6, clone this repository, and open a Claude Code session
-   in that folder.
-4. **Asset budget:** realistic cars, trees, buildings and characters are bought from asset stores.
-5. Still open from before: adhan recordings, and reviewers for religious texts and Arabic.
+Decisions:
 
-### Engine phases (proposed)
+- **Setting:** the present day, with modern cars and modern roads, and no borders, walls or checkpoints drawn.
+- **History:** every important site can show its story through time, and where possible how it once looked.
+- **Walking:** the player should be able to leave the car and walk. Not built yet.
+- **Car:** realistic and unbranded, in the style of a modern electric crossover.
 
-| Phase | Result |
+## Realism pass R1: what was built
+
+- **Photographic materials** from Poly Haven (free, CC0): rock, stony soil and cracked valley mud on the
+  ground, asphalt on the road, weathered limestone blocks on the walls of Al-Quds.
+- **A modern road:** two asphalt lanes, painted edge and centre lines, gravel verges, and steel guard rails
+  wherever the ground drops away, which the car cannot pass through.
+- **A modern car:** a sleek crossover shaped by code, with metallic paint, a glass roof, alloy wheels, brake
+  lights and headlamps; handling retuned (125 kW, about 137 km/h, six gears) and a quieter engine sound.
+- **Today's Al-Quds:** the Dome of the Rock has its golden dome.
+- **History of this place:** near the Dome of the Rock a button opens its timeline from 691 CE to today, and
+  "See it as it was" shows the dark lead dome of about 1910. Content is in `content/history.json`.
+- **Story:** the opening now fits the present day. The journal page is unchanged.
+- **Fix:** ground detail now refreshes at once after Reset car or Back to Al-Quds.
+
+## Realism pass R1: checks run
+
+| Check | Result |
 |---|---|
-| E0 — Setup | Unity project in this repository; terrain and road exported from the existing pipeline and imported; a placeholder car driving the Jericho road on the PC |
-| E1 — Vertical slice | Al-Quds to Ariha with realistic ground, vegetation, sky, one modern car with proper handling and sound, and getting out to walk |
-| E2 — Al-Quds on foot | The Old City and the Haram at close to true size, walkable, with the journal and the adhan |
-| E3 — Tablets | Reduced settings, touch controls, a tablet build |
-| E4 onwards | The rest of Palestine, then the other regions, as in the brief |
+| `npm test` | Passed (5 tests) with the new car |
+| `node tests/play.mjs` on the single-file build | Passed (15 checks), including the history timeline and the "See it as it was" switch |
+| Screenshots | `docs/screenshots/realism-r1.jpg` |
+| Draw calls (High) | 50 to 155 (budget 350) |
+| Triangles (High, all passes) | 410k to 830k (budget 1.5 million) |
+| Download size | 11 MB (12 MB as a single file) |
+| Frame rate | Not measured here; the owner runs the performance test |
+
+## Realism pass R1: known issues
+
+- The car is built by code. It has the outline of a modern crossover but not the detail of a real model.
+- Trees are still simple shapes; they are now the least realistic thing on screen.
+- Villages, khans and Ariha still look historical; modern towns are not built.
+- The road follows the line found by the computer, not today's real highway.
+- The Dead Sea is at the level in the elevation data (about 411 m below sea level); today it is lower.
+- The sound has still not been heard by anyone.
+- No walking yet.
+
+## Next (proposed)
+
+1. Walking: get out of the car at a site and explore on foot.
+2. History views for more sites, starting with Al-Qibli Mosque, the walls and gates, Ariha and Maqam al-Nabi Musa.
+3. Better trees and roadside detail; today's real road line from OpenStreetMap.
+4. A purchased or licensed car model, if the owner wants a truly realistic car.
+
+## Still open with the owner
+
+- Who reviews religious texts, history dates and the Arabic.
+- Adhan recordings for each place.
+- Whether to buy a realistic car model.

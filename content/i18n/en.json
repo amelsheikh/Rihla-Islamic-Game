@@ -38,7 +38,7 @@
   "bench.done": "Finished. Copy this result and send it back:",
   "bench.copy": "Copy result",
   "bench.close": "Close",
-  "greybox": "Phase 1b build · sound is synthesised and has not been tuned by ear yet",
+  "greybox": "Realism build R1 · sound is synthesised and has not been tuned by ear yet",
   "volume": "Sound volume",
   "reset": "Reset car",
   "journal": "Journal",
@@ -52,8 +52,12 @@
   "ancestorSays": "From the Rihla",
   "jiddoSays": "Jiddo Ibrahim explains",
   "meaning": "Meaning",
-  "intro.title": "Al-Quds, 1328 AH · 1910",
-  "intro.1": "You live in Al-Quds with your grandfather, Jiddo Ibrahim, a map-maker. In his workshop stands a rare thing for these days: a motorcar, which he has lovingly restored.",
-  "intro.2": "Hidden under its seat you found a torn travel journal, the Rihla, written by a traveller of your own family more than five hundred years ago. Its pages are scattered along the old roads.",
-  "intro.3": "“A road connects hearts before it connects cities,” says Jiddo. “Let us go and find the pages. The first, they say, is kept at a khan on the road down to Ariha.”"
+  "intro.title": "Al-Quds",
+  "intro.1": "You live in Al-Quds with your grandfather, Jiddo Ibrahim, a map-maker who has spent his life drawing the roads of this land.",
+  "intro.2": "Hidden in his old map chest you found a torn travel journal, the Rihla, written by a traveller of your own family more than five hundred years ago. Its pages are scattered along the old roads.",
+  "intro.3": "“A road connects hearts before it connects cities,” says Jiddo. “Let us go and find the pages. The first, they say, is kept at a khan on the road down to Ariha.”",
+  "history": "History of this place",
+  "seeThen": "See it as it was",
+  "seeNow": "See it as it is today",
+  "showingThen": "You are seeing this place as it was around 1910"
 }

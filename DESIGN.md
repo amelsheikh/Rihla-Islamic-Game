@@ -230,3 +230,23 @@ a step below Unreal.
 This cloud session has no graphics card and cannot run Unity, and the owner's PC does not offer its folders to
 cloud sessions. Engine work therefore runs in a Claude Code session on the owner's PC, in a clone of this
 repository, where Unity is installed. `CLAUDE.md` tells that session where to start.
+
+## 12. Decision: stay in the browser and raise realism (current)
+
+The owner has no suitable computer for an engine, so the engine plan in sections 10 and 11 is on hold. The
+game stays a browser game, built and tested entirely in the cloud session, and is now set in the present day.
+
+How realism is raised here:
+
+- **Photographic materials** (Poly Haven, CC0) replace generated textures. The terrain keeps its baked colour
+  map for the broad look and multiplies in scanned rock, soil and mud close to the camera, chosen by slope
+  and by height (`src/render/terrain.ts`, `src/render/photo.ts`).
+- **The car** is lofted from cross-sections into one smooth shell (`src/render/car.ts`). A bought model can
+  replace it without touching the physics.
+- **History views** are data (`content/history.json`). A site may have two looks, "then" and "now", built
+  side by side and switched (`setDomeEra` in `src/render/buildings.ts`).
+- Finishing effects use three.js's own post-processing passes, not the separate `postprocessing` library, so
+  there is one fewer dependency to keep in step.
+
+Limits that remain: no ray tracing or engine-grade foliage, code-built models, and frame rates that can only
+be measured on the owner's devices.

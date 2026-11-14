@@ -9,22 +9,22 @@ export type DriveMode = 'family' | 'simulation';
 export interface Controls { throttle: number; brake: number; steer: number; handbrake: boolean }
 
 export const CAR = {
-  mass: 1150,
-  wheelBase: 2.9,
-  track: 1.42,
-  wheelRadius: 0.42,
+  mass: 1550,
+  wheelBase: 2.7,
+  track: 1.74,
+  wheelRadius: 0.36,
   attachY: -0.05,
-  suspRest: 0.32, // spring length at rest under the car's weight
-  suspDroop: 0.1, // extra length before the wheel leaves the ground
-  suspBump: 0.14,
-  damping: 0.5,
-  maxSteer: 0.56,
-  enginePower: 34_000, // watts; generous for 1910 so that climbs stay fun
-  maxDriveForce: 5200,
-  topSpeed: 24, // m/s, about 86 km/h
-  reverseSpeed: 6,
-  brakeForce: 9500,
-  dragArea: 1.25,
+  suspRest: 0.28, // spring length at rest under the car's weight
+  suspDroop: 0.09, // extra length before the wheel leaves the ground
+  suspBump: 0.11,
+  damping: 0.6,
+  maxSteer: 0.58,
+  enginePower: 125_000, // watts: a modern family SUV
+  maxDriveForce: 8200,
+  topSpeed: 38, // m/s, about 137 km/h
+  reverseSpeed: 7,
+  brakeForce: 17_000,
+  dragArea: 0.85,
 };
 
 const SURFACE: Record<Surface, { grip: number; rolling: number }> = {
@@ -61,10 +61,10 @@ export class Vehicle {
     this.body = rapier.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setCanSleep(false).setLinearDamping(0).setAngularDamping(0.15).setCcdEnabled(true));
     const m = CAR.mass;
     rapier.createCollider(
-      RAPIER.ColliderDesc.cuboid(0.78, 0.3, 1.9)
-        .setTranslation(0, 0.2, 0)
+      RAPIER.ColliderDesc.cuboid(0.9, 0.44, 2.25)
+        .setTranslation(0, 0.05, 0)
         // Centre of mass set low, as on a real chassis with the engine and frame rails down low.
-        .setMassProperties(m, { x: 0, y: -0.28, z: 0.05 }, { x: (m / 12) * 15.1, y: (m / 12) * 17, z: (m / 12) * 5.2 }, { w: 1, x: 0, y: 0, z: 0 })
+        .setMassProperties(m, { x: 0, y: -0.3, z: -0.05 }, { x: (m / 12) * 15.1, y: (m / 12) * 17, z: (m / 12) * 5.2 }, { w: 1, x: 0, y: 0, z: 0 })
         .setFriction(0.35).setRestitution(0.05),
       this.body,
     );
@@ -114,7 +114,7 @@ export class Vehicle {
     if (ctl.throttle > 0 && this.speed < -0.5) brake = Math.max(brake, ctl.throttle);
     // Engine braking, and in Family mode a gentle hold on long descents.
     let coast = ctl.throttle === 0 ? 500 + 45 * absSpeed : 0;
-    if (family && ctl.throttle === 0 && this.speed > 15) coast += (this.speed - 15) * 700;
+    if (family && ctl.throttle === 0 && this.speed > 24) coast += (this.speed - 24) * 900;
     const idleHold = ctl.throttle === 0 && ctl.brake === 0 && absSpeed < 1.2;
 
     this.force.set(0, 0, 0); this.torque.set(0, 0, 0);
@@ -155,10 +155,10 @@ export class Vehicle {
       const vLong = this.v.dot(this.f), vLat = this.v.dot(this.s);
 
       const surf = SURFACE[w.surface], grip = surf.grip * load, mEff = CAR.mass / 4;
-      // Along the wheel: drive on the rear axle, brakes on all four (rear only in Simulation, as in 1910).
+      // Along the wheel: drive on the rear axle, brakes on all four.
       let fx = front ? 0 : drive / 2;
       let stop = surf.rolling * load + (front ? 0 : coast / 2);
-      const brakeShare = family ? (front ? 0.3 : 0.2) : front ? 0 : 0.5;
+      const brakeShare = front ? 0.32 : 0.18;
       stop += brake * CAR.brakeForce * brakeShare;
       if ((ctl.handbrake || idleHold) && !front) stop += CAR.brakeForce * 0.5;
       fx -= Math.sign(vLong) * Math.min(stop, (Math.abs(vLong) * mEff) / dt);
@@ -194,10 +194,11 @@ export class Vehicle {
     body.addForce(this.force, true); body.addTorque(this.torque, true);
 
     // Engine speed, for the HUD and later the engine sound.
-    const ratios = [3.4, 1.9, 1.15], wheelRpm = (absSpeed / CAR.wheelRadius) * 9.55 * 3.9;
-    if (this.gear < 3 && wheelRpm * ratios[this.gear - 1] > 2300) this.gear++;
-    else if (this.gear > 1 && wheelRpm * ratios[this.gear - 1] < 1000) this.gear--;
-    const targetRpm = Math.max(650 + ctl.throttle * 350, wheelRpm * ratios[this.gear - 1]);
+    const ratios = [3.6, 2.1, 1.45, 1.1, 0.87, 0.72], wheelRpm = (absSpeed / CAR.wheelRadius) * 9.55 * 3.7;
+    const shiftAt = 2400 + ctl.throttle * 2600;
+    if (this.gear < 6 && wheelRpm * ratios[this.gear - 1] > shiftAt) this.gear++;
+    else if (this.gear > 1 && wheelRpm * ratios[this.gear - 2] < shiftAt * 0.72) this.gear--;
+    const targetRpm = Math.max(800 + ctl.throttle * 500, wheelRpm * ratios[this.gear - 1]);
     this.rpm += (targetRpm - this.rpm) * Math.min(1, dt * 6);
 
     // Upside down or on its side and stopped: note it, so the game can offer to right the car.

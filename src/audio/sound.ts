@@ -1,5 +1,5 @@
-// All sound is made by the browser's synthesiser: there are no recordings. The engine is a slow-revving
-// four-cylinder of about 1910; the rest is tyres, wind, birds by day, crickets by night and a horn.
+// All sound is made by the browser's synthesiser: there are no recordings. A quiet modern four-cylinder
+// engine, tyres, wind, birds by day, crickets by night and a horn.
 export interface SoundState { rpm: number; throttle: number; speed: number; onRoad: boolean; slip: number; grounded: boolean; night: number; paused: boolean }
 
 export class Sound {
@@ -32,14 +32,14 @@ export class Sound {
     const filter = (type: BiquadFilterType, f: number, q = 1) => { const b = c.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; };
 
     // Engine: the firing note, a rough sub-note an octave down and a light overtone, through a low filter.
-    this.engA = osc('sawtooth', 25); this.engB = osc('square', 12.5); this.engC = osc('triangle', 50);
+    this.engA = osc('sawtooth', 27); this.engB = osc('triangle', 13.5); this.engC = osc('triangle', 54);
     this.engFilter = filter('lowpass', 320, 1.2); this.engGain = gain(0.2);
     this.engA.connect(gain(0.5)).connect(this.engFilter); this.engB.connect(gain(0.3)).connect(this.engFilter); this.engC.connect(gain(0.22)).connect(this.engFilter);
     this.engFilter.connect(this.engGain).connect(this.master);
     // The "chuff" of the exhaust: noise switched on and off at the firing rate.
     this.chuffGain = gain(0); this.chuffLfo = osc('square', 25);
     const chuffDepth = gain(0.5); this.chuffLfo.connect(chuffDepth).connect(this.chuffGain.gain);
-    const chuffOut = gain(0.16);
+    const chuffOut = gain(0.04);
     noise().connect(filter('bandpass', 260, 0.8)).connect(this.chuffGain).connect(chuffOut).connect(this.master);
 
     this.tyreFilter = filter('bandpass', 420, 0.6); this.tyreGain = gain(0);
@@ -60,10 +60,10 @@ export class Sound {
     set(this.master.gain, s.paused ? 0 : this.volume, 0.15);
     const fire = (s.rpm / 60) * 2; // two firings per turn of the crankshaft
     set(this.engA.frequency, fire); set(this.engB.frequency, fire / 2); set(this.engC.frequency, fire * 2); set(this.chuffLfo.frequency, fire);
-    set(this.engFilter.frequency, 240 + s.throttle * 520 + s.rpm * 0.18);
-    set(this.engGain.gain, 0.16 + s.throttle * 0.2);
+    set(this.engFilter.frequency, 220 + s.throttle * 700 + s.rpm * 0.22);
+    set(this.engGain.gain, 0.07 + s.throttle * 0.15);
     set(this.chuffGain.gain, 0.35 + s.throttle * 0.4);
-    const v = Math.min(1, Math.abs(s.speed) / 24), roll = s.grounded ? 1 : 0;
+    const v = Math.min(1, Math.abs(s.speed) / 36), roll = s.grounded ? 1 : 0;
     set(this.tyreFilter.frequency, s.onRoad ? 520 : 260);
     set(this.tyreGain.gain, roll * v * (s.onRoad ? 0.16 : 0.34));
     set(this.windGain.gain, 0.02 + v * v * 0.22);

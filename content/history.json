@@ -1,0 +1,26 @@
+{
+  "note": "The story of a place through time. Every date and statement here is listed in NEEDS_REVIEW.md (H12) until checked against sources.",
+  "sites": {
+    "dome-of-the-rock": {
+      "title": { "en": "The Dome of the Rock through time", "ar": "قبّة الصخرة عبر الزمن" },
+      "intro": {
+        "en": "The Dome of the Rock stands inside al-Masjid al-Aqsa, the sacred enclosure of Al-Quds. It is one of the oldest Islamic buildings still standing, and people have cared for it for more than thirteen hundred years.",
+        "ar": "تقع قبّة الصخرة داخل المسجد الأقصى المبارك في القدس. وهي من أقدم المباني الإسلاميّة القائمة حتّى اليوم، وقد اعتنى بها الناس أكثر من ألف وثلاثمئة عام."
+      },
+      "eras": [
+        { "when": { "en": "72 AH · 691–692 CE", "ar": "٧٢ هـ · ٦٩١–٦٩٢ م" },
+          "text": { "en": "The Umayyad caliph Abd al-Malik ibn Marwan orders the building of the dome over the Rock.", "ar": "أمر الخليفة الأمويّ عبد الملك بن مروان ببناء القبّة فوق الصخرة." } },
+        { "when": { "en": "1015–1023 CE", "ar": "١٠١٥–١٠٢٣ م" },
+          "text": { "en": "An earthquake brings the dome down. It is rebuilt a few years later, in the time of the Fatimids.", "ar": "أسقط زلزالٌ القبّة، ثمّ أُعيد بناؤها بعد سنوات قليلة في عهد الفاطميّين." } },
+        { "when": { "en": "1099–1187 CE", "ar": "١٠٩٩–١١٨٧ م" },
+          "text": { "en": "The Crusaders take Al-Quds and use the building as a church. In 1187 Salah al-Din wins the city back and the building is restored.", "ar": "احتلّ الصليبيّون القدس واتّخذوا المبنى كنيسة. وفي سنة ١١٨٧ استعاد صلاح الدين المدينة ورُمِّم المبنى." } },
+        { "when": { "en": "About 1550 CE", "ar": "نحو ١٥٥٠ م" },
+          "text": { "en": "The Ottoman sultan Suleiman covers the outer walls with the blue and turquoise tiles that give the building its famous colours.", "ar": "كسا السلطان العثمانيّ سليمان الجدران الخارجيّة بالبلاط الأزرق والفيروزيّ الذي أعطى المبنى ألوانه المشهورة." } },
+        { "when": { "en": "About 1910 CE", "ar": "نحو ١٩١٠ م" }, "look": "then",
+          "text": { "en": "In the last years of Ottoman rule the dome is covered with dark sheets of lead, not gold.", "ar": "في أواخر العهد العثمانيّ كانت القبّة مغطّاة بصفائح الرصاص الداكنة، لا بالذهب." } },
+        { "when": { "en": "1959–1964 and 1993–1994 CE", "ar": "١٩٥٩–١٩٦٤ و١٩٩٣–١٩٩٤ م" }, "look": "now",
+          "text": { "en": "Two great restorations give the dome the golden covering we see today.", "ar": "منح ترميمان كبيران القبّة كسوتها الذهبيّة التي نراها اليوم." } }
+      ]
+    }
+  }
+}

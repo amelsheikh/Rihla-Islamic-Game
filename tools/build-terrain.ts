@@ -15,7 +15,7 @@ fs.mkdirSync(OUT, { recursive: true });
 
 const roadDef = JSON.parse(fs.readFileSync(path.join(ROOT, 'content/roads/quds-ariha.json'), 'utf8'));
 const placesDef = JSON.parse(fs.readFileSync(path.join(ROOT, 'content/places.json'), 'utf8'));
-const WATER_Y = toGameY(placesDef.deadSeaLevel1910);
+const WATER_Y = toGameY(placesDef.deadSeaLevel);
 
 // ---------------------------------------------------------------- grids
 const NEAR = { cell: 3, cols: 1792, rows: 1152, x0: 0, z0: 0 };

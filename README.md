@@ -4,10 +4,11 @@ An educational 3D driving game for children and adults. Players travel the roads
 historical Palestine, Jordan, Lebanon and Egypt in the late Ottoman era (around 1910),
 learning the landscape, cities, history and Islamic heritage of the region.
 
-**Current state: Phase 1b.** The road from Al-Quds down to Ariha and the Dead Sea, on real terrain,
-with trees, buildings, sound, a story opening and the first journal page. The look is stylised.
+**Current state: realism pass R1.** A present-day drive from Al-Quds down to Ariha and the Dead Sea on real
+terrain, with photographic ground and stone, a modern road and car, sound, a story opening, the first
+journal page, and the history of the Dome of the Rock through time.
 
-![Phase 1b screenshots](docs/screenshots/phase-1b.jpg)
+![Realism pass R1 screenshots](docs/screenshots/realism-r1.jpg)
 
 - Game brief: [docs/GAME_BRIEF.md](docs/GAME_BRIEF.md)
 - Technical design: [DESIGN.md](DESIGN.md)
@@ -48,6 +49,7 @@ The file is `dist-single/index.html`.
 | Reset the car | R, or the Reset car button | |
 | Horn | H | |
 | Journal (once a page is found) | J | |
+| History of this place (near a site that has one) | the button on screen | |
 | Move the clock an hour | [ and ] | |
 | Menu | Esc | |
 | Performance details | F3 | |

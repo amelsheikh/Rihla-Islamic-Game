@@ -1,4 +1,5 @@
 // The Rihla journal: shows a found page, and the story card at the start of the game.
+import history from '../../content/history.json';
 import journal from '../../content/journal.json';
 import texts from '../../content/religious_texts.json';
 import { lang, t } from '../core/settings';
@@ -35,6 +36,28 @@ export function showPage(page: Page, onClose: () => void) {
     const facts = el('div', 'facts');
     for (const f of page.facts) facts.append(el('span', null, f[l]));
     b.append(facts);
+  }, t('close'), onClose);
+}
+
+export interface Era { when: L; text: L; look?: 'then' | 'now' }
+export interface SiteHistory { title: L; intro: L; eras: Era[] }
+export const HISTORY = history.sites as Record<string, SiteHistory>;
+
+/** The story of a place through time. `onLook` is called when the player asks to see an era for themselves. */
+export function showHistory(site: SiteHistory, onLook: (look: 'then' | 'now') => void, onClose: () => void) {
+  const l = lang(), root = document.getElementById('page')!;
+  show((b) => {
+    b.append(el('h1', null, site.title[l]), el('p', null, site.intro[l]));
+    for (const era of site.eras) {
+      const row = el('div', 'era');
+      row.append(el('div', 'when', era.when[l]), el('p', null, era.text[l]));
+      if (era.look) {
+        const btn = el('button', null, t(era.look === 'then' ? 'seeThen' : 'seeNow')) as HTMLButtonElement;
+        btn.onclick = () => { onLook(era.look!); root.hidden = true; onClose(); };
+        row.append(btn);
+      }
+      b.append(row);
+    }
   }, t('close'), onClose);
 }
 
