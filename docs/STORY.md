@@ -1,6 +1,6 @@
 # Rihla: The Lost Pages — story design (draft for the owner's review)
 
-Status: **draft 1**. Nothing here is built yet except where marked. Every historical or religious statement
+Status: **draft 1, with the owner's decisions in section 8**. Nothing here is built yet except where marked. Every historical or religious statement
 that ends up in the game goes into `NEEDS_REVIEW.md` first.
 
 The owner's aim, in their words: *to teach my children, explore with them my historical home, and connect
@@ -112,18 +112,23 @@ one family, and to come home.*
 - Quran and hadith appear only where a place calls for them, accurately and with references, as on the first
   journal page and in the history of Al-Aqsa *(built; awaiting review)*.
 
-## 8. Questions for the owner
+## 8. Decisions by the owner
 
-1. **The child's home:** visiting from abroad for the summer (as written, like your own children), or living in Al-Quds?
-2. **The ancestor:** is a woman scholar of the 1300s, Zaynab al-Maqdisiyya, right for your family's story?
-3. **Cast:** keep Teta's video calls and Simsim the cat?
-4. **Prayer:** should the child be able to join prayer at al-Aqsa (shown with respect, not played as a game)?
-5. **Order:** after Chapter 1, Jordan first (as above) or the rest of Palestine first?
-6. **The present day:** the game draws no checkpoints or walls and keeps out of current politics. Please confirm
-   this is how you want present-day places shown, and whether any place should be left out for now.
+1. **The child** is visiting from abroad for the summer.
+2. **The ancestor**, Zaynab al-Maqdisiyya, is approved.
+3. **Teta (or Sittu)** stays, with her video calls. *(The cat, Simsim, was not mentioned; kept for now.)*
+4. **Prayer:** the child prays. Prayer is shown with respect and is never scored or rushed.
+5. **Order:** after Chapter 1, the rest of Palestine comes first. The chapter table in section 6 becomes:
+   Chapter 2, Hills of the Prophets (Bethlehem, Al-Khalil); Chapter 3, Olives and the Sea (Nablus, the Galilee,
+   Akka, Haifa, Yafa, Gaza); then Jordan, Lebanon, Egypt and Syria.
+6. **Then and now** is central: at every place the children can see what it was and what it looks like today.
+7. **The world should feel alive:** cities, roads, shops, streets and people, explored by car, on foot, and
+   from the air.
+8. Still to confirm: how present-day places are shown (no checkpoints or walls are drawn), and whether any
+   place should be left out for now.
 
 ## 9. Proposed next step
 
-Build **Chapter 1** as described in section 5: the prologue walk in Al-Quds, the three pages with their
+The game is moving to Unity (see `docs/ENGINE_SETUP.md`). Build **Chapter 1** there as described in section 5: the prologue walk in Al-Quds, the three pages with their
 riddles, clues found on foot, the two keepers, the shepherd, Teta's call and the Dead Sea finale. The story is
 kept in data files, so it carries over unchanged if the game later moves to a more advanced engine.

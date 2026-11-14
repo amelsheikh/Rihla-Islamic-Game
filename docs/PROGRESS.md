@@ -150,6 +150,19 @@ Decisions:
 - The sound has still not been heard by anyone.
 - No walking yet.
 
+## Direction change: to Unity on a cloud graphics PC (after R2)
+
+The owner judged that the browser has reached its limit and asked for a dedicated graphics engine. The owner has
+no powerful computer, so the plan is a rented cloud Windows PC with a graphics card (Shadow PC to start), running
+Unity 6 and Claude Code. Full steps and costs: `docs/ENGINE_SETUP.md`. The first engine phase, E0, is described
+there. The browser build stays as the prototype for story and teaching content.
+
+Story decisions recorded in `docs/STORY.md` section 8: the child visits from abroad, the child prays, the rest of
+Palestine comes after Chapter 1, "then and now" is central, and the world should have cities, shops, people,
+walking and flying.
+
+Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
+
 ## Pass R2: walking, history, driving and sound
 
 Owner's feedback on R1: driving felt a bit off, the car sounded wrong, and the laptop ran it slowly

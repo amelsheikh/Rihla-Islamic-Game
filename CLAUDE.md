@@ -8,6 +8,7 @@
 - Commit with clear messages and push before ending a session; cloud sessions are temporary.
 - Religious and cultural guidelines in section 5 of the brief are strict and never optional.
 - Never invent historical or religious facts; add uncertain ones to `NEEDS_REVIEW.md`.
-- **Direction (current):** a realistic browser game set in the present day, with modern cars, no borders drawn, a history view for each site, and walking to come. The owner's purpose is to teach their children about their historical home and Islamic history, so teaching content comes first. Read the "Direction" part of `docs/PROGRESS.md` before doing anything. The game-engine plan in `DESIGN.md` sections 10 and 11 is on hold.
-- Everything is built and tested in the cloud session. Free assets come from Poly Haven (CC0); record each one in `ASSETS.md`.
+- **Direction (current):** the game is moving to **Unity 6**, run on a rented cloud Windows PC with a graphics card, because the browser build reached its limit. Read `docs/ENGINE_SETUP.md` (setup and Phase E0) and `docs/STORY.md` (the story and the owner's decisions in section 8) before doing anything. The owner's purpose is to teach their children about their historical home and Islamic history, so teaching content comes first. Show every place both as it was and as it is now.
+- The browser build (`src/`, `index.html`) stays as the prototype for story and teaching content; do not delete it.
+- Free assets come from Poly Haven (CC0); record every asset, free or bought, in `ASSETS.md`.
 - History content lives in `content/history.json`; list every date and claim in `NEEDS_REVIEW.md` until checked.
