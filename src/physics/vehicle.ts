@@ -4,6 +4,7 @@
 import RAPIER from '@dimforge/rapier3d-compat';
 import { Quaternion, Vector3 } from 'three';
 import type { GroundHit, Surface, World } from '../world/world';
+import { GROUP_CAR } from './groups';
 
 export type DriveMode = 'family' | 'simulation';
 export interface Controls { throttle: number; brake: number; steer: number; handbrake: boolean }
@@ -49,6 +50,8 @@ export class Vehicle {
   airborne = false;
   private flippedFor = 0;
   private terrainCollider: RAPIER.Collider | null = null;
+  /** The small ground patch under the car; people on foot ignore it. */
+  get terrainPatchHandle() { return this.terrainCollider?.handle ?? null; }
   private patchX = Infinity; private patchZ = Infinity;
 
   // Scratch objects, reused every step.
@@ -65,7 +68,7 @@ export class Vehicle {
         .setTranslation(0, 0.05, 0)
         // Centre of mass set low, as on a real chassis with the engine and frame rails down low.
         .setMassProperties(m, { x: 0, y: -0.3, z: -0.05 }, { x: (m / 12) * 15.1, y: (m / 12) * 17, z: (m / 12) * 5.2 }, { w: 1, x: 0, y: 0, z: 0 })
-        .setFriction(0.35).setRestitution(0.05),
+        .setFriction(0.35).setRestitution(0.05).setCollisionGroups(GROUP_CAR),
       this.body,
     );
     const hw = CAR.track / 2, hb = CAR.wheelBase / 2;
@@ -98,8 +101,9 @@ export class Vehicle {
     this.updateTerrainPatch();
 
     // Steering: less lock at speed, and a limited turning rate so a tap on a key is not a full swerve.
-    const lock = CAR.maxSteer * (family ? 1 / (1 + absSpeed / 9) : 1 / (1 + absSpeed / 16));
-    const target = -ctl.steer * lock, rate = (family ? 1.6 : 2.4) * dt;
+    const lock = CAR.maxSteer * (family ? 1 / (1 + absSpeed / 15) : 1 / (1 + absSpeed / 22));
+    const target = -ctl.steer * lock, centring = Math.abs(target) < Math.abs(this.steerAngle);
+    const rate = (family ? 2.6 : 3.4) * (centring ? 1.6 : 1) * dt;
     this.steerAngle += Math.min(rate, Math.max(-rate, target - this.steerAngle));
 
     // Drive: power-limited at speed, force-limited from rest. Brake doubles as reverse when stopped.
@@ -185,7 +189,7 @@ export class Vehicle {
     if (family) {
       // Assists: damp spins, and resist rolling over.
       const yawRate = this.ang.dot(this.up);
-      this.torque.addScaledVector(this.up, -yawRate * 900 * Math.min(1, absSpeed / 8));
+      this.torque.addScaledVector(this.up, -yawRate * 350 * Math.min(1, absSpeed / 8));
       const roll = Math.asin(Math.max(-1, Math.min(1, this.s.set(1, 0, 0).applyQuaternion(this.q).y)));
       if (Math.abs(roll) > 0.3) this.torque.addScaledVector(this.fwd, -Math.sign(roll) * (Math.abs(roll) - 0.3) * 9000 - this.ang.dot(this.fwd) * 1500);
     }

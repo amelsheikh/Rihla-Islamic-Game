@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { Sound } from './audio/sound';
 import { Input } from './core/input';
 import { guessQuality, lang, loadProgress, loadSettings, num, PRESETS, QUALITIES, saveProgress, saveSettings, setLang, t, type Quality } from './core/settings';
+import { Walker } from './game/walker';
 import { HISTORY, pageOpen, PAGES, showHistory, showIntro, showPage } from './game/journal';
 import farUrl from './generated/far.rhm?url';
 import nearUrl from './generated/near.rhm?url';
@@ -84,6 +85,10 @@ async function boot() {
   const vegetation = new Vegetation(world, plants, shade, rapier);
   const places = buildPlaces(world, rapier, shade, photos);
   const labels = new Labels(places.named);
+  const walker = new Walker(rapier, world, places.walkTops, () => car.terrainPatchHandle);
+  scene.add(walker.model);
+  let onFoot = false, stepDist = 0, walkCamTurn = 0;
+  const focus = new THREE.Vector3();
   scene.add(terrain.group, buildRoad(world, shade, photos, rapier), vegetation.group, places.group, labels.group);
   sky.update(0, new THREE.Vector3(), camera);
   shade.bakeNow(sky.lightDir); farShade.bakeNow(sky.lightDir);
@@ -111,7 +116,7 @@ async function boot() {
   scene.add(carModel.group);
 
   // ---------------------------------------------------------------- quality
-  let quality: Quality = settings.quality === 'auto' ? guessQuality() : settings.quality, shadeBudget = 1.5;
+  let quality: Quality = settings.quality === 'auto' ? guessQuality(String(gpuName())) : settings.quality, shadeBudget = 1.5;
   function applyQuality(q: Quality) {
     quality = q;
     const p = PRESETS[q];
@@ -119,6 +124,7 @@ async function boot() {
     renderer.setSize(innerWidth, innerHeight, false);
     sky.setShadows(p.shadows); sky.useEnvironment = p.environment;
     terrain.lodScale = vegetation.lodScale = p.lod;
+    terrain.setDetail(p.detail);
     shadeBudget = p.shadeBudget;
     post.configure(p.postfx, innerWidth, innerHeight, renderer.getPixelRatio());
     terrain.setAnisotropy(Math.min(p.anisotropy, renderer.capabilities.getMaxAnisotropy()));
@@ -150,30 +156,34 @@ async function boot() {
   }
   const ariha = world.data.places.find((p) => p.id === 'ariha')!;
   function updateHud() {
-    hud.speed.textContent = num(Math.abs(car.speed) * 3.6);
-    const elev = toRealElevation(currPos.y - 1.05);
+    hud.speed.textContent = num(Math.abs(onFoot ? walker.speed : car.speed) * 3.6);
+    const elev = toRealElevation(onFoot ? walker.pos.y : currPos.y - 1.05);
     hud.alt.textContent = `${num(Math.abs(elev))} ${t(elev >= 0 ? 'above' : 'below')}`;
-    const hit = world.nearestRoad(currPos.x, currPos.z);
+    const hit = world.nearestRoad(focus.x, focus.z);
     const left = hit ? ariha.roadDist - hit.along : -1;
-    const toPage = Math.hypot(pageMarker.position.x - currPos.x, pageMarker.position.z - currPos.z);
+    const toPage = Math.hypot(pageMarker.position.x - focus.x, pageMarker.position.z - focus.z);
     if (!pageFound()) hud.trip.textContent = toPage < 14 ? t('pageNear') : `${t('objective')} · ${num(Math.abs(world.data.places.find((p) => p.id === page.place)!.roadDist - (hit?.along ?? 0)) / 1000, 1)} km`;
     else hud.trip.textContent = left > 30 ? `${num(left / 1000, 1)} km ${t('toAriha')}` : '';
-    // Pick up the page by stopping beside it.
-    if (!pageFound() && toPage < 11 && Math.abs(car.speed) < 2.5 && !autopilot) {
+    // Pick up the page by stopping beside it, or by walking up to it.
+    if (!pageFound() && !autopilot && (onFoot ? toPage < 2.5 : toPage < 11 && Math.abs(car.speed) < 2.5)) {
       progress.pages.push(page.id); saveProgress(progress);
       $('journal-btn').hidden = false; paused = true;
       showPage(page, () => { paused = false; banner(t('pageFound'), page.title[lang()]); });
     }
-    const near = world.nearestPlace(currPos.x, currPos.z);
+    const near = world.nearestPlace(focus.x, focus.z);
     hud.placeAr.textContent = near.place.name.ar; hud.placeEn.textContent = near.place.name.en;
     const h = Math.floor(sky.time), m = Math.floor((sky.time - h) * 60);
     hud.clock.textContent = `${num(h).padStart(2, num(0))}:${num(m).padStart(2, num(0))}`;
-    fwd.set(0, 0, -1).applyQuaternion(currQ);
+    if (onFoot) fwd.set(-Math.sin(walker.yaw), 0, -Math.cos(walker.yaw)); else fwd.set(0, 0, -1).applyQuaternion(currQ);
     const bearing = (Math.atan2(fwd.x, -fwd.z) * 180) / Math.PI;
     hud.compass.textContent = (lang() === 'ar' ? ['ش', 'ش ق', 'ق', 'ج ق', 'ج', 'ج غ', 'غ', 'ش غ'] : ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'])[Math.round(((bearing + 360) % 360) / 45) % 8];
-    hud.hint.textContent = car.needsRescue ? t('rescue') : seeingThen ? t('showingThen') : '';
+    const gate = world.data.places.find((p) => p.id === 'bab-al-asbat')!;
+    hud.hint.textContent = car.needsRescue ? t('rescue') : !onFoot && Math.hypot(gate.x - focus.x, gate.z - focus.z) < 70 ? t('parkHere') : seeingThen ? t('showingThen') : '';
+    walkBtn.textContent = t(onFoot ? 'getIn' : 'getOut');
     // The History button appears near a place whose story through time has been written.
-    historySite = Object.keys(HISTORY).find((id) => { const p = world.data.places.find((q) => q.id === id); return p && Math.hypot(p.x - currPos.x, p.z - currPos.z) < 900; }) ?? '';
+    // The nearest place within reach whose history has been written.
+    let best = 600; historySite = '';
+    for (const id of Object.keys(HISTORY)) { const p = world.data.places.find((q) => q.id === id); const d = p ? Math.hypot(p.x - focus.x, p.z - focus.z) : Infinity; if (d < best) { best = d; historySite = id; } }
     $('history-btn').hidden = !historySite;
     // In Family mode the car is put back by itself after a few seconds.
     if (car.mode === 'family' && car.tippedFor > 4) resetCar();
@@ -198,7 +208,24 @@ async function boot() {
     paused = true;
     showHistory(HISTORY[historySite], (look) => { seeingThen = look === 'then'; places.setDomeEra(seeingThen); }, () => { paused = false; });
   };
-  const resetCar = () => { car.rescue(); pilot.sync(); snapPose(); terrain.update(currPos, true); banner(t('rescued'), '', 2.5); };
+  const walkBtn = $<HTMLButtonElement>('walk-btn');
+  /** Get out of the car beside the driver's door, or back in when close enough. */
+  function toggleFoot() {
+    if (paused || bench) return;
+    if (!onFoot) {
+      if (Math.abs(car.speed) > 1.5) { banner(t('stopFirst'), '', 2); return; }
+      const side = new THREE.Vector3(-1.9, 0, 0.3).applyQuaternion(currQ).add(currPos);
+      fwd.set(0, 0, -1).applyQuaternion(currQ);
+      walker.place(side.x, side.z, Math.atan2(-fwd.x, -fwd.z));
+      walker.show(true); onFoot = true; walkCamTurn = 0;
+    } else {
+      if (Math.hypot(walker.pos.x - currPos.x, walker.pos.z - currPos.z) > 4.5) { banner(t('walkBack'), '', 3); return; }
+      walker.show(false); onFoot = false;
+    }
+    camSnap = true; walkBtn.blur(); updateHud();
+  }
+  walkBtn.onclick = toggleFoot;
+  const resetCar = () => { if (onFoot) { walker.show(false); onFoot = false; } car.rescue(); pilot.sync(); snapPose(); terrain.update(currPos, true); banner(t('rescued'), '', 2.5); };
   $('reset-btn').onclick = () => { if (!paused) resetCar(); ($('reset-btn') as HTMLButtonElement).blur(); };
   $('journal-btn').onclick = () => { if (pageFound() && !paused) { paused = true; showPage(page, () => { paused = false; }); } };
   const overlay = $('overlay'), startBtn = $<HTMLButtonElement>('start');
@@ -213,7 +240,7 @@ async function boot() {
   labels.group.visible = settings.labels;
   sel.lang.onchange = () => { settings.lang = sel.lang.value as 'en' | 'ar'; saveSettings(settings); applyText(); startBtn.textContent = t(started ? 'resume' : 'start'); lastPlace = ''; };
   sel.mode.onchange = () => { settings.mode = car.mode = sel.mode.value as 'family' | 'simulation'; saveSettings(settings); };
-  sel.quality.onchange = () => { settings.quality = sel.quality.value as Quality | 'auto'; saveSettings(settings); applyQuality(settings.quality === 'auto' ? guessQuality() : settings.quality); };
+  sel.quality.onchange = () => { settings.quality = sel.quality.value as Quality | 'auto'; saveSettings(settings); applyQuality(settings.quality === 'auto' ? guessQuality(String(gpuName())) : settings.quality); };
   sel.time.oninput = () => { sky.time = +sel.time.value % 24; };
   sel.flow.onchange = () => { sky.timeScale = +sel.flow.value; };
   sel.labels.onchange = () => { settings.labels = labels.group.visible = sel.labels.checked; saveSettings(settings); };
@@ -259,7 +286,7 @@ async function boot() {
     const low = sorted.slice(0, Math.max(1, Math.floor(sorted.length / 100))).reduce((s, x) => s + x, 0) / Math.max(1, Math.floor(sorted.length / 100));
     b.rows.push(`${QUALITIES[b.index].padEnd(7)} avg ${(1 / avg).toFixed(0).padStart(3)} fps | 1% low ${(1 / low).toFixed(0).padStart(3)} fps | calls ${(b.calls / b.samples).toFixed(0)} | tris ${(b.tris / b.samples / 1000).toFixed(0)}k`);
     if (++b.index < QUALITIES.length) return benchStage();
-    const text = [`RIHLA-BENCH R1`, `${innerWidth}x${innerHeight} dpr ${devicePixelRatio}`, String(gpuName()), navigator.userAgent, ...b.rows].join('\n');
+    const text = [`RIHLA-BENCH R2`, `${innerWidth}x${innerHeight} dpr ${devicePixelRatio}`, String(gpuName()), navigator.userAgent, ...b.rows].join('\n');
     applyQuality(b.saved.quality); sky.time = b.saved.time; sky.timeScale = b.saved.scale;
     autopilot = false; paused = true; bench = null;
     $('bench-status').textContent = t('bench.done');
@@ -274,7 +301,7 @@ async function boot() {
   let dragging = false;
   canvas.addEventListener('pointerdown', () => (dragging = true));
   addEventListener('pointerup', () => (dragging = false));
-  addEventListener('pointermove', (e) => { if (dragging && camMode === 'free') { freeYaw -= e.movementX * 0.004; freePitch = Math.max(-1.5, Math.min(1.5, freePitch - e.movementY * 0.004)); } });
+  addEventListener('pointermove', (e) => { if (dragging && onFoot && camMode !== 'free') walkCamTurn -= e.movementX * 0.005; if (dragging && camMode === 'free') { freeYaw -= e.movementX * 0.004; freePitch = Math.max(-1.5, Math.min(1.5, freePitch - e.movementY * 0.004)); } });
 
   function updateCamera(dt: number) {
     fwd.set(0, 0, -1).applyQuaternion(quat);
@@ -290,6 +317,20 @@ async function boot() {
       if (k.has('KeyQ')) camera.position.y -= sp;
       camera.position.y = Math.max(camera.position.y, world.groundY(camera.position.x, camera.position.z) + 1);
       camera.lookAt(v3.add(camera.position));
+      return;
+    }
+    if (onFoot) {
+      // On foot: a camera over the shoulder that can be turned by dragging, and drifts back behind when walking.
+      if (Math.abs(walker.speed) > 0.2) walkCamTurn *= Math.exp(-dt * 1.5);
+      const yaw = walker.yaw + walkCamTurn, hx = -Math.sin(yaw), hz = -Math.cos(yaw);
+      v3.set(walker.pos.x - hx * 3.8, walker.pos.y + 2.0, walker.pos.z - hz * 3.8);
+      v3.y = Math.max(v3.y, walker.groundAt(v3.x, v3.z) + 0.8);
+      camPos.lerp(v3, camSnap ? 1 : 1 - Math.exp(-dt * 6));
+      v3.set(walker.pos.x + hx * 1.5, walker.pos.y + 1.3, walker.pos.z + hz * 1.5);
+      camLook.lerp(v3, camSnap ? 1 : 1 - Math.exp(-dt * 10));
+      camSnap = false;
+      camera.position.copy(camPos); camera.lookAt(camLook);
+      if (Math.abs(camera.fov - 60) > 0.05) { camera.fov = 60; camera.updateProjectionMatrix(); }
       return;
     }
     if (camMode === 'bonnet') {
@@ -323,6 +364,7 @@ async function boot() {
       if (input.hit('KeyC')) { camMode = camMode === 'chase' ? 'bonnet' : 'chase'; camSnap = true; }
       if (input.hit('KeyF')) { camMode = camMode === 'free' ? 'chase' : 'free'; camSnap = true; freeYaw = Math.atan2(-fwd.x, -fwd.z); }
       if (input.hit('KeyR')) resetCar();
+      if (input.hit('KeyE') && camMode !== 'free') toggleFoot();
       if (input.hit('KeyH')) sound.horn();
       if (input.hit('KeyJ')) $('journal-btn').click();
       if (input.hit('KeyP')) { autopilot = !autopilot; pilot.sync(); }
@@ -337,7 +379,7 @@ async function boot() {
       let steps = 0;
       while (acc >= DT && steps < 10) {
         if (autopilot) pilot.update(ctl);
-        else if (camMode === 'free') { ctl.throttle = ctl.steer = 0; ctl.brake = 1; ctl.handbrake = true; }
+        else if (camMode === 'free' || onFoot) { ctl.throttle = ctl.steer = 0; ctl.brake = 1; ctl.handbrake = true; }
         else input.read(ctl);
         prevPos.copy(currPos); prevQ.copy(currQ);
         car.step(DT, ctl); rapier.step(); readPose();
@@ -345,16 +387,23 @@ async function boot() {
       }
       if (steps === 10) acc = 0;
       if (autopilot && car.needsRescue) { car.rescue(); pilot.sync(); snapPose(); }
+      if (onFoot) {
+        const w = input.read({ throttle: 0, brake: 0, steer: 0, handbrake: false }), run = input.keys.has('ShiftLeft') || input.keys.has('ShiftRight');
+        walker.update(dt, { forward: w.throttle - w.brake, turn: w.steer, run });
+        stepDist += Math.abs(walker.speed) * dt;
+        if (stepDist > (Math.abs(walker.speed) > 2.5 ? 1.15 : 0.62)) { stepDist = 0; sound.step(Math.abs(walker.speed) > 2.5); }
+      }
     }
+    if (onFoot) focus.copy(walker.pos); else focus.copy(currPos);
     const alpha = acc / DT;
     pos.lerpVectors(prevPos, currPos, alpha); quat.slerpQuaternions(prevQ, currQ, alpha);
     carModel.update(car, pos, quat, sky.night, !paused && ctl.brake > 0.05 && car.speed > 0.5);
     pageMarker.visible = !pageFound();
     if (pageMarker.visible) { pageMarker.getObjectByName('scroll')!.rotation.y += dt * 1.2; pageMarker.getObjectByName('scroll')!.position.y = 1.75 + Math.sin(now / 600) * 0.12; }
-    sound.update(dt, { rpm: car.rpm, throttle: paused ? 0 : ctl.throttle, speed: car.speed, onRoad: car.wheels[2].surface === 'road', slip: Math.max(car.wheels[2].slip, car.wheels[3].slip), grounded: !car.airborne, night: sky.night, paused: paused || document.visibilityState !== 'visible' });
+    sound.update(dt, { rpm: car.rpm, throttle: paused ? 0 : ctl.throttle, speed: car.speed, onRoad: car.wheels[2].surface === 'road', slip: Math.max(car.wheels[2].slip, car.wheels[3].slip), grounded: !car.airborne, night: sky.night, paused: paused || document.visibilityState !== 'visible', walking: onFoot ? 1 : 0 });
     updateCamera(dt);
     labels.update(camera.position);
-    sky.update(paused ? 0 : dt, pos, camera);
+    sky.update(paused ? 0 : dt, onFoot ? walker.pos : pos, camera);
     shade.update(dt, sky.lightDir, shadeBudget); farShade.update(dt, sky.lightDir, 0.4);
     shade.uniforms.visFloor.value = farShade.uniforms.visFloor.value = sky.night;
     water.tick(now / 1000);
@@ -384,7 +433,7 @@ async function boot() {
   (window as any).__rihla = {
     ready: true, world, car, sky, renderer, scene,
     start: () => { progress.introSeen = true; sound.start(); openMenu(false); },
-    sound, progress, pageMarker, setDomeEra: (old: boolean) => places.setDomeEra(old),
+    sound, progress, pageMarker, walker, toggleFoot, onFoot: () => onFoot, setDomeEra: (old: boolean) => places.setDomeEra(old),
     setTime: (h: number, scale = 0) => { sky.time = h; sky.timeScale = scale; },
     teleport: (s: number, reverse = false) => { car.placeOnRoad(s, reverse); pilot.sync(); snapPose(); terrain.update(currPos, true); vegetation.update(currPos); },
     rebake: () => { sky.update(0, currPos, camera); shade.bakeNow(sky.lightDir); farShade.bakeNow(sky.lightDir); },

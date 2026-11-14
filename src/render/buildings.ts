@@ -3,6 +3,8 @@
 import RAPIER from '@dimforge/rapier3d-compat';
 import * as THREE from 'three';
 import quds from '../../content/landmarks/al-quds.json';
+import type { WalkTop } from '../game/walker';
+import { GROUP_CAR_ONLY } from '../physics/groups';
 import { toGame } from '../world/warp';
 import type { World } from '../world/world';
 import { applySunShade, type SunShade } from './sunshade';
@@ -26,7 +28,7 @@ class Kit {
   }
 
   /** A box standing at height `y`, turned by `yaw`. Solid boxes stop the car. */
-  box(m: Mat, x: number, y: number, z: number, sx: number, sy: number, sz: number, yaw = 0, tint?: number[], solid = false, top: Mat = m) {
+  box(m: Mat, x: number, y: number, z: number, sx: number, sy: number, sz: number, yaw = 0, tint?: number[], solid: boolean | 'car' = false, top: Mat = m) {
     const cs = Math.cos(yaw), sn = Math.sin(yaw), s = TEX[m];
     const P = (lx: number, ly: number, lz: number) => [x + lx * cs + lz * sn, y + ly, z - lx * sn + lz * cs];
     const hx = sx / 2, hz = sz / 2, u0 = (x + z) / s;
@@ -34,7 +36,7 @@ class Kit {
     side([-hx, hz], [hx, hz], sx); side([hx, hz], [hx, -hz], sz); side([hx, -hz], [-hx, -hz], sx); side([-hx, -hz], [-hx, hz], sz);
     const t = TEX[top];
     this.quad(top, P(-hx, sy, hz), P(hx, sy, hz), P(hx, sy, -hz), P(-hx, sy, -hz), [[0, 0], [sx / t, 0], [sx / t, sz / t], [0, sz / t]], tint);
-    if (solid && this.rapier) this.rapier.createCollider(RAPIER.ColliderDesc.cuboid(hx, sy / 2 + 1.5, hz).setTranslation(x, y + sy / 2 - 1.5, z).setRotation({ x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) }));
+    if (solid && this.rapier) this.rapier.createCollider(RAPIER.ColliderDesc.cuboid(hx, sy / 2 + 1.5, hz).setCollisionGroups(solid === 'car' ? GROUP_CAR_ONLY : 0xffffffff).setTranslation(x, y + sy / 2 - 1.5, z).setRotation({ x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) }));
   }
 
   /** An upright drum with `sides` faces. `faceTex` stretches one whole texture across each face. */
@@ -93,9 +95,9 @@ class Kit {
       }
     }
   }
-  tower(world: World, x: number, z: number, w: number, h: number, yaw = 0) {
+  tower(world: World, x: number, z: number, w: number, h: number, yaw = 0, solid: boolean | 'car' = true) {
     const y = world.terrainY(x, z) - 1.5;
-    this.box('stone', x, y, z, w, h + 1.5, w, yaw, undefined, true);
+    this.box('stone', x, y, z, w, h + 1.5, w, yaw, undefined, solid);
     for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1], [0, -1], [0, 1], [-1, 0], [1, 0]]) this.box('stone', x + (dx * (w / 2 - 0.4)) , y + h + 1.5, z + dz * (w / 2 - 0.4), 0.9, 0.9, 0.9, yaw);
   }
 
@@ -117,7 +119,7 @@ class Kit {
     }
   }
 
-  house(world: World, x: number, z: number, w: number, d: number, h: number, yaw: number, r: () => number, opts: { domed?: boolean; plain?: boolean; solid?: boolean }) {
+  house(world: World, x: number, z: number, w: number, d: number, h: number, yaw: number, r: () => number, opts: { domed?: boolean; plain?: boolean; solid?: boolean | 'car' }) {
     const g = world.terrainY(x, z), y = g - 1.5, k = 0.86 + r() * 0.2, tint = [k, k * (0.97 + r() * 0.03), k * (0.9 + r() * 0.08)];
     const m: Mat = opts.plain ? 'plaster' : 'stone';
     this.box(m, x, y, z, w, h + 1.5, d, yaw, tint, opts.solid ?? false, 'plaster');
@@ -155,12 +157,13 @@ class Kit {
 export interface Named { x: number; y: number; z: number; en: string; ar: string; size: number }
 
 /** Build every place in the corridor. Returns one group per place (so far-off places are skipped when drawing). */
-export function buildPlaces(world: World, rapier: RAPIER.World | null, shade: SunShade, photos: Photos): { group: THREE.Group; named: Named[]; setDomeEra: (old: boolean) => void } {
+export function buildPlaces(world: World, rapier: RAPIER.World | null, shade: SunShade, photos: Photos): { group: THREE.Group; named: Named[]; walkTops: WalkTop[]; setDomeEra: (old: boolean) => void } {
   const root = new THREE.Group(), named: Named[] = [], P = (id: string) => world.data.places.find((p) => p.id === id)!, ty = (x: number, z: number) => world.terrainY(x, z);
   const r = rng(77);
   const clear = (x: number, z: number, m: number) => { const h = world.nearestRoad(x, z); return !h || h.dist > world.halfWidth + m; };
   const finish = (kit: Kit) => { const g = kit.build(shade, photos); root.add(g); return g; };
   let domeThen: THREE.Group | null = null, domeNow: THREE.Group | null = null;
+  const walkTops: WalkTop[] = [];
 
   // ---------------------------------------------------------------- Al-Quds
   {
@@ -176,13 +179,16 @@ export function buildPlaces(world: World, rapier: RAPIER.World | null, shade: Su
     // Bab al-Asbat: a gate tower in the east wall, with its arched gateway facing the Jericho road.
     {
       const g = P('bab-al-asbat');
-      kit.tower(world, g.x, g.z, 10, 14);
+      // A gate: the car stops here, but people walk through.
+      kit.tower(world, g.x, g.z, 10, 14, 0, 'car');
       kit.opening(3, g.x + 5.05, ty(g.x + 6, g.z), g.z, 5.2, 7.5, Math.PI / 2);
     }
     // The Dome of the Rock on its raised platform: marble and tile octagon, drum, and the lead-covered dome of 1910.
     {
       const d = P('dome-of-the-rock'), y = ty(d.x, d.z);
-      kit.box('stone', d.x, y - 1.5, d.z, 74, 3.1, 66, 0, [1.04, 1.03, 1], true, 'plaster');
+      // The raised platform: no car may drive onto it; people on foot step up onto it.
+      kit.box('stone', d.x, y - 1.5, d.z, 74, 3.1, 66, 0, [1.04, 1.03, 1], 'car', 'plaster');
+      walkTops.push({ x: d.x, z: d.z, hx: 37, hz: 33, y: y + 1.6 });
       kit.drum('tile', d.x, y + 1.6, d.z, 19.5, 11.5, 8, undefined, true, 19.5, 'lead');
       kit.drum('tile', d.x, y + 13.1, d.z, 10.6, 6.2, 16, [0.8, 0.95, 1.05], false, 10.6, null);
       // The great dome is built twice: gilded as it is today, and lead-covered as it was around 1910.
@@ -242,12 +248,13 @@ export function buildPlaces(world: World, rapier: RAPIER.World | null, shade: Su
     }
     // The houses of the Old City: closely packed stone cubes, many with small domes.
     const xs = wall.map((p) => p[0]), zs = wall.map((p) => p[1]);
-    for (let x = Math.min(...xs); x < Math.max(...xs); x += 12.5) for (let z = Math.min(...zs); z < Math.max(...zs); z += 12.5) {
-      const hx = x + (r() - 0.5) * 6, hz = z + (r() - 0.5) * 6;
+    // Houses stand in blocks with lanes between them, so that the Old City can be walked.
+    for (let x = Math.min(...xs); x < Math.max(...xs); x += 13) for (let z = Math.min(...zs); z < Math.max(...zs); z += 13) {
+      const hx = x + (r() - 0.5) * 2, hz = z + (r() - 0.5) * 2;
       const edge = (m: number) => inside(wall, hx + m, hz) && inside(wall, hx - m, hz) && inside(wall, hx, hz + m) && inside(wall, hx, hz - m);
       if (!edge(9) || inside(haram, hx + 12, hz) || inside(haram, hx - 12, hz) || inside(haram, hx, hz + 12) || inside(haram, hx, hz - 12) || inside(haram, hx, hz)) continue;
       if ((quds.structures as any[]).some((s) => { const [sx, sz] = toGame(s.lon, s.lat); return Math.hypot(sx - hx, sz - hz) < 17; })) continue;
-      kit.house(world, hx, hz, 8.5 + r() * 4.5, 8.5 + r() * 4.5, 6 + r() * 7, r() * 0.5, r, { domed: r() > 0.45 });
+      kit.house(world, hx, hz, 7.5 + r() * 2, 7.5 + r() * 2, 6 + r() * 7, 0, r, { domed: r() > 0.45, solid: true });
     }
     finish(kit);
   }
@@ -301,5 +308,5 @@ export function buildPlaces(world: World, rapier: RAPIER.World | null, shade: Su
   }
   for (const p of world.data.places) if (p.id !== 'dome-of-the-rock' && p.id !== 'al-qibli') named.push({ x: p.x, y: p.y + (p.kind === 'city' ? 62 : 26), z: p.z, en: p.name.en, ar: p.name.ar, size: p.kind === 'city' ? 1.2 : 0.9 });
   void pageSpot;
-  return { group: root, named, setDomeEra: (old) => { if (domeNow && domeThen) { domeNow.visible = !old; domeThen.visible = old; } } };
+  return { group: root, named, walkTops, setDomeEra: (old) => { if (domeNow && domeThen) { domeNow.visible = !old; domeThen.visible = old; } } };
 }

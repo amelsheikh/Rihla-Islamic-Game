@@ -13,6 +13,7 @@ journal page, and the history of the Dome of the Rock through time.
 - Game brief: [docs/GAME_BRIEF.md](docs/GAME_BRIEF.md)
 - Technical design: [DESIGN.md](DESIGN.md)
 - Progress and open questions: [docs/PROGRESS.md](docs/PROGRESS.md)
+- Story design (draft): [docs/STORY.md](docs/STORY.md)
 - Facts awaiting review: [NEEDS_REVIEW.md](NEEDS_REVIEW.md)
 - Assets and licences: [ASSETS.md](ASSETS.md)
 
@@ -46,6 +47,8 @@ The file is `dist-single/index.html`.
 | Steer | Left/Right arrows or A/D | Left stick |
 | Handbrake | Space | A |
 | Change camera | C | |
+| Get out and walk / get back in | E, or the button on screen | |
+| Walk, turn, run (on foot) | arrow keys or W A S D, Shift to run, drag to look around | |
 | Reset the car | R, or the Reset car button | |
 | Horn | H | |
 | Journal (once a page is found) | J | |

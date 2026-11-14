@@ -5,13 +5,13 @@ import type { DriveMode } from '../physics/vehicle';
 
 export type Lang = 'en' | 'ar';
 export type Quality = 'low' | 'medium' | 'high' | 'ultra';
-export interface Preset { pixelRatio: number; shadows: number; lod: number; anisotropy: number; environment: boolean; /** Anti-aliasing samples for the finishing effects; 0 turns them off. */ postfx: number; /** Milliseconds per frame spent refreshing hill shadows. */ shadeBudget: number }
+export interface Preset { pixelRatio: number; shadows: number; lod: number; anisotropy: number; environment: boolean; /** Anti-aliasing samples for the finishing effects; 0 turns them off. */ postfx: number; /** Milliseconds per frame spent refreshing hill shadows. */ shadeBudget: number; /** Photographic ground detail close to the camera. */ detail: boolean }
 
 export const PRESETS: Record<Quality, Preset> = {
-  low: { pixelRatio: 0.7, shadows: 0, lod: 0.5, anisotropy: 2, environment: false, postfx: 0, shadeBudget: 0.8 },
-  medium: { pixelRatio: 1, shadows: 1024, lod: 0.75, anisotropy: 4, environment: true, postfx: 0, shadeBudget: 1.5 },
-  high: { pixelRatio: 1.25, shadows: 2048, lod: 1, anisotropy: 8, environment: true, postfx: 4, shadeBudget: 2.5 },
-  ultra: { pixelRatio: 2, shadows: 4096, lod: 1.6, anisotropy: 16, environment: true, postfx: 4, shadeBudget: 4 },
+  low: { pixelRatio: 0.65, shadows: 0, lod: 0.42, anisotropy: 2, environment: false, postfx: 0, shadeBudget: 0.8, detail: false },
+  medium: { pixelRatio: 1, shadows: 1024, lod: 0.75, anisotropy: 4, environment: true, postfx: 0, shadeBudget: 1.5, detail: true },
+  high: { pixelRatio: 1.25, shadows: 2048, lod: 1, anisotropy: 8, environment: true, postfx: 4, shadeBudget: 2.5, detail: true },
+  ultra: { pixelRatio: 2, shadows: 4096, lod: 1.6, anisotropy: 16, environment: true, postfx: 4, shadeBudget: 4, detail: true },
 };
 export const QUALITIES: Quality[] = ['low', 'medium', 'high', 'ultra'];
 
@@ -25,8 +25,10 @@ export function loadSettings(): Settings {
 export function saveSettings(s: Settings) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* private window: settings last for this visit only */ } }
 
 /** A first guess at a quality level; the game steps down by itself if the frame rate is poor. */
-export function guessQuality(): Quality {
+export function guessQuality(gpu = ''): Quality {
   const nav = navigator as Navigator & { deviceMemory?: number };
+  // Older Intel graphics built into laptops ("HD Graphics", "UHD Graphics", "Iris") start on Low.
+  if (/intel/i.test(gpu) && !/arc/i.test(gpu)) return 'low';
   const mobile = matchMedia('(pointer: coarse)').matches;
   if (mobile) return (nav.deviceMemory ?? 4) >= 6 ? 'medium' : 'low';
   return (nav.hardwareConcurrency ?? 4) >= 8 ? 'high' : 'medium';

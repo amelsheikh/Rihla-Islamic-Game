@@ -31,7 +31,7 @@
   "arrived": "You have reached",
   "toAriha": "to Ariha",
   "nextTo": "Near",
-  "controls": "Drive: arrow keys or W A S D · Handbrake: Space · Horn: H · Camera: C · Reset car: R · Journal: J · Time: [ and ] · Menu: Esc",
+  "controls": "Drive: arrow keys or W A S D · Get out and walk: E · Run: Shift · Handbrake: Space · Horn: H · Camera: C · Reset car: R · Journal: J · Menu: Esc",
   "rescue": "The car has tipped over. Press R or tap Reset car.",
   "bench.title": "Performance test",
   "bench.running": "Testing… please wait and do not switch tabs",
@@ -59,5 +59,10 @@
   "history": "History of this place",
   "seeThen": "See it as it was",
   "seeNow": "See it as it is today",
-  "showingThen": "You are seeing this place as it was around 1910"
+  "showingThen": "You are seeing this place as it was around 1910",
+  "getOut": "Get out and walk",
+  "getIn": "Get back in the car",
+  "walkBack": "Walk back to the car to drive on",
+  "parkHere": "Cars cannot go through the old gates. Stop here and walk in.",
+  "stopFirst": "Stop the car first"
 }

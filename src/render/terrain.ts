@@ -84,6 +84,7 @@ function bake(hm: Heightmap, world: World, texW: number, texH: number, plants: P
 
 function terrainMaterial(tex: { map: THREE.Texture; normalMap: THREE.Texture }, photos: Photos, sizeX: number, sizeZ: number, shade: SunShade) {
   const m = new THREE.MeshStandardMaterial({ map: tex.map, normalMap: tex.normalMap, normalMapType: THREE.ObjectSpaceNormalMap, roughness: 0.94, metalness: 0 });
+  m.defines = { RIHLA_DETAIL: '' };
   applySunShade(m, shade, (shader) => {
     const u = shader.uniforms;
     for (const k of ['rock', 'soil', 'mud'] as const) { u[k + 'C'] = { value: photos[k].color }; u[k + 'N'] = { value: photos[k].normal }; u[k + 'Mean'] = { value: photos[k].mean }; }
@@ -95,6 +96,7 @@ function terrainMaterial(tex: { map: THREE.Texture; normalMap: THREE.Texture }, 
         {
           // The baked map gives each place its broad colour. Close to the camera, scanned photographs of
           // rock (steep ground), stony soil (gentler ground) and cracked mud (the valley floor) give the detail.
+          #ifdef RIHLA_DETAIL
           vec2 duv = vMapUv * detailScale;
           float steep = smoothstep(0.94, 0.78, texture2D(normalMap, vNormalMapUv).y * 2.0 - 1.0);
           float mud = smoothstep(-100.0, -128.0, vTerrY) * (1.0 - steep);
@@ -103,6 +105,9 @@ function terrainMaterial(tex: { map: THREE.Texture; normalMap: THREE.Texture }, 
           rihlaDn = mix(mix(texture2D(soilN, duv).xy, texture2D(mudN, duv * 0.7).xy, mud), texture2D(rockN, duv * 0.55).xy, steep) * 2.0 - 1.0;
           rihlaFade = 1.0 - smoothstep(90.0, 700.0, gl_FragCoord.z / gl_FragCoord.w);
           diffuseColor.rgb *= mix(vec3(1.0), det, rihlaFade) * mix(vec3(1.0), broad, 0.55);
+          #else
+          rihlaDn = vec2(0.0); rihlaFade = 0.0;
+          #endif
         }`)
       .replace('#include <normal_fragment_maps>', `
         vec3 rihlaN = texture2D(normalMap, vNormalMapUv).xyz * 2.0 - 1.0;
@@ -118,6 +123,7 @@ export class Terrain {
   lodScale = 1;
   private readonly near: Heightmap;
   private readonly material: THREE.MeshStandardMaterial;
+  private farMaterial!: THREE.MeshStandardMaterial;
   private readonly chunks: { cx: number; cz: number; level: number; mesh: THREE.Mesh | null }[] = [];
   private readonly indexCache = new Map<number, THREE.BufferAttribute>();
   private readonly textures: THREE.Texture[] = [];
@@ -150,9 +156,20 @@ export class Terrain {
     g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
     g.setIndex(new THREE.BufferAttribute(idx.slice(0, k), 1));
     g.computeBoundingSphere();
-    const far = new THREE.Mesh(g, terrainMaterial(farTex, detail, fi.cols * fi.cell, fi.rows * fi.cell, farShade));
+    this.farMaterial = terrainMaterial(farTex, detail, fi.cols * fi.cell, fi.rows * fi.cell, farShade);
+    const far = new THREE.Mesh(g, this.farMaterial);
     far.receiveShadow = false; far.matrixAutoUpdate = false;
     this.group.add(far);
+  }
+
+  /** Photographic detail close to the camera; off on the Low quality level, where it costs too much. */
+  setDetail(on: boolean) {
+    for (const m of [this.material, this.farMaterial]) {
+      const d = (m.defines ??= {});
+      if (on === 'RIHLA_DETAIL' in d) continue;
+      if (on) d.RIHLA_DETAIL = ''; else delete d.RIHLA_DETAIL;
+      m.needsUpdate = true;
+    }
   }
 
   setAnisotropy(a: number) { for (const t of this.textures) { t.anisotropy = a; t.needsUpdate = true; } }

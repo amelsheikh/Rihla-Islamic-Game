@@ -150,7 +150,43 @@ Decisions:
 - The sound has still not been heard by anyone.
 - No walking yet.
 
+## Pass R2: walking, history, driving and sound
+
+Owner's feedback on R1: driving felt a bit off, the car sounded wrong, and the laptop ran it slowly
+(Intel HD Graphics: Low 40 fps, Medium 21, High 13, Ultra 12). The owner asked for walking and more history
+views, and now wants to focus on the story before any move to a more advanced engine.
+
+What was built:
+
+- **Walking:** Get out and walk (button or E) when the car has stopped; Get back in when beside it. Arrow keys or
+  W A S D to walk and turn, Shift to run, drag to look around; footsteps. People on foot can pass through the
+  gate of Bab al-Asbat and step up onto the Haram platform; the car cannot. Old City houses are now solid with
+  lanes between them. The journal page can be picked up on foot.
+- **History views** for five more places: Al-Qibli Mosque (with the hadith of the three mosques), the walls and
+  gates of Al-Quds, Maqam al-Nabi Musa, Ariha and the Dead Sea. The History button opens the nearest one.
+- **Driving:** quicker steering, more steering at speed, quicker return to centre, a lighter stability assist.
+- **Sound:** the petrol engine is replaced by the quiet whine of an electric car, with softer tyre and wind
+  noise, footsteps and a modern horn.
+- **Speed on modest laptops:** Intel graphics now start on Low; Low skips the close-up photographic ground
+  detail, draws less far, and renders at a lower resolution.
+- **Story design:** `docs/STORY.md`, a draft for the owner's review.
+
+Checks: `npm test` passed (5). `node tests/play.mjs` passed (18 checks, now including getting out, walking and
+getting back in). Walking screenshots: `docs/screenshots/walking-r2.jpg`. Frame rate on the owner's laptop
+not yet re-measured.
+
+Known issues: walking through the gate passes through the tower block rather than an opening; the Dome of the
+Rock and the Qibli Mosque cannot be entered; the walker's figure is simple; the sound has still not been heard.
+
 ## Next (proposed)
+
+1. The owner reviews `docs/STORY.md` and answers its questions.
+2. Build Chapter 1 of the story as described there.
+
+Earlier ideas still open: better trees, today's real road line, a purchased car model.
+
+## Previously proposed (R1)
+
 
 1. Walking: get out of the car at a site and explore on foot.
 2. History views for more sites, starting with Al-Qibli Mosque, the walls and gates, Ariha and Maqam al-Nabi Musa.

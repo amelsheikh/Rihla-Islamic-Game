@@ -37,10 +37,28 @@ check((await page.textContent('#alt')).includes('above sea level'), 'HUD shows t
 await page.waitForSelector('#history-btn', { state: 'visible', timeout: 120000 });
 await page.click('#history-btn');
 await page.waitForSelector('#page', { state: 'visible', timeout: 60000 });
-check((await page.textContent('#page-body')).includes('691'), 'the History button opens the timeline of the Dome of the Rock');
+const eras = await page.locator('#page-body .era').count();
+check(eras >= 3, 'the History button opens the timeline of the nearest place: ' + (await page.textContent('#page-body h1')));
 await page.screenshot({ path: `${out}/history.png` });
-await page.click('#page-body .era button');
-check(await page.isHidden('#page'), 'choosing "See it as it was" closes the card and changes the view');
+await page.click('#page-close');
+check(await page.isHidden('#page'), 'the history card closes');
+// Stop, get out and walk a few steps, then get back in.
+await page.keyboard.down('Space');
+await page.waitForFunction(() => Math.abs(window.__rihla.car.speed) < 0.5, null, { timeout: 180000 });
+await page.keyboard.up('Space');
+await page.click('#walk-btn');
+check(await page.evaluate(() => window.__rihla.onFoot()), 'the Get out button puts the child on foot');
+const w0 = await page.evaluate(() => ({ ...window.__rihla.walker.pos }));
+await page.keyboard.down('ArrowUp');
+await page.waitForFunction((w) => { const p = window.__rihla.walker.pos; return Math.hypot(p.x - w.x, p.z - w.z) > 1.5; }, w0, { timeout: 180000 });
+await page.keyboard.up('ArrowUp');
+check(true, 'the child walks forward with the arrow key');
+await page.screenshot({ path: `${out}/walking.png` });
+await page.keyboard.down('ArrowDown');
+await page.waitForFunction((w) => { const p = window.__rihla.walker.pos; return Math.hypot(p.x - w.x, p.z - w.z) < 1.2; }, w0, { timeout: 180000 }).catch(() => null);
+await page.keyboard.up('ArrowDown');
+await page.click('#walk-btn');
+check(!(await page.evaluate(() => window.__rihla.onFoot())), 'the Get back in button returns the child to the car');
 await page.waitForFunction(() => window.__rihla.sound.level() > 0.001, null, { timeout: 120000 }).catch(() => null); // the sound fades back in after a card closes
 const level = await page.evaluate(() => window.__rihla.sound.level());
 check(level > 0.001 && level < 0.9, 'the engine can be heard and is not distorted (level ' + level.toFixed(3) + ')');

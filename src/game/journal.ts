@@ -25,7 +25,7 @@ export function showPage(page: Page, onClose: () => void) {
   show((b) => {
     b.append(el('h1', null, page.title[l]), el('h2', null, t('ancestorSays')), el('p', 'ancestor', page.ancestor[l]), el('h2', null, t('jiddoSays')));
     for (const para of page.jiddo[l]) b.append(el('p', null, para));
-    const v = (texts.texts as Record<string, { reference: string; surah: L; ar: string; en: string }>)[page.verse];
+    const v = (texts.texts as unknown as Record<string, { reference: string; surah: L; ar: string; en: string }>)[page.verse];
     if (v) {
       b.append(el('p', null, page.verseIntro[l]));
       const box = el('div', 'verse');
@@ -40,7 +40,7 @@ export function showPage(page: Page, onClose: () => void) {
 }
 
 export interface Era { when: L; text: L; look?: 'then' | 'now' }
-export interface SiteHistory { title: L; intro: L; eras: Era[] }
+export interface SiteHistory { title: L; intro: L; eras: Era[]; verse?: string }
 export const HISTORY = history.sites as Record<string, SiteHistory>;
 
 /** The story of a place through time. `onLook` is called when the player asks to see an era for themselves. */
@@ -48,6 +48,13 @@ export function showHistory(site: SiteHistory, onLook: (look: 'then' | 'now') =>
   const l = lang(), root = document.getElementById('page')!;
   show((b) => {
     b.append(el('h1', null, site.title[l]), el('p', null, site.intro[l]));
+    const v = site.verse ? (texts.texts as unknown as Record<string, { reference: string; ar: string; en: string; surah?: L; collection?: L }>)[site.verse] : undefined;
+    if (v) {
+      const box = el('div', 'verse');
+      box.append(el('div', 'ar', v.ar), el('div', 'ref', `${(v.surah ?? v.collection)?.[l] ?? ''} · ${v.reference}`));
+      if (l !== 'ar') box.append(el('p', null, `${t('meaning')}: ${v.en}`));
+      b.append(box);
+    }
     for (const era of site.eras) {
       const row = el('div', 'era');
       row.append(el('div', 'when', era.when[l]), el('p', null, era.text[l]));
