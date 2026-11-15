@@ -19,6 +19,16 @@ Not recommended: a university research computer. Its terms almost certainly do n
 **Recommendation:** start with **Shadow PC on a Neo plan**. It is the quickest way to a working setup. If the hour
 limits get in the way, move to AWS later; nothing in the project depends on the provider.
 
+## 1b. Trying the owner's own PC first
+
+The owner asked to try their own PC (AELSHEIKH135) before renting one. Its graphics are Intel HD Graphics, so
+Unity will run but slowly, and the realistic look will not be visible there; the PC is for setting up and for
+the game's logic. If it is too slow, move to the cloud PC.
+
+- Project folder on that PC: `C:\Users\aelsh\Desktop\Research Projects\Rihla`
+- The steps are the same as section 2 below, from step 2 on, with that folder in place of `C:\Projects\Rihla`.
+- Keep Unity's quality on its lowest settings while working there.
+
 ## 2. Setting up the cloud PC (about an hour, once)
 
 Do these steps on the cloud PC itself, after opening it from your laptop.
