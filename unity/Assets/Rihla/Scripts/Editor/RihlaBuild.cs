@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEditor.SceneManagement;
@@ -14,9 +15,8 @@ namespace Rihla.EditorTools
         {
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
-                scenes = File.Exists(RihlaCesiumBuilder.ScenePath)
-                    ? new[] { RihlaSceneBuilder.ScenePath, RihlaCesiumBuilder.ScenePath }
-                    : new[] { RihlaSceneBuilder.ScenePath },
+                scenes = new[] { RihlaSceneBuilder.ScenePath, RihlaCesiumBuilder.ScenePath, RihlaWalkBuilder.ScenePath }
+                    .Where(File.Exists).ToArray(),
                 locationPathName = "../Builds/Windows/Rihla.exe",
                 target = BuildTarget.StandaloneWindows64,
                 options = BuildOptions.None,

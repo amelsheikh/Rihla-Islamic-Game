@@ -140,7 +140,7 @@ What this asks of the game, and how the plan answers it:
 | The vision | What it means for the game | Where it is planned |
 |---|---|---|
 | Walking the blessed streets | Real streets at walking height, built in detail: stone, doorways, shops, light, people, sound. Google's 3D map is too blurry for this, so streets are built by hand, starting with one route. | E2: the walk from Bab al-Asbat to al-Masjid al-Aqsa |
-| How it was, then how it is now | The **Time Lens** becomes the heart of the game: the child walks a street as it was (for example about 1900, or in Zaynab's day), then the scene turns to today. "Then" needs sources (old photographs, drawings, scholarly descriptions) chosen with the owner. | E2 (first reveal), then every place |
+| How it was, then how it is now | *(First reveal built in E2: the Dome of the Rock about 1910, then today.)* The **Time Lens** becomes the heart of the game: the child walks a street as it was (for example about 1900, or in Zaynab's day), then the scene turns to today. "Then" needs sources (old photographs, drawings, scholarly descriptions) chosen with the owner. | E2 (first reveal), then every place |
 | With all the emotions | Music, ambient sound, the adhan, Jiddo's voice, slow camera at the reveal, quiet moments. How present-day places are shown stays the owner's decision (section 8, item 8). | E2 onwards |
 | Walk, horse, carriage, bike, car | Ways to travel that fit the era: on foot, horse and carriage in the "then" scenes, bicycle and car today. | E4 |
 | Glider and plane | Flying over the whole land on the real 3D map (Cesium), landing into a hand-built place. | E4, building on "Al-Quds today" |

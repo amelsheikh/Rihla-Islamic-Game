@@ -51,10 +51,7 @@ namespace Rihla.EditorTools
             RihlaUIBuilder.AddUI();
 
             EditorSceneManager.SaveScene(scene, ScenePath);
-            var list = new System.Collections.Generic.List<EditorBuildSettingsScene>();
-            list.Add(new EditorBuildSettingsScene(RihlaSceneBuilder.ScenePath, true));
-            list.Add(new EditorBuildSettingsScene(ScenePath, true));
-            EditorBuildSettings.scenes = list.ToArray();
+            RihlaScenes.UpdateBuildSettings();
             Debug.Log("[Rihla] E0 Cesium scene built: " + ScenePath);
         }
     }

@@ -20,6 +20,7 @@ namespace Rihla.EditorTools
             content.religiousTexts = Load(Content + "religious_texts.json");
             content.english = Load(Content + "i18n/en.json");
             content.arabic = Load(Content + "i18n/ar.json");
+            content.walk = Load(Content + "walk.json");
             return content;
         }
 

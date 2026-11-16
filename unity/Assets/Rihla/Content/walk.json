@@ -1,0 +1,88 @@
+{
+  "note": "The walk with Jiddo from Bab al-Asbat to al-Masjid al-Aqsa (Phase E2). Clue facts are not written here: each clue points to an era in history.json, so every fact stays in one place and in NEEDS_REVIEW.md. Jiddo's lines are listed in NEEDS_REVIEW.md (H17, R6).",
+  "title": { "en": "Al-Quds at dawn", "ar": "القدس عند الفجر" },
+  "steps": [
+    {
+      "id": "gate",
+      "at": "outsideGate",
+      "jiddo": {
+        "en": "Bismillah. This is Bab al-Asbat, the gate nearest to al-Masjid al-Aqsa. Look up beside the gate. What do you see?",
+        "ar": "بسم الله. هذا باب الأسباط، أقرب الأبواب إلى المسجد الأقصى. انظر إلى جانبَي الباب. ماذا ترى؟"
+      }
+    },
+    {
+      "id": "lane",
+      "at": "insideGate",
+      "jiddo": {
+        "en": "We walk calmly here, as guests. The gate of al-Masjid al-Aqsa is just ahead, on the left.",
+        "ar": "نمشي هنا بهدوء، كالضيوف. باب المسجد الأقصى أمامنا، على اليسار."
+      }
+    },
+    {
+      "id": "enter",
+      "at": "haramGate",
+      "jiddo": {
+        "en": "Now we are inside al-Masjid al-Aqsa. All of it, the courtyards, the trees and the domes, is the blessed mosque.",
+        "ar": "نحن الآن داخل المسجد الأقصى المبارك. كلّه، بساحاته وأشجاره وقبابه، هو المسجد المبارك."
+      }
+    },
+    {
+      "id": "lens",
+      "at": "platformTop",
+      "jiddo": {
+        "en": "Before we go closer, look through my Time Lens. This is the Dome of the Rock as your great-great-grandparents saw it. Now, look again.",
+        "ar": "قبل أن نقترب، انظر من خلال عدسة الزمن. هكذا رأى أجدادُ أجدادِك قبّةَ الصخرة. والآن، انظر مرّة أخرى."
+      }
+    },
+    {
+      "id": "tiles",
+      "at": "domeOfTheRock",
+      "jiddo": {
+        "en": "Go close to the walls. Look at the colours of the tiles.",
+        "ar": "اقترب من الجدران. انظر إلى ألوان البلاط."
+      }
+    },
+    {
+      "id": "qibli",
+      "at": "alQibli",
+      "jiddo": {
+        "en": "And this is the Qibli Mosque, at the southern end. Look at its dome.",
+        "ar": "وهذا هو المسجد القبلي في الطرف الجنوبي. انظر إلى قبّته."
+      }
+    },
+    {
+      "id": "end",
+      "at": "end",
+      "jiddo": {
+        "en": "Alhamdulillah. You found all three. Come, the car is waiting, and the road down to Ariha.",
+        "ar": "الحمد لله. وجدتَها كلّها. هيّا، السيارة تنتظرنا، والطريق النازل إلى أريحا."
+      }
+    }
+  ],
+  "clues": [
+    {
+      "id": "lions",
+      "title": { "en": "The lions of Bab al-Asbat", "ar": "أسود باب الأسباط" },
+      "site": "bab-al-asbat",
+      "era": 1
+    },
+    {
+      "id": "tiles",
+      "title": { "en": "The tiles of the Dome of the Rock", "ar": "بلاط قبّة الصخرة" },
+      "site": "dome-of-the-rock",
+      "era": 3
+    },
+    {
+      "id": "qibli-dome",
+      "title": { "en": "The Qibli Mosque", "ar": "المسجد القبلي" },
+      "site": "al-qibli",
+      "era": 2
+    }
+  ],
+  "timeLens": {
+    "site": "dome-of-the-rock",
+    "thenEra": 4,
+    "nowEra": 5,
+    "label": { "en": "Time Lens", "ar": "عدسة الزمن" }
+  }
+}

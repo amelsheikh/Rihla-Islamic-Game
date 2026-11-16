@@ -13,6 +13,7 @@
 | 7 — Polish and release | Not started | |
 | E0 — Unity 6 project (owner's PC) | Done | Terrain, road, car on autopilot, child walking, Al-Quds today on Google 3D Tiles via Cesium ion, Windows build at 118 FPS. See below |
 | E1 — Chapter 1 teaching systems in Unity (owner's PC) | Done | Arabic and English UI, banners, journal page with Al-Isra 17:1, history beside "Al-Quds today", saving; 102 FPS. See below |
+| E2 — Walking Al-Quds, then and now (owner's PC, block-out) | Done | The walk from Bab al-Asbat to al-Masjid al-Aqsa at true scale with Jiddo, three clues and the first Time Lens reveal; 97-103 FPS. See below |
 
 ## Phase 1a: what works
 
@@ -164,6 +165,67 @@ Palestine comes after Chapter 1, "then and now" is central, and the world should
 walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
+
+## Phase E2: Walking Al-Quds, then and now (done 16 November 2026, block-out)
+
+Plan: `docs/ENGINE_SETUP.md` 4c, from the owner's vision in `docs/STORY.md` 8b. Built on the owner's PC as a
+block-out: real outlines and working logic, plain shapes and colours, waiting for the realism pass on the cloud PC.
+
+What works:
+
+- **The Old City at true scale** (`E2_AlQuds_Walk`, menu *Rihla > Build E2 walk*), from OpenStreetMap data
+  (`tools/build-walk.ts`, `npm run walk:build`; credit in `ASSETS.md`): 698 building outlines, the city walls
+  with openings where streets pass, Bab al-Asbat with the lane through it, the compound of al-Masjid al-Aqsa and
+  its own gate, the raised platform of the Dome of the Rock with stairs, the Dome of the Rock (the real octagon:
+  marble below, blue tiles above, drum and dome), the Dome of the Chain and the Qibli Mosque with its dome.
+- **The walk with Jiddo** (`content/walk.json`), about 600 m and 9 minutes: Jiddo walks ahead at an old man's
+  pace, waits when the child falls behind, turns to look at them, and speaks at each step (subtitles, English and
+  Arabic): at Bab al-Asbat, in the lane, on entering al-Masjid al-Aqsa, on the platform, at the Dome and at the
+  Qibli Mosque, ending "Alhamdulillah ... the car is waiting, and the road down to Ariha."
+- **Three clues** found by walking up to a glowing marker (or E): the lions of Bab al-Asbat, the tiles of the
+  Dome of the Rock, the Qibli Mosque. Each opens a card whose fact is taken from `content/history.json`, so no
+  new facts were written. The HUD counts them (٣ / ٣ in Arabic).
+- **The Time Lens.** The walk begins "then", about 1910: an old-photograph look (faded warm colour, vignette,
+  grain) and the Dome of the Rock's dark lead dome. At the top of the platform stairs Jiddo says "look again",
+  and over five seconds colour returns and the dome turns to today's gold, with the banner "Today · 1959–1964
+  and 1993–1994 CE". After that **T** switches between then and now at any time. The eras come from
+  `content/history.json` (marked "then" and "now"), chosen in `content/walk.json`.
+- **First person** with **V**: the child's own eyes, looking up with the right mouse button. The chase camera
+  now keeps out of walls, so it works in narrow lanes.
+- **Linked to the road:** stopped (or on foot) near Bab al-Asbat on the Jericho road, **G** walks into the Old
+  City; at the start of the walk, or when it is done, **G** goes back to the car. Clues found and the walk
+  finished are saved.
+- For testing: `-walk` starts in the Old City and `-autowalk` makes the child follow Jiddo by itself; any build
+  run with `-quitafter N` logs its frame rate in every scene.
+
+Checks run:
+
+| Check | Result |
+|---|---|
+| The whole walk, steps, clues and lines in order (editor, driven by a test script) | All 7 steps and 3 clues, ending with the walk saved as done |
+| Time Lens reveal at the platform, then T both ways, English and Arabic | Working; `docs/screenshots/e2-lens-1..4-*.png`, `e2-dome-then/now-firstperson-ar.png` |
+| Road to walk link | "G: walk into the Old City" shown when stopped near Bab al-Asbat |
+| Windows build, `-walk -autowalk -quitafter 330` | **97.5 FPS average** over 5.5 minutes in the Old City at 1280 x 720 (91-110) |
+| Windows build, the whole walk by itself in Arabic (`-walk -autowalk -newgame -arabic -quitafter 660`) | All 7 of Jiddo's lines, the Time Lens reveal and all 3 clues in order; **103 FPS average** over 11 minutes |
+
+Bugs found and fixed: leaving a scene with a page open (for example the opening card) left the game paused in the
+next scene, so every scene now starts with time running; Jiddo's route cut through a corner of the Dome of the
+Rock and he could be lifted onto things overhead; and the self-walking test stuck on the platform stairs at high
+frame rates (the walker's own gravity fought the test's movement; real walking was not affected).
+
+Known issues (block-out):
+
+- Everything is plain shapes and flat colours; no people, trees, doors, arches, shops or sound yet. The realism
+  pass on this route is E3, on the cloud PC.
+- Heights and the shapes of the domes are estimates, listed in `NEEDS_REVIEW.md` H17, as are Jiddo's lines.
+- "Then" changes only the look and the Dome of the Rock's dome; the street itself is the same in both eras.
+  Showing what else was different about 1910 needs sources (old photographs and descriptions) chosen with the owner.
+- Jiddo walks through other people and objects (he has no collider) and walks straight between route points.
+- The whole walk takes about 9 minutes; a faster pace when the child runs ahead may be wanted.
+- No prayer, adhan or entering the buildings yet.
+
+Next: E3, realism on the cloud PC, starting with this route (`docs/ENGINE_SETUP.md` 4c). Owner decisions waiting:
+the "then" sources, how present-day streets are shown, and setting up the cloud PC.
 
 ## Phase E1: Chapter 1's teaching systems in Unity (done 16 November 2026)
 

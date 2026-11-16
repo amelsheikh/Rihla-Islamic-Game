@@ -11,7 +11,8 @@
     "terrain": "tsx tools/build-terrain.ts",
     "unity:export": "tsx tools/export-unity.ts",
     "test": "vitest run",
-    "shots": "node tests/screenshots.mjs"
+    "shots": "node tests/screenshots.mjs",
+    "walk:build": "tsx tools/build-walk.ts"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "0.21.0",

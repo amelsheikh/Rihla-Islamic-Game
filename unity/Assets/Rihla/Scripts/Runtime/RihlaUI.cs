@@ -24,14 +24,15 @@ namespace Rihla
         static readonly Color Ink = new Color(0.96f, 0.93f, 0.87f), Gold = new Color(0.91f, 0.78f, 0.42f),
             Panel = new Color(0.09f, 0.07f, 0.05f, 0.74f), Paper = new Color(0.95f, 0.91f, 0.82f), PaperInk = new Color(0.17f, 0.13f, 0.09f);
 
-        VisualElement root, hud, buttons, banner, modal, sheet, body;
-        Label speed, line1, line2, placeMain, placeSub, hint, fps, bannerTitle, bannerSub;
+        VisualElement root, hud, buttons, banner, modal, sheet, body, subtitle;
+        Label speed, line1, line2, placeMain, placeSub, hint, fps, bannerTitle, bannerSub, subWho, subText;
         Button langBtn, journalBtn, historyBtn, closeBtn;
-        float bannerTimer; Action onClose, rebuild; float savedTimeScale = 1f;
+        float bannerTimer, subtitleTimer; Action onClose, rebuild; float savedTimeScale = 1f;
 
         void Awake()
         {
             Instance = this;
+            Time.timeScale = 1f; // a page left open when the last scene closed must not keep this one paused
             if (Array.IndexOf(Environment.GetCommandLineArgs(), "-newgame") >= 0) SaveData.Reset();
             if (Array.IndexOf(Environment.GetCommandLineArgs(), "-arabic") >= 0) SaveData.Current.lang = "ar";
             Lang.Set(SaveData.Current.lang);
@@ -48,7 +49,7 @@ namespace Rihla
         // The content library loads in its own Awake, so the button labels are filled again once it has.
         void Start() => Relayout();
 
-        void OnDestroy() { Lang.Changed -= Relayout; if (Instance == this) Instance = null; }
+        void OnDestroy() { Lang.Changed -= Relayout; if (ModalOpen) Time.timeScale = 1f; if (Instance == this) Instance = null; }
 
         // ------------------------------------------------------------------ building blocks
 
@@ -124,6 +125,15 @@ namespace Rihla
             banner.style.display = DisplayStyle.None;
             root.Add(banner);
 
+            // Subtitles: who is speaking and what they say, near the bottom.
+            subtitle = new VisualElement(); subtitle.style.position = Position.Absolute; subtitle.style.bottom = 40;
+            subtitle.style.left = new Length(50, LengthUnit.Percent); subtitle.style.translate = new Translate(new Length(-50, LengthUnit.Percent), 0);
+            subtitle.style.width = 820; subtitle.style.backgroundColor = Panel; Pad(subtitle, 10, 20); Round(subtitle, 10);
+            subtitle.pickingMode = PickingMode.Ignore;
+            subWho = Text("", 17, true, Gold); subText = Text("", 21);
+            subtitle.Add(subWho); subtitle.Add(subText); subtitle.style.display = DisplayStyle.None;
+            root.Add(subtitle);
+
             // The page sheet for the journal, history and the opening card.
             modal = new VisualElement(); modal.style.position = Position.Absolute;
             modal.style.left = modal.style.right = modal.style.top = modal.style.bottom = 0;
@@ -174,6 +184,14 @@ namespace Rihla
             placeMain.text = place; placeSub.text = placeOther; hint.text = hintText;
             line2.style.display = string.IsNullOrEmpty(b) ? DisplayStyle.None : DisplayStyle.Flex;
             hint.style.display = string.IsNullOrEmpty(hintText) ? DisplayStyle.None : DisplayStyle.Flex;
+        }
+
+        /// <summary>Shows a line spoken by someone (for example Jiddo) at the bottom of the screen.</summary>
+        public void Say(string who, string text, float seconds = 7f)
+        {
+            subWho.text = who; subText.text = text;
+            subtitle.style.display = DisplayStyle.Flex; subtitleTimer = seconds;
+            Debug.Log($"[Rihla] says ({Lang.Current}): {who}: {text}");
         }
 
         public void SetFps(float value) => fps.text = Lang.Num(value) + " fps";
@@ -255,11 +273,38 @@ namespace Rihla
             var b = MakeButton(label, pick); b.style.alignSelf = Align.Stretch; b.style.marginTop = 6; body.Add(b);
         }
 
+        // ------------------------------------------------------------------ measuring builds
+
+        // "-quitafter 60": log the frame rate every 10 s and the average, then quit after 60 s of play in total.
+        static float quitAfter = float.NaN, played; float logTimer, sceneTime; int logFrames, sceneFrames;
+
+        void Measure()
+        {
+            if (float.IsNaN(quitAfter))
+            {
+                quitAfter = -1f; var a = Environment.GetCommandLineArgs();
+                for (int i = 0; i < a.Length - 1; i++)
+                    if (a[i] == "-quitafter") float.TryParse(a[i + 1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out quitAfter);
+            }
+            if (quitAfter <= 0f || Time.timeSinceLevelLoad < 3f) return;
+            float dt = Time.unscaledDeltaTime; played += dt;
+            logFrames++; logTimer += dt; sceneFrames++; sceneTime += dt;
+            string scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            if (logTimer >= 10f) { Debug.Log($"[Rihla] FPS {logFrames / logTimer:0.0} at {Screen.width}x{Screen.height} in {scene}"); logFrames = 0; logTimer = 0f; }
+            if (played > quitAfter)
+            {
+                Debug.Log($"[Rihla] average FPS {sceneFrames / sceneTime:0.0} over {sceneTime:0} s in {scene}");
+                Application.Quit();
+            }
+        }
+
         // ------------------------------------------------------------------ per frame
 
         void Update()
         {
+            Measure();
             if (bannerTimer > 0f && (bannerTimer -= Time.unscaledDeltaTime) <= 0f) banner.style.display = DisplayStyle.None;
+            if (subtitleTimer > 0f && (subtitleTimer -= Time.unscaledDeltaTime) <= 0f) subtitle.style.display = DisplayStyle.None;
             var kb = Keyboard.current; if (kb == null) return;
             if (ModalOpen)
             {

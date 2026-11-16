@@ -74,5 +74,16 @@
   "u.flyKeys": "Arrows: turn · C or Esc: back to the road · L: language",
   "u.historyHere": "Places of the Old City",
   "u.km": "km",
-  "u.m": "m"
+  "u.m": "m",
+  "w.clues": "Clues found",
+  "w.lens": "T: Time Lens",
+  "w.then": "Then",
+  "w.now": "Today",
+  "w.view": "V: first person",
+  "w.toCar": "G: back to the car",
+  "w.toWalk": "G: walk into the Old City",
+  "w.look": "E: look closely",
+  "w.clueFound": "Clue found",
+  "w.walkHint": "WASD: walk · Shift: run · right mouse: look",
+  "w.aqsa": "al-Masjid al-Aqsa"
 }

@@ -118,7 +118,7 @@ look waits for the cloud PC.
 
 ## 4c. The road ahead, revised for the owner's vision (`docs/STORY.md` 8b)
 
-- **E2: Walking Al-Quds, then and now** (owner's PC, logic and block-out). One street route at walking height,
+- **E2: Walking Al-Quds, then and now** (owner's PC, logic and block-out). *Done 16 November 2026; see `docs/PROGRESS.md`.* One street route at walking height,
   from Bab al-Asbat to al-Masjid al-Aqsa, built by hand to real measurements. A first-person and third-person
   walk, the Chapter 1 prologue (three clues: the lions of Bab al-Asbat, the tiles of the Dome of the Rock, the
   dome of the Qibli Mosque), and the first **Time Lens** reveal: the street as it was about 1900, turning to

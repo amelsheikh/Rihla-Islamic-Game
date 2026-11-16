@@ -101,6 +101,16 @@ namespace Rihla
             ui.SetHistoryVisible(historySite.Length > 0);
 
             string hint = onFoot ? Lang.T("u.onFoot") : car.autopilot ? Lang.T("u.jiddoDrives") : Lang.T("u.driving");
+            // Near Bab al-Asbat, stopped or on foot: G walks into the Old City (the E2 walk, at true scale).
+            var gate = road.places.FirstOrDefault(x => x.id == "bab-al-asbat");
+            bool canWalkIn = gate.id != null && Flat(gate.position, p) < 120f && (onFoot || kmh < 3f) && Application.CanStreamedLevelBeLoaded("E2_AlQuds_Walk");
+            if (canWalkIn)
+            {
+                hint = Lang.T("w.toWalk") + "\n" + hint;
+                var kb = UnityEngine.InputSystem.Keyboard.current;
+                if (kb != null && kb.gKey.wasPressedThisFrame && Time.timeSinceLevelLoad > 1f && !ui.ModalOpen)
+                { SavePosition(); UnityEngine.SceneManagement.SceneManager.LoadScene("E2_AlQuds_Walk"); return; }
+            }
             ui.SetHud(Lang.Num(kmh) + " " + Lang.T("kmh"), elevText, trip, placeMain, placeOther, hint + "\n" + Lang.T("u.toFly"));
             if (hud) ui.SetFps(hud.Fps);
 

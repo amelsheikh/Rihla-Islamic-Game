@@ -68,6 +68,8 @@ namespace Rihla
         public string lang = "en";
         public string[] pages = new string[0];
         public bool introSeen;
+        public string[] clues = new string[0];
+        public bool walkDone;
         public bool hasPosition;
         public float x, y, z, yaw;
 

@@ -50,9 +50,7 @@ namespace Rihla.EditorTools
             teach.pageMarker = PageMarker(road, json);
 
             EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(), ScenePath);
-            EditorBuildSettings.scenes = File.Exists(RihlaCesiumBuilder.ScenePath)
-                ? new[] { new EditorBuildSettingsScene(ScenePath, true), new EditorBuildSettingsScene(RihlaCesiumBuilder.ScenePath, true) }
-                : new[] { new EditorBuildSettingsScene(ScenePath, true) };
+            RihlaScenes.UpdateBuildSettings();
             AssetDatabase.SaveAssets();
             Debug.Log($"[Rihla] E0 scene built: {terrains.Count} terrains, road {road.points.Length} points ({road.Length:0} m), {road.places.Length} places");
         }
