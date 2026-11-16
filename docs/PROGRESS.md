@@ -14,7 +14,7 @@
 | E0 — Unity 6 project (owner's PC) | Done | Terrain, road, car on autopilot, child walking, Al-Quds today on Google 3D Tiles via Cesium ion, Windows build at 118 FPS. See below |
 | E1 — Chapter 1 teaching systems in Unity (owner's PC) | Done | Arabic and English UI, banners, journal page with Al-Isra 17:1, history beside "Al-Quds today", saving; 102 FPS. See below |
 | E2 — Walking Al-Quds, then and now (owner's PC, block-out) | Done | The walk from Bab al-Asbat to al-Masjid al-Aqsa at true scale with Jiddo, three clues and the first Time Lens reveal; 97-103 FPS. See below |
-| E3 — Realism on the owner's PC | Two passes done | Stone textures, arches, battlements, trees, sky; then doors, shop shutters, windows, roof domes, warm bounce light, ambient occlusion; 64 FPS. See below |
+| E3 — Realism on the owner's PC | Three passes done | Stone textures, arches, battlements, trees, sky; then doors, shop shutters, windows, roof domes, warm bounce light, ambient occlusion; then sound, and people in modest dress (Jiddo, Yusuf or Maryam, 46 townspeople); 68 FPS. See below |
 
 ## Phase 1a: what works
 
@@ -229,6 +229,28 @@ Known issues and what would help most next:
 - Checked: it plays with no errors and costs nothing measurable (65 FPS). **Nobody has listened to it yet**; the
   owner's ears decide the levels.
 - The adhan is not synthesised: it needs a real recording with permission (`NEEDS_REVIEW.md` R4).
+
+### People in the walk (16 November 2026, the owner chose "simple figures now")
+
+- `FigureBody.cs` builds each person from smooth shapes when the walk starts, with no downloaded models: a robe or
+  a shirt and trousers, sleeves to the wrist, a head with no facial features, and a kufiya, prayer cap, headscarf
+  or hair. Arms swing and feet step in time with walking; standing people breathe gently.
+- **Jiddo Ibrahim:** a white thobe, a black-and-white checked kufiya falling behind his shoulders, a black agal,
+  and a grey beard.
+- **The child:** Yusuf (blue shirt, dark trousers, white trainers) or Maryam (a long plum dress and a cream
+  headscarf). The choice is saved (`SaveData.hero`); there is no menu for it yet, so `-maryam` on the command line
+  picks Maryam for now.
+- **46 townspeople** (`Townsfolk.cs`): 22 walk the lanes near the route, keeping to one side; 14 cross the
+  courtyard of al-Masjid al-Aqsa, keeping off the platform and away from the buildings; 5 pairs stand talking.
+  They pause at the end of their walk and stop to let the child pass. Men wear a thobe with a kufiya or a white
+  cap, or a shirt and trousers; women wear long dresses and headscarves; some older women wear a black thob with
+  red tatreez on the chest and hem and a white veil. Who wears what is an estimate (`NEEDS_REVIEW.md` H18).
+- They are hidden beyond 85 m (the haze hides them there anyway), so the walk is no slower: the Windows build
+  averages **68 FPS** over the first 95 s of the walk (63-70), with no errors.
+- Not yet: the townspeople look the same in the "then" view (people of about 1910 would dress differently); no
+  children or elders walking slowly with a stick yet; no one prays, because how prayer is shown is for the owner
+  and a scholar to decide (brief section 5).
+- Screenshots: `docs/screenshots/e3c-*.png`.
 
 ## Phase E2: Walking Al-Quds, then and now (done 16 November 2026, block-out)
 

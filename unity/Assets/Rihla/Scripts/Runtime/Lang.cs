@@ -70,6 +70,8 @@ namespace Rihla
         public bool introSeen;
         public string[] clues = new string[0];
         public bool walkDone;
+        /// <summary>Which child the player chose: "yusuf" or "maryam" (STORY section 1).</summary>
+        public string hero = "yusuf";
         public bool hasPosition;
         public float x, y, z, yaw;
 

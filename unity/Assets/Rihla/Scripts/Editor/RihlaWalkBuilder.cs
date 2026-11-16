@@ -97,6 +97,7 @@ namespace Rihla.EditorTools
             RihlaUIBuilder.AddUI();
             var (child, cam) = Player(path[0] + new Vector3(10f, 0f, 2f));
             var jiddo = Jiddo(path[0]);
+            Townspeople(streets, platform, compound, path, child.transform, new[] { Ring(domeB), qibliRing, Ring(chainB) });
 
             var lens = new GameObject("Time Lens").AddComponent<TimeLens>();
             lens.thenLook = ThenLook(lens.gameObject);
@@ -702,10 +703,7 @@ namespace Rihla.EditorTools
             child.transform.SetPositionAndRotation(at + Vector3.up * 0.1f, Quaternion.LookRotation(Vector3.left));
             var cc = child.AddComponent<CharacterController>(); cc.height = 1.35f; cc.radius = 0.25f; cc.center = new Vector3(0f, 0.675f, 0f); cc.stepOffset = 0.4f;
             var walker = child.AddComponent<Walker>();
-            var body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            body.name = "Body"; body.transform.SetParent(child.transform, false); Object.DestroyImmediate(body.GetComponent<Collider>());
-            body.transform.localPosition = new Vector3(0f, 0.675f, 0f); body.transform.localScale = new Vector3(0.5f, 0.675f, 0.5f);
-            body.GetComponent<MeshRenderer>().sharedMaterial = Mat("child", new Color(0.2f, 0.4f, 0.75f));
+            child.AddComponent<FigureBody>().hero = true; // Yusuf or Maryam, built when the walk starts
 
             var camGo = new GameObject("Main Camera") { tag = "MainCamera" };
             var cam = camGo.AddComponent<Camera>(); cam.nearClipPlane = 0.1f; cam.farClipPlane = 3000f; cam.fieldOfView = 60f;
@@ -720,15 +718,95 @@ namespace Rihla.EditorTools
         {
             var root = new GameObject("Jiddo Ibrahim").transform;
             root.SetPositionAndRotation(at, Quaternion.LookRotation(Vector3.right));
-            var body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            body.name = "Body"; body.transform.SetParent(root, false); Object.DestroyImmediate(body.GetComponent<Collider>());
-            body.transform.localPosition = new Vector3(0f, 0.85f, 0f); body.transform.localScale = new Vector3(0.6f, 0.85f, 0.6f);
-            body.GetComponent<MeshRenderer>().sharedMaterial = Mat("jiddo", new Color(0.45f, 0.36f, 0.27f));
-            var head = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            head.name = "Head"; head.transform.SetParent(root, false); Object.DestroyImmediate(head.GetComponent<Collider>());
-            head.transform.localPosition = new Vector3(0f, 1.62f, 0f); head.transform.localScale = Vector3.one * 0.3f;
-            head.GetComponent<MeshRenderer>().sharedMaterial = Mat("kufiya", new Color(0.92f, 0.9f, 0.86f));
+            root.gameObject.AddComponent<FigureBody>().look = FigureBody.Look.Jiddo; // thobe, kufiya and agal, grey beard
             return root;
+        }
+
+        /// <summary>
+        /// People of the town on a morning walk: along the lanes near the child's route, across the courtyard of
+        /// al-Aqsa, and a few standing in pairs, talking. Their dress is modest and an estimate (H18).
+        /// </summary>
+        static void Townspeople(List<Street> streets, List<Vector2> platform, List<Vector2> compound, List<Vector3> path, Transform child, List<Vector2>[] landmarks)
+        {
+            var parent = new GameObject("Townspeople").transform;
+            var rng = new System.Random(1187);
+            float R() => (float)rng.NextDouble();
+            var looks = new[] { FigureBody.Look.Man, FigureBody.Look.Man, FigureBody.Look.ManModern, FigureBody.Look.ManModern,
+                                FigureBody.Look.Woman, FigureBody.Look.Woman, FigureBody.Look.Woman, FigureBody.Look.WomanElder };
+            int n = 0;
+            bool Blocked(Vector2 p)
+            {
+                if (Inside(platform, p) || EdgeDistance(platform, p) < 2.5f) return true;
+                foreach (var l in landmarks) if (Inside(l, p) || EdgeDistance(l, p) < 1.5f) return true;
+                foreach (var h in houses) if (Inside(h.ring, p)) return true;
+                return false;
+            }
+            float NearRoute(Vector2 p) => path.Min(q => (new Vector2(q.x, q.z) - p).magnitude);
+            void Person(Vector3[] route, Vector3 faceTo, float speed)
+            {
+                var go = new GameObject("Person " + (++n));
+                go.transform.SetParent(parent); go.transform.position = route[0];
+                var f = go.AddComponent<FigureBody>(); f.look = looks[rng.Next(looks.Length)]; f.seed = n; f.cullDistance = 85f;
+                var t = go.AddComponent<Townsfolk>(); t.route = route; t.faceTo = faceTo; t.speed = speed; t.child = child;
+            }
+
+            // Along the lanes: up to 60 m of a street near the route, on one side of it so there is room to pass.
+            foreach (var st in streets.OrderBy(_ => R()).ToList())
+            {
+                if (n >= 22) break;
+                if (st.line.Count < 2 || NearRoute(st.line[st.line.Count / 2]) > 70f) continue;
+                var pts = new List<Vector3>(); float len = 0f, side = (R() < 0.5f ? -1f : 1f) * Mathf.Max(0f, st.width * 0.5f - 0.7f);
+                for (int i = 0; i < st.line.Count && len < 60f; i++)
+                {
+                    Vector2 a = st.line[i], dir = i + 1 < st.line.Count ? st.line[i + 1] - a : a - st.line[i - 1];
+                    Vector2 q = a + new Vector2(-dir.normalized.y, dir.normalized.x) * side;
+                    if (i > 0) len += (a - st.line[i - 1]).magnitude;
+                    if (Blocked(q)) break;
+                    pts.Add(new Vector3(q.x, 0f, q.y));
+                }
+                if (pts.Count < 2 || len < 15f) continue;
+                Person(pts.ToArray(), default, 0.9f + R() * 0.4f);
+            }
+
+            // Across the courtyard: straight walks that keep off the platform and the buildings.
+            var bmin = new Vector2(compound.Min(p => p.x), compound.Min(p => p.y)); var bmax = new Vector2(compound.Max(p => p.x), compound.Max(p => p.y));
+            Vector2 InCompound() => new Vector2(Mathf.Lerp(bmin.x, bmax.x, R()), Mathf.Lerp(bmin.y, bmax.y, R()));
+            int courtyard = 0;
+            for (int tries = 0; tries < 4000 && courtyard < 14; tries++)
+            {
+                Vector2 a = InCompound(), b = a + Random2(R) * (20f + R() * 40f);
+                bool ok = true;
+                for (float u = 0f; u <= 1.001f && ok; u += 0.02f) { var q = Vector2.Lerp(a, b, u); ok = Inside(compound, q) && EdgeDistance(compound, q) > 2f && !Blocked(q); }
+                if (!ok) continue;
+                Person(new[] { new Vector3(a.x, 0f, a.y), new Vector3(b.x, 0f, b.y) }, default, 0.8f + R() * 0.4f);
+                courtyard++;
+            }
+
+            // Standing in pairs, talking: in the courtyard near the route.
+            int pairs = 0;
+            for (int tries = 0; tries < 4000 && pairs < 5; tries++)
+            {
+                Vector2 a = InCompound(), d = Random2(R) * 0.75f;
+                if (NearRoute(a) > 45f || NearRoute(a) < 5f || !Inside(compound, a) || Blocked(a - d) || Blocked(a + d)) continue;
+                Vector3 p1 = new Vector3(a.x - d.x, 0f, a.y - d.y), p2 = new Vector3(a.x + d.x, 0f, a.y + d.y);
+                Person(new[] { p1 }, p2, 0f); Person(new[] { p2 }, p1, 0f);
+                pairs++;
+            }
+            Debug.Log($"[Rihla] townspeople: {n} ({courtyard} crossing the courtyard, {pairs} pairs talking)");
+        }
+
+        static Vector2 Random2(System.Func<float> r) { float a = r() * Mathf.PI * 2f; return new Vector2(Mathf.Cos(a), Mathf.Sin(a)); }
+
+        static float EdgeDistance(List<Vector2> ring, Vector2 p)
+        {
+            float best = float.MaxValue;
+            for (int i = 0; i < ring.Count; i++)
+            {
+                Vector2 a = ring[i], b = ring[(i + 1) % ring.Count], ab = b - a;
+                float t = Mathf.Clamp01(Vector2.Dot(p - a, ab) / Mathf.Max(1e-6f, ab.sqrMagnitude));
+                best = Mathf.Min(best, (a + ab * t - p).magnitude);
+            }
+            return best;
         }
 
         /// <summary>The old-photograph look of the Time Lens: faded warm colour, vignette and grain.</summary>
