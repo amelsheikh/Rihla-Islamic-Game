@@ -11,7 +11,7 @@
 | 5 — Lebanon | Not started | |
 | 6 — Egypt and Sinai | Not started | |
 | 7 — Polish and release | Not started | |
-| E0 — Unity 6 project (owner's PC) | Built and play-tested; Cesium waits for the API key | Terrain, road, car on autopilot, child walking, Windows build. See below |
+| E0 — Unity 6 project (owner's PC) | Done, except the 3D map key | Terrain, road, car on autopilot, child walking, Cesium scene, Windows build at 118 FPS. See below |
 
 ## Phase 1a: what works
 
@@ -164,7 +164,7 @@ walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
 
-## Phase E0: Unity 6 on the owner's PC (first build done 16 November 2026; Cesium still to come)
+## Phase E0: Unity 6 on the owner's PC (done 16 November 2026, except the 3D map key)
 
 Working on the owner's own PC first (`docs/ENGINE_SETUP.md` section 1b): Intel HD Graphics, 16 GB memory.
 Unity **6000.6.9f1** (Unity 6.6), URP 17.6, new Input System, Unity Pipeline package (so Claude drives the
@@ -192,11 +192,18 @@ Done:
   no MSAA or HDR, coarser terrain detail; the build opens in a 1280 x 720 window.
 - Screenshots: `docs/screenshots/e0-overview.png` (Al-Quds east to the Dead Sea), `e0-road-00/25/50/75/98.png`
   along the road, and `e0-play-on-foot.png` (the game view in play, with the HUD).
-- Windows build (`Builds/Windows/Rihla.exe`, menu *Rihla > Build for Windows*): being made; results to follow.
+- **Windows build** (`Builds/Windows/Rihla.exe`, menu *Rihla > Build for Windows*; not in git): 173 MB, both
+  scenes. `Rihla.exe -autopilot -quitafter 70` drives itself and logs FPS to the player log.
+- **Cesium for Unity 1.26.1** and a second scene, *Al-Quds today* (`E0_AlQuds_Cesium`, menu *Rihla > Build E0
+  Cesium scene*): a slow circle over the Old City on Google Photorealistic 3D Tiles, with Google's credits on
+  screen. C on the road opens it; arrows turn it; C or Esc goes back. The map key is read at run time from
+  `unity/Assets/StreamingAssets/google_maps_key.txt`, which is git-ignored (never commit a key).
 
 Frame rate on this PC (Intel HD Graphics 4400-class): the editor's 2560 x 1440 game view ran at **10-12 FPS**
 before the low settings, 17 FPS without shadows, and 112 FPS with the camera off, so the limit is the graphics
-chip's drawing of pixels, not the game's logic.
+chip's drawing of pixels, not the game's logic. **The Windows build, at 1280 x 720 with the low settings,
+averages 118 FPS** over 67 s of autopilot driving (123-140 FPS once loaded). The Al-Quds scene runs at
+about 53 FPS in the editor with no map tiles loaded.
 
 Setting-up problems solved (written up in `docs/ENGINE_SETUP.md` 1b): the editor must be opened from Unity
 Hub to get its licence; this Intel GPU crashes under DirectX 12, so the editor runs with `-force-d3d11` and
@@ -204,13 +211,16 @@ Unity's background import workers are off; Unity 6.6 makes Terrain and Vehicles 
 
 Not done yet, and known issues:
 
-- **Cesium flying over Al-Quds (step 6)** waits for the owner's Google Maps API key.
+- **The 3D map does not show yet.** The owner's demo Google key is refused (HTTP 403, "Permission denied on
+  the service"): Google's Map Tiles API needs a key from the owner's own Cloud project with billing and the
+  API enabled. The easier route is a free Cesium ion account, which serves the same Google 3D Tiles; the
+  scene then reads a Cesium ion token instead. Waiting for the owner to choose.
 - From high above, the road shows in dashes on distant hills, where the coarse terrain detail covers it; fine
   up close. The rock layer is barely visible, so the hills read as one sand colour.
 - The HUD is English only, since Unity's simple debug UI does not join Arabic letters; the real UI (E1) will.
 - The car, child and buildings are placeholders (boxes and a capsule), as E0 intends.
 
-Next: Cesium over Al-Quds once the key is in; then, on the cloud PC, the realistic look (E1).
+Next: a working map key or Cesium ion token for Al-Quds today, with its screenshots; then E1, the realistic look on the cloud PC.
 
 ## Pass R2: walking, history, driving and sound
 

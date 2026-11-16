@@ -22,6 +22,7 @@ Nothing on this list is treated as settled.
 | H13 | The game is now set in the present day. The Dead Sea is drawn at about 411 m below sea level, the level in the elevation data (from about the year 2000); it is lower today. The journal page's figures (Al-Quds about 750 m, Ariha about 250 m below) are unchanged. | The altimeter at the shore. | Decide whether to lower the water to today's level. |
 | H14 | The histories in `content/history.json` of Al-Qibli Mosque (Umayyad building about 705–715, earthquake of 746 and Abbasid rebuilding, al-Zahir 1035, Salah al-Din 1187 and Nur al-Din's minbar, the fire of 1969, the new minbar of 2007), the walls (Suleiman 1537–1541, Bab al-Asbat about 1538, about 4 km long, seven open gates), Maqam al-Nabi Musa (Baybars 1269–1270, Ottoman additions, the spring festival), Ariha (Tell al-Sultan about 10,000 years ago, Hisham's Palace about 724–743, the earthquake of 749) and the Dead Sea (falling about a metre a year). | Taught to children as fact. | Confirm each. |
 | H15 | The story draft in `docs/STORY.md`, in particular that Bab al-Asbat has carved lions and that Tell al-Sultan and the spring are reachable together in Ariha. | Story scenes rely on them. | Confirm before Chapter 1 is built. |
+| H16 | The Unity "Al-Quds today" scene centres on the Old City at about 31.7767 N, 35.2345 E, with its ground taken as about 740-780 m above the WGS84 ellipsoid (`RihlaCesiumBuilder.cs`). | Where the 3D map camera circles. | Confirm the centre once the 3D map is showing. |
 
 ## Religious
 

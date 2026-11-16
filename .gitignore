@@ -24,3 +24,6 @@ unity/Assets/Rihla/Built.meta
 Builds/
 unity/.vscode/
 unity/*.slnx
+# API keys stay on this PC, never in git
+unity/Assets/StreamingAssets/google_maps_key.txt
+unity/Assets/StreamingAssets/google_maps_key.txt.meta
