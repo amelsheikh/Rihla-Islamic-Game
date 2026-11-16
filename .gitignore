@@ -7,3 +7,18 @@ dist-single/
 playwright-report/
 test-results/
 tools/.cache/
+
+# Unity (unity/ is the Unity 6 project)
+unity/[Ll]ibrary/
+unity/[Tt]emp/
+unity/[Oo]bj/
+unity/[Ll]ogs/
+unity/[Uu]ser[Ss]ettings/
+unity/[Bb]uild/
+unity/[Bb]uilds/
+unity/*.csproj
+unity/*.sln
+unity/.vs/
+unity/Assets/Rihla/Built/
+unity/Assets/Rihla/Built.meta
+Builds/

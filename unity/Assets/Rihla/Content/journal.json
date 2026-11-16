@@ -1,0 +1,38 @@
+{
+  "note": "The pages of the Rihla. 'ancestor' is fiction in the voice of the family's 14th-century traveller. 'jiddo' is fact, and every fact is listed in NEEDS_REVIEW.md until checked.",
+  "pages": [
+    {
+      "id": "the-road-down",
+      "place": "khan-al-hatruri",
+      "title": { "en": "The Road Down to Ariha", "ar": "الطريق النازل إلى أريحا" },
+      "ancestor": {
+        "en": "From the Holy City I went down toward Ariha. The road fell and fell, the air grew warm, and the hills turned from green to gold. At a khan beside the road I found water, shade and kind company, as every traveller should.",
+        "ar": "خرجتُ من المدينة المقدّسة نازلةً إلى أريحا. ظلّ الطريق ينحدر وينحدر، ودفئ الهواء، وتبدّلت التلال من الخُضرة إلى لون الذهب. وعند خانٍ على جانب الطريق وجدتُ الماء والظلّ والصحبة الطيّبة، كما ينبغي لكلّ مسافر."
+      },
+      "jiddo": {
+        "en": [
+          "Al-Quds sits high in the hills, about 750 metres above the sea. Ariha lies in the Jordan Valley, about 250 metres below it. In one short journey this road falls a whole kilometre.",
+          "Did you see the land change colour? Rain clouds come from the Mediterranean Sea in the west. The hills catch the rain, so their western side is green with olive trees. Little rain crosses the ridge, so the eastern side is a dry wilderness.",
+          "A khan is an inn for travellers. For hundreds of years khans like this one gave shelter, water and safety to anyone on the road, whoever they were and wherever they came from.",
+          "Ahead of us is Ariha, one of the oldest cities on Earth. Beyond it is the Dead Sea, and its shore is the lowest dry land in the world."
+        ],
+        "ar": [
+          "تقع القدس عاليةً في الجبال، على ارتفاع نحو ٧٥٠ مترًا فوق سطح البحر. أمّا أريحا فتقع في غور الأردن، على نحو ٢٥٠ مترًا تحت سطح البحر. في رحلة قصيرة واحدة ينحدر هذا الطريق كيلومترًا كاملًا.",
+          "هل رأيتَ كيف تغيّر لون الأرض؟ تأتي غيوم المطر من البحر المتوسّط في الغرب، فتلتقط الجبال المطر، ولذلك يخضرّ جانبها الغربيّ بأشجار الزيتون. وقليلٌ من المطر يعبر القمّة، ولذلك كان الجانب الشرقيّ برّيّةً جافّة.",
+          "الخان نُزُلٌ للمسافرين. ومنذ مئات السنين كانت الخانات مثل هذا الخان تمنح المأوى والماء والأمان لكلّ من يسلك الطريق، أيًّا كان ومن أيّ مكان جاء.",
+          "أمامنا أريحا، وهي من أقدم مدن الأرض. وبعدها البحر الميّت، وشاطئه أخفض يابسةٍ في العالم."
+        ]
+      },
+      "verseIntro": {
+        "en": "The Quran speaks of the land around al-Masjid al-Aqsa as blessed:",
+        "ar": "يذكر القرآن الكريم أنّ الأرض حول المسجد الأقصى مباركة:"
+      },
+      "verse": "isra-1",
+      "facts": [
+        { "en": "Al-Quds: about 750 m above sea level", "ar": "القدس: نحو ٧٥٠ م فوق سطح البحر" },
+        { "en": "Ariha: about 250 m below sea level", "ar": "أريحا: نحو ٢٥٠ م تحت سطح البحر" },
+        { "en": "The road falls about 1,000 m", "ar": "ينحدر الطريق نحو ١٠٠٠ م" }
+      ]
+    }
+  ]
+}

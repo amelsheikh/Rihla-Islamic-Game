@@ -1,0 +1,18 @@
+{
+  "note": "Positions are approximate and listed for review in NEEDS_REVIEW.md (H6, H10). Every building here stood in 1910.",
+  "haram": [[35.2338, 31.7797], [35.2367, 31.78], [35.237, 31.7757], [35.2345, 31.7754]],
+  "structures": [
+    { "id": "bab-al-rahma", "type": "sealed-gate", "lon": 35.23705, "lat": 31.779, "name": { "en": "Bab al-Rahma (the Golden Gate)", "ar": "باب الرحمة" } },
+    { "id": "minaret-asbat", "type": "minaret-round", "lon": 35.2362, "lat": 31.7802, "h": 26, "name": { "en": "Minaret of Bab al-Asbat", "ar": "مئذنة باب الأسباط" } },
+    { "id": "minaret-ghawanima", "type": "minaret-square", "lon": 35.234, "lat": 31.7799, "h": 30, "name": { "en": "Ghawanima Minaret", "ar": "مئذنة الغوانمة" } },
+    { "id": "minaret-silsila", "type": "minaret-square", "lon": 35.2344, "lat": 31.7774, "h": 27, "name": { "en": "Minaret of Bab al-Silsila", "ar": "مئذنة باب السلسلة" } },
+    { "id": "minaret-fakhriyya", "type": "minaret-square", "lon": 35.2346, "lat": 31.7758, "h": 24, "name": { "en": "Fakhriyya Minaret", "ar": "المئذنة الفخرية" } },
+    { "id": "holy-sepulchre", "type": "church-domes", "lon": 35.2297, "lat": 31.7785, "name": { "en": "Church of the Holy Sepulchre", "ar": "كنيسة القيامة" } },
+    { "id": "redeemer", "type": "bell-tower", "lon": 35.2306, "lat": 31.7777, "h": 34, "name": { "en": "Church of the Redeemer", "ar": "كنيسة الفادي" } },
+    { "id": "citadel", "type": "citadel", "lon": 35.2282, "lat": 31.7762, "name": { "en": "The Citadel", "ar": "القلعة" } },
+    { "id": "hurva", "type": "synagogue-dome", "lon": 35.2314, "lat": 31.7752, "r": 7, "name": { "en": "Hurva Synagogue", "ar": "كنيس الخراب" } },
+    { "id": "tiferet", "type": "synagogue-dome", "lon": 35.2326, "lat": 31.7755, "r": 5.5, "name": { "en": "Tiferet Yisrael Synagogue", "ar": "كنيس تفئيرت يسرائيل" } },
+    { "id": "mary-magdalene", "type": "onion-church", "lon": 35.2413, "lat": 31.7788, "name": { "en": "Church of Mary Magdalene", "ar": "كنيسة مريم المجدلية" } },
+    { "id": "ascension-tower", "type": "bell-tower", "lon": 35.2478, "lat": 31.7792, "h": 40, "name": { "en": "Russian Tower of the Ascension", "ar": "برج الصعود الروسي" } }
+  ]
+}

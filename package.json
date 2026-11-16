@@ -9,6 +9,7 @@
     "build:single": "vite build --mode single",
     "preview": "vite preview --host",
     "terrain": "tsx tools/build-terrain.ts",
+    "unity:export": "tsx tools/export-unity.ts",
     "test": "vitest run",
     "shots": "node tests/screenshots.mjs"
   },

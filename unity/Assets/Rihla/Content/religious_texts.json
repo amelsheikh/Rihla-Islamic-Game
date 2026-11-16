@@ -1,0 +1,29 @@
+{
+  "note": "Every Quranic verse and hadith shown in the game lives in this one file so that a scholar can review all of it. Nothing here is final until 'reviewed' is true.",
+  "texts": {
+    "isra-1": {
+      "kind": "quran",
+      "reference": "17:1",
+      "surah": {
+        "en": "Surah Al-Isra",
+        "ar": "سورة الإسراء"
+      },
+      "ar": "سُبْحَانَ الَّذِي أَسْرَىٰ بِعَبْدِهِ لَيْلًا مِّنَ الْمَسْجِدِ الْحَرَامِ إِلَى الْمَسْجِدِ الْأَقْصَى الَّذِي بَارَكْنَا حَوْلَهُ لِنُرِيَهُ مِنْ آيَاتِنَا ۚ إِنَّهُ هُوَ السَّمِيعُ الْبَصِيرُ",
+      "en": "Glory be to the One who took His servant by night from al-Masjid al-Haram to al-Masjid al-Aqsa, whose surroundings We have blessed, to show him some of Our signs. He is the All-Hearing, the All-Seeing.",
+      "enNote": "The English gives the meaning only and was written for this game; replace it with a published translation chosen by the reviewer.",
+      "reviewed": false
+    },
+    "three-mosques": {
+      "kind": "hadith",
+      "reference": "Sahih al-Bukhari 1189; Sahih Muslim 1397",
+      "collection": {
+        "en": "Sahih al-Bukhari and Sahih Muslim",
+        "ar": "صحيح البخاريّ وصحيح مسلم"
+      },
+      "ar": "لَا تُشَدُّ الرِّحَالُ إِلَّا إِلَى ثَلَاثَةِ مَسَاجِدَ: الْمَسْجِدِ الْحَرَامِ، وَمَسْجِدِ الرَّسُولِ ﷺ، وَمَسْجِدِ الْأَقْصَى",
+      "en": "Do not set out on a journey except to three mosques: al-Masjid al-Haram, the Mosque of the Messenger ﷺ, and al-Masjid al-Aqsa.",
+      "enNote": "The English gives the meaning only and was written for this game; replace it with a published translation chosen by the reviewer.",
+      "reviewed": false
+    }
+  }
+}

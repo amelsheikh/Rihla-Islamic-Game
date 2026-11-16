@@ -11,6 +11,7 @@
 | 5 — Lebanon | Not started | |
 | 6 — Egypt and Sinai | Not started | |
 | 7 — Polish and release | Not started | |
+| E0 — Unity 6 project (owner's PC) | In progress | Exporter and scripts written; waiting for Unity 6 to be installed. See below |
 
 ## Phase 1a: what works
 
@@ -162,6 +163,35 @@ Palestine comes after Chapter 1, "then and now" is central, and the world should
 walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
+
+## Phase E0: Unity 6 on the owner's PC (in progress, started 16 November 2026)
+
+Working on the owner's own PC first (`docs/ENGINE_SETUP.md` section 1b): Intel HD Graphics, 16 GB memory.
+
+Done:
+
+- Repository cloned to `C:\Users\aelsh\Desktop\Research Projects\Rihla`. Git 2.47 was already installed;
+  Unity Hub 3.22.6 installed with winget (it installs as a Windows app package).
+- **Export for Unity** (`npm run unity:export`, `tools/export-unity.ts`): reads the browser game's generated
+  terrain (`src/generated/`) and writes `unity/Assets/Rihla/Generated/`: twelve 1.5 km terrain tiles at 3 m
+  (513 x 513, 16-bit), one 13.8 km far terrain with a hole under the tiles, and `scene.json` with the road
+  (3,203 points, 9.6 km), the 13 places, the Old City wall line and the Dead Sea level, all turned to Unity's
+  axes (+z north). Checked: the road lies within 0.44 m of the exported ground (the road bed is carved 0.3 m).
+- **Content** is copied unchanged into `unity/Assets/Rihla/Content/`; `content/` stays the one place to edit.
+- **Unity scripts** written (`unity/Assets/Rihla/Scripts/`), not yet compiled, because no editor is installed yet:
+  a scene builder (menu *Rihla > Build E0 scene*) that makes the terrain, road with centre line, Dead Sea,
+  block-out Old City walls and place markers; a placeholder car on wheel colliders with autopilot (P, or
+  `-autopilot`); the child walking (E to get out and back in); a chase camera; a plain HUD (speed, true
+  elevation, distance to Ariha, nearest place, FPS); content loading; a Windows build and screenshot commands.
+
+Waiting for the owner: in Unity Hub, sign in, take a Unity Personal licence, and install **Unity 6000.3.28f1**
+(the newest Unity 6 LTS) with *Windows Build Support (IL2CPP)*. Then: create the URP project in `unity/`,
+add the Pipeline package, compile and fix the scripts, build the scene, screenshots, frame rate, Windows build.
+Cesium (step 6) needs the owner's Google Maps API key.
+
+Known so far: the Unity command-line tool could not be installed from here (the install script was blocked by
+this session's safety rules); the owner may need to run it, or the Pipeline package can be added by hand.
+The HUD is English only for now, since Unity's simple debug UI does not join Arabic letters.
 
 ## Pass R2: walking, history, driving and sound
 

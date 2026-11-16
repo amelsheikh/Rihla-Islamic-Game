@@ -1,0 +1,320 @@
+{
+  "note": "The story of a place through time. Every date and statement here is listed in NEEDS_REVIEW.md (H12) until checked against sources.",
+  "sites": {
+    "dome-of-the-rock": {
+      "title": {
+        "en": "The Dome of the Rock through time",
+        "ar": "قبّة الصخرة عبر الزمن"
+      },
+      "intro": {
+        "en": "The Dome of the Rock stands inside al-Masjid al-Aqsa, the sacred enclosure of Al-Quds. It is one of the oldest Islamic buildings still standing, and people have cared for it for more than thirteen hundred years.",
+        "ar": "تقع قبّة الصخرة داخل المسجد الأقصى المبارك في القدس. وهي من أقدم المباني الإسلاميّة القائمة حتّى اليوم، وقد اعتنى بها الناس أكثر من ألف وثلاثمئة عام."
+      },
+      "eras": [
+        {
+          "when": {
+            "en": "72 AH · 691–692 CE",
+            "ar": "٧٢ هـ · ٦٩١–٦٩٢ م"
+          },
+          "text": {
+            "en": "The Umayyad caliph Abd al-Malik ibn Marwan orders the building of the dome over the Rock.",
+            "ar": "أمر الخليفة الأمويّ عبد الملك بن مروان ببناء القبّة فوق الصخرة."
+          }
+        },
+        {
+          "when": {
+            "en": "1015–1023 CE",
+            "ar": "١٠١٥–١٠٢٣ م"
+          },
+          "text": {
+            "en": "An earthquake brings the dome down. It is rebuilt a few years later, in the time of the Fatimids.",
+            "ar": "أسقط زلزالٌ القبّة، ثمّ أُعيد بناؤها بعد سنوات قليلة في عهد الفاطميّين."
+          }
+        },
+        {
+          "when": {
+            "en": "1099–1187 CE",
+            "ar": "١٠٩٩–١١٨٧ م"
+          },
+          "text": {
+            "en": "The Crusaders take Al-Quds and use the building as a church. In 1187 Salah al-Din wins the city back and the building is restored.",
+            "ar": "احتلّ الصليبيّون القدس واتّخذوا المبنى كنيسة. وفي سنة ١١٨٧ استعاد صلاح الدين المدينة ورُمِّم المبنى."
+          }
+        },
+        {
+          "when": {
+            "en": "About 1550 CE",
+            "ar": "نحو ١٥٥٠ م"
+          },
+          "text": {
+            "en": "The Ottoman sultan Suleiman covers the outer walls with the blue and turquoise tiles that give the building its famous colours.",
+            "ar": "كسا السلطان العثمانيّ سليمان الجدران الخارجيّة بالبلاط الأزرق والفيروزيّ الذي أعطى المبنى ألوانه المشهورة."
+          }
+        },
+        {
+          "when": {
+            "en": "About 1910 CE",
+            "ar": "نحو ١٩١٠ م"
+          },
+          "look": "then",
+          "text": {
+            "en": "In the last years of Ottoman rule the dome is covered with dark sheets of lead, not gold.",
+            "ar": "في أواخر العهد العثمانيّ كانت القبّة مغطّاة بصفائح الرصاص الداكنة، لا بالذهب."
+          }
+        },
+        {
+          "when": {
+            "en": "1959–1964 and 1993–1994 CE",
+            "ar": "١٩٥٩–١٩٦٤ و١٩٩٣–١٩٩٤ م"
+          },
+          "look": "now",
+          "text": {
+            "en": "Two great restorations give the dome the golden covering we see today.",
+            "ar": "منح ترميمان كبيران القبّة كسوتها الذهبيّة التي نراها اليوم."
+          }
+        }
+      ]
+    },
+    "al-qibli": {
+      "title": {
+        "en": "Al-Qibli Mosque through time",
+        "ar": "المصلّى القبليّ عبر الزمن"
+      },
+      "intro": {
+        "en": "Al-Masjid al-Aqsa is the whole blessed enclosure, with everything inside its walls. The Qibli Mosque is the great prayer hall at its southern end, under the silver-grey dome. Al-Aqsa was the first qibla, the direction Muslims faced in prayer before the Ka'bah, and it is the place of the Prophet's ﷺ Night Journey.",
+        "ar": "المسجد الأقصى هو الساحة المباركة كلّها بكلّ ما داخل أسوارها. والمصلّى القبليّ هو قاعة الصلاة الكبرى في طرفها الجنوبيّ تحت القبّة الرصاصيّة. وكان الأقصى القبلة الأولى التي صلّى إليها المسلمون قبل الكعبة، وهو مسرى النبيّ ﷺ."
+      },
+      "verse": "three-mosques",
+      "eras": [
+        {
+          "when": {
+            "en": "About 705–715 CE",
+            "ar": "نحو ٧٠٥–٧١٥ م"
+          },
+          "text": {
+            "en": "The Umayyad caliphs build a great mosque at the southern end of the enclosure.",
+            "ar": "بنى الخلفاء الأمويّون مسجدًا كبيرًا في الطرف الجنوبيّ من الساحة."
+          }
+        },
+        {
+          "when": {
+            "en": "746 and later",
+            "ar": "٧٤٦ م وما بعدها"
+          },
+          "text": {
+            "en": "Earthquakes damage it more than once, and the Abbasid caliphs rebuild it.",
+            "ar": "ضربته الزلازل أكثر من مرّة، فأعاد الخلفاء العبّاسيّون بناءه."
+          }
+        },
+        {
+          "when": {
+            "en": "1035 CE",
+            "ar": "١٠٣٥ م"
+          },
+          "text": {
+            "en": "The Fatimid caliph al-Zahir rebuilds the hall. Much of its shape today comes from this time.",
+            "ar": "أعاد الخليفة الفاطميّ الظاهر بناء القاعة، ويعود كثير من شكلها اليوم إلى ذلك العهد."
+          }
+        },
+        {
+          "when": {
+            "en": "1187 CE",
+            "ar": "١١٨٧ م"
+          },
+          "text": {
+            "en": "Salah al-Din frees Al-Quds from the Crusaders, cleans and restores the mosque, and sets up the carved minbar made by order of Nur al-Din.",
+            "ar": "حرّر صلاح الدين القدس من الصليبيّين، فطهّر المسجد ورمّمه، ونصب فيه المنبر المحفور الذي صُنع بأمر نور الدين."
+          }
+        },
+        {
+          "when": {
+            "en": "1969 CE",
+            "ar": "١٩٦٩ م"
+          },
+          "text": {
+            "en": "A fire set on purpose burns the old minbar and part of the mosque.",
+            "ar": "أحرق حريقٌ متعمَّد المنبر القديم وجزءًا من المسجد."
+          }
+        },
+        {
+          "when": {
+            "en": "2007 CE",
+            "ar": "٢٠٠٧ م"
+          },
+          "text": {
+            "en": "A new minbar, carved by hand to match the old one, is set in its place.",
+            "ar": "نُصب منبر جديد حُفر باليد على مثال القديم في مكانه."
+          }
+        }
+      ]
+    },
+    "bab-al-asbat": {
+      "title": {
+        "en": "The walls and gates of Al-Quds",
+        "ar": "أسوار القدس وأبوابها"
+      },
+      "intro": {
+        "en": "The walls you see around the Old City were built by the Ottomans almost five hundred years ago. They have seven gates that are open today. Bab al-Asbat, the Gate of the Tribes, opens towards the Mount of Olives and leads straight to al-Masjid al-Aqsa.",
+        "ar": "الأسوار التي تراها حول البلدة القديمة بناها العثمانيّون قبل نحو خمسمئة عام، ولها سبعة أبواب مفتوحة اليوم. وباب الأسباط يطلّ على جبل الزيتون ويؤدّي مباشرةً إلى المسجد الأقصى."
+      },
+      "eras": [
+        {
+          "when": {
+            "en": "1537–1541 CE",
+            "ar": "١٥٣٧–١٥٤١ م"
+          },
+          "text": {
+            "en": "Sultan Suleiman orders the walls to be rebuilt around the city, on the line of older walls.",
+            "ar": "أمر السلطان سليمان بإعادة بناء الأسوار حول المدينة على خطّ أسوارٍ أقدم."
+          }
+        },
+        {
+          "when": {
+            "en": "About 1538 CE",
+            "ar": "نحو ١٥٣٨ م"
+          },
+          "text": {
+            "en": "Bab al-Asbat is built. The pairs of carved lions beside it give it its other name, the Lions' Gate.",
+            "ar": "بُني باب الأسباط. ويُسمّى أيضًا باب الأسود بسبب أزواج الأسود المنحوتة على جانبيه."
+          }
+        },
+        {
+          "when": {
+            "en": "Today",
+            "ar": "اليوم"
+          },
+          "text": {
+            "en": "The walls still stand, about four kilometres around, and you can walk through the gates as people have for centuries.",
+            "ar": "ما زالت الأسوار قائمة، ويبلغ طولها نحو أربعة كيلومترات، ويمكنك أن تمشي عبر أبوابها كما فعل الناس منذ قرون."
+          }
+        }
+      ]
+    },
+    "nabi-musa": {
+      "title": {
+        "en": "Maqam al-Nabi Musa through time",
+        "ar": "مقام النبيّ موسى عبر الزمن"
+      },
+      "intro": {
+        "en": "On a hill in the wilderness between Al-Quds and Ariha stands Maqam al-Nabi Musa, a place where Muslims have long remembered the Prophet Musa (peace be upon him). Pilgrims and families came here from all over the land.",
+        "ar": "على تلّة في البرّيّة بين القدس وأريحا يقوم مقام النبيّ موسى، حيث اعتاد المسلمون منذ زمن طويل أن يذكروا النبيّ موسى عليه السلام. وكان الزوّار والعائلات يأتونه من أنحاء البلاد."
+      },
+      "eras": [
+        {
+          "when": {
+            "en": "1269–1270 CE",
+            "ar": "١٢٦٩–١٢٧٠ م"
+          },
+          "text": {
+            "en": "The Mamluk sultan Baybars builds the first mosque and shrine here.",
+            "ar": "بنى السلطان المملوكيّ بيبرس أوّل مسجد ومقام هنا."
+          }
+        },
+        {
+          "when": {
+            "en": "Ottoman times",
+            "ar": "العهد العثمانيّ"
+          },
+          "text": {
+            "en": "Rooms for visitors, a courtyard and the minaret are added around it.",
+            "ar": "أُضيفت حوله غرفٌ للزوّار وساحة ومئذنة."
+          }
+        },
+        {
+          "when": {
+            "en": "Every spring, for centuries",
+            "ar": "كلّ ربيع منذ قرون"
+          },
+          "text": {
+            "en": "The Nabi Musa festival: families walk in a joyful procession from Al-Quds with banners, food and songs, and stay for days.",
+            "ar": "موسم النبيّ موسى: كانت العائلات تسير في موكب بهيج من القدس بالرايات والطعام والأناشيد، وتقيم أيّامًا."
+          }
+        }
+      ]
+    },
+    "ariha": {
+      "title": {
+        "en": "Ariha through time",
+        "ar": "أريحا عبر الزمن"
+      },
+      "intro": {
+        "en": "Ariha, Jericho, is an oasis in the Jordan Valley, fed by a strong spring. It is one of the oldest towns on Earth where people have lived, and the lowest city in the world.",
+        "ar": "أريحا واحة في غور الأردن يرويها نبعٌ غزير. وهي من أقدم البلدات التي سكنها الناس على وجه الأرض، وأخفض مدينة في العالم."
+      },
+      "eras": [
+        {
+          "when": {
+            "en": "About 10,000 years ago",
+            "ar": "قبل نحو عشرة آلاف عام"
+          },
+          "text": {
+            "en": "People settle by the spring at Tell al-Sultan and build one of the first towns, with a stone wall and a tower.",
+            "ar": "استقرّ الناس قرب النبع في تلّ السلطان، وبنوا من أوّل البلدات، بسور وبرج من الحجر."
+          }
+        },
+        {
+          "when": {
+            "en": "About 724–743 CE",
+            "ar": "نحو ٧٢٤–٧٤٣ م"
+          },
+          "text": {
+            "en": "The Umayyads build a palace with baths and beautiful mosaics just north of the town, known today as Hisham's Palace.",
+            "ar": "بنى الأمويّون قصرًا بحمّامات وفسيفساء جميلة شمال البلدة، يُعرف اليوم بقصر هشام."
+          }
+        },
+        {
+          "when": {
+            "en": "749 CE",
+            "ar": "٧٤٩ م"
+          },
+          "text": {
+            "en": "A great earthquake damages the palace before it is finished.",
+            "ar": "ألحق زلزالٌ كبير الضرر بالقصر قبل أن يكتمل."
+          }
+        },
+        {
+          "when": {
+            "en": "Today",
+            "ar": "اليوم"
+          },
+          "text": {
+            "en": "Ariha is famous for its dates, bananas and oranges, and for its warm winters.",
+            "ar": "تشتهر أريحا اليوم بالتمر والموز والبرتقال، وبشتائها الدافئ."
+          }
+        }
+      ]
+    },
+    "dead-sea": {
+      "title": {
+        "en": "The Dead Sea",
+        "ar": "البحر الميّت"
+      },
+      "intro": {
+        "en": "The shore of the Dead Sea is the lowest dry land on Earth. Its water is so salty that you float without trying, and almost nothing can live in it. That is how it got its name.",
+        "ar": "شاطئ البحر الميّت أخفض يابسة على وجه الأرض. وماؤه شديد الملوحة حتّى إنّك تطفو عليه دون جهد، ولا يكاد يعيش فيه شيء، ومن هنا جاء اسمه."
+      },
+      "eras": [
+        {
+          "when": {
+            "en": "Long ago",
+            "ar": "منذ زمن بعيد"
+          },
+          "text": {
+            "en": "Rivers flow in from the north, but no river flows out. The sun dries the water and leaves the salt behind.",
+            "ar": "تصبّ فيه الأنهار من الشمال، ولا يخرج منه نهر. فتجفّف الشمس الماء ويبقى الملح."
+          }
+        },
+        {
+          "when": {
+            "en": "Today",
+            "ar": "اليوم"
+          },
+          "text": {
+            "en": "Less water reaches the sea than before, and its level falls by about a metre every year.",
+            "ar": "يصل إلى البحر ماءٌ أقلّ من قبل، فينخفض مستواه نحو متر كلّ عام."
+          }
+        }
+      ]
+    }
+  }
+}
