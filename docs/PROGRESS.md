@@ -11,7 +11,7 @@
 | 5 — Lebanon | Not started | |
 | 6 — Egypt and Sinai | Not started | |
 | 7 — Polish and release | Not started | |
-| E0 — Unity 6 project (owner's PC) | In progress | Exporter and scripts written; waiting for Unity 6 to be installed. See below |
+| E0 — Unity 6 project (owner's PC) | Built and play-tested; Cesium waits for the API key | Terrain, road, car on autopilot, child walking, Windows build. See below |
 
 ## Phase 1a: what works
 
@@ -164,34 +164,53 @@ walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
 
-## Phase E0: Unity 6 on the owner's PC (in progress, started 16 November 2026)
+## Phase E0: Unity 6 on the owner's PC (first build done 16 November 2026; Cesium still to come)
 
 Working on the owner's own PC first (`docs/ENGINE_SETUP.md` section 1b): Intel HD Graphics, 16 GB memory.
+Unity **6000.6.9f1** (Unity 6.6), URP 17.6, new Input System, Unity Pipeline package (so Claude drives the
+editor through the Unity command-line tool that comes with Unity Hub).
 
 Done:
 
-- Repository cloned to `C:\Users\aelsh\Desktop\Research Projects\Rihla`. Git 2.47 was already installed;
-  Unity Hub 3.22.6 installed with winget (it installs as a Windows app package).
+- Repository cloned; Git 2.47 was already installed; Unity Hub 3.22.6 installed with winget.
 - **Export for Unity** (`npm run unity:export`, `tools/export-unity.ts`): reads the browser game's generated
   terrain (`src/generated/`) and writes `unity/Assets/Rihla/Generated/`: twelve 1.5 km terrain tiles at 3 m
   (513 x 513, 16-bit), one 13.8 km far terrain with a hole under the tiles, and `scene.json` with the road
   (3,203 points, 9.6 km), the 13 places, the Old City wall line and the Dead Sea level, all turned to Unity's
-  axes (+z north). Checked: the road lies within 0.44 m of the exported ground (the road bed is carved 0.3 m).
+  axes (+z north). The road lies within 0.44 m of the exported ground (the road bed is carved 0.3 m).
 - **Content** is copied unchanged into `unity/Assets/Rihla/Content/`; `content/` stays the one place to edit.
-- **Unity scripts** written (`unity/Assets/Rihla/Scripts/`), not yet compiled, because no editor is installed yet:
-  a scene builder (menu *Rihla > Build E0 scene*) that makes the terrain, road with centre line, Dead Sea,
-  block-out Old City walls and place markers; a placeholder car on wheel colliders with autopilot (P, or
-  `-autopilot`); the child walking (E to get out and back in); a chase camera; a plain HUD (speed, true
-  elevation, distance to Ariha, nearest place, FPS); content loading; a Windows build and screenshot commands.
+- **The URP project** in `unity/`, made from Unity's URP template. Menu *Rihla > Build E0 scene* builds
+  `Assets/Scenes/E0_JerichoRoad.unity`: 13 terrains (soil and rock blended by slope), the road mesh with a
+  dashed centre line and collider, the Dead Sea, block-out Old City walls, gold place markers, the car, the
+  child, sun, sky and haze. Generated assets go to `Assets/Rihla/Built/` (not in git; rebuild from the menu).
+- **Play-tested in the editor:** the placeholder car drives itself down the road on autopilot (P, or
+  `-autopilot` on the command line) at about 60 km/h, staying on the road; WASD/arrows or a gamepad drive it,
+  R puts it back on the road. Stopped, E lets the child out: the child walks on the road and hillside, stays on
+  the ground, and the chase camera follows; E near the car gets back in. The HUD shows speed, true elevation
+  (677 m near Al-Eizariya, as the browser game), distance to Ariha, the nearest place and FPS.
+- Lowest quality: the *Mobile* quality level for Windows, render scale 0.6, shadow distance 50 m, hard shadows,
+  no MSAA or HDR, coarser terrain detail; the build opens in a 1280 x 720 window.
+- Screenshots: `docs/screenshots/e0-overview.png` (Al-Quds east to the Dead Sea), `e0-road-00/25/50/75/98.png`
+  along the road, and `e0-play-on-foot.png` (the game view in play, with the HUD).
+- Windows build (`Builds/Windows/Rihla.exe`, menu *Rihla > Build for Windows*): being made; results to follow.
 
-Waiting for the owner: in Unity Hub, sign in, take a Unity Personal licence, and install **Unity 6000.3.28f1**
-(the newest Unity 6 LTS) with *Windows Build Support (IL2CPP)*. Then: create the URP project in `unity/`,
-add the Pipeline package, compile and fix the scripts, build the scene, screenshots, frame rate, Windows build.
-Cesium (step 6) needs the owner's Google Maps API key.
+Frame rate on this PC (Intel HD Graphics 4400-class): the editor's 2560 x 1440 game view ran at **10-12 FPS**
+before the low settings, 17 FPS without shadows, and 112 FPS with the camera off, so the limit is the graphics
+chip's drawing of pixels, not the game's logic.
 
-Known so far: the Unity command-line tool could not be installed from here (the install script was blocked by
-this session's safety rules); the owner may need to run it, or the Pipeline package can be added by hand.
-The HUD is English only for now, since Unity's simple debug UI does not join Arabic letters.
+Setting-up problems solved (written up in `docs/ENGINE_SETUP.md` 1b): the editor must be opened from Unity
+Hub to get its licence; this Intel GPU crashes under DirectX 12, so the editor runs with `-force-d3d11` and
+Unity's background import workers are off; Unity 6.6 makes Terrain and Vehicles optional built-in packages.
+
+Not done yet, and known issues:
+
+- **Cesium flying over Al-Quds (step 6)** waits for the owner's Google Maps API key.
+- From high above, the road shows in dashes on distant hills, where the coarse terrain detail covers it; fine
+  up close. The rock layer is barely visible, so the hills read as one sand colour.
+- The HUD is English only, since Unity's simple debug UI does not join Arabic letters; the real UI (E1) will.
+- The car, child and buildings are placeholders (boxes and a capsule), as E0 intends.
+
+Next: Cesium over Al-Quds once the key is in; then, on the cloud PC, the realistic look (E1).
 
 ## Pass R2: walking, history, driving and sound
 

@@ -29,6 +29,19 @@ the game's logic. If it is too slow, move to the cloud PC.
 - The steps are the same as section 2 below, from step 2 on, with that folder in place of `C:\Projects\Rihla`.
 - Keep Unity's quality on its lowest settings while working there.
 
+What we learned setting it up (16 November 2026, Unity 6000.6.9f1):
+
+- **Open the project from Unity Hub only.** The Hub is a Windows app package, and an editor started any other
+  way (or in batch mode) gets no licence and refuses to start.
+- **DirectX 11, not 12.** This Intel GPU crashes under DirectX 12 ("Unrecoverable GPU device error"), and the
+  editor then freezes on "Hold on (busy …)". In the Hub, the project's ⋮ menu → *Add command line arguments* →
+  `-force-d3d11`. Unity starts its background import workers on DirectX 12 regardless, so they are turned off in
+  `unity/UserSettings/EditorUserSettings.asset` (`m_DesiredImportWorkerCount: 0`, `m_StandbyImportWorkerCount: 0`).
+  This file is not in git, so set it again on a new machine if the same freeze happens. The cloud PC's
+  graphics card does not need either change.
+- Unity 6.6 makes Terrain, Terrain Physics and Vehicles (wheel colliders) optional built-in packages; they are in
+  `unity/Packages/manifest.json` now.
+
 ## 2. Setting up the cloud PC (about an hour, once)
 
 Do these steps on the cloud PC itself, after opening it from your laptop.

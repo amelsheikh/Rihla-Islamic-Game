@@ -22,3 +22,5 @@ unity/.vs/
 unity/Assets/Rihla/Built/
 unity/Assets/Rihla/Built.meta
 Builds/
+unity/.vscode/
+unity/*.slnx

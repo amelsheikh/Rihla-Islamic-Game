@@ -73,7 +73,7 @@ namespace Rihla.EditorTools
         {
             var sun = new GameObject("Sun").AddComponent<Light>();
             sun.type = LightType.Directional; sun.intensity = 1.3f; sun.color = new Color(1f, 0.95f, 0.86f);
-            sun.shadows = LightShadows.Soft;
+            sun.shadows = LightShadows.Hard; // hard shadows are cheaper on integrated graphics
             sun.transform.rotation = Quaternion.Euler(38f, -60f, 0f);
             RenderSettings.sun = sun;
             RenderSettings.skybox = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Skybox.mat");
@@ -137,6 +137,8 @@ namespace Rihla.EditorTools
                 }
                 td.SetAlphamaps(0, 0, alpha);
                 AssetDatabase.CreateAsset(td, Built + (string)t["name"] + ".asset");
+                // The splat textures are sub-assets; without this they are lost on save and reload.
+                foreach (var tex in td.alphamapTextures) if (!AssetDatabase.Contains(tex)) AssetDatabase.AddObjectToAsset(tex, td);
 
                 var go = Terrain.CreateTerrainGameObject(td);
                 go.name = (string)t["name"]; go.transform.SetParent(parent);
@@ -144,7 +146,7 @@ namespace Rihla.EditorTools
                 var terrain = go.GetComponent<Terrain>();
                 terrain.materialTemplate = mat;
                 bool isFar = (string)t["kind"] == "far";
-                terrain.heightmapPixelError = isFar ? 12f : 6f; // low settings for integrated graphics
+                terrain.heightmapPixelError = isFar ? 24f : 10f; // low settings for integrated graphics
                 terrain.basemapDistance = 600f;
                 terrain.drawInstanced = true;
                 if (isFar) terrain.groupingID = 1;
