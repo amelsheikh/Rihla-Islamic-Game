@@ -11,7 +11,7 @@
 | 5 — Lebanon | Not started | |
 | 6 — Egypt and Sinai | Not started | |
 | 7 — Polish and release | Not started | |
-| E0 — Unity 6 project (owner's PC) | Done, except the 3D map key | Terrain, road, car on autopilot, child walking, Cesium scene, Windows build at 118 FPS. See below |
+| E0 — Unity 6 project (owner's PC) | Done | Terrain, road, car on autopilot, child walking, Al-Quds today on Google 3D Tiles via Cesium ion, Windows build at 118 FPS. See below |
 
 ## Phase 1a: what works
 
@@ -164,7 +164,7 @@ walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
 
-## Phase E0: Unity 6 on the owner's PC (done 16 November 2026, except the 3D map key)
+## Phase E0: Unity 6 on the owner's PC (done 16 November 2026)
 
 Working on the owner's own PC first (`docs/ENGINE_SETUP.md` section 1b): Intel HD Graphics, 16 GB memory.
 Unity **6000.6.9f1** (Unity 6.6), URP 17.6, new Input System, Unity Pipeline package (so Claude drives the
@@ -196,14 +196,18 @@ Done:
   scenes. `Rihla.exe -autopilot -quitafter 70` drives itself and logs FPS to the player log.
 - **Cesium for Unity 1.26.1** and a second scene, *Al-Quds today* (`E0_AlQuds_Cesium`, menu *Rihla > Build E0
   Cesium scene*): a slow circle over the Old City on Google Photorealistic 3D Tiles, with Google's credits on
-  screen. C on the road opens it; arrows turn it; C or Esc goes back. The map key is read at run time from
-  `unity/Assets/StreamingAssets/google_maps_key.txt`, which is git-ignored (never commit a key).
+  screen. C on the road opens it; arrows turn it; C or Esc goes back. The tiles come through the owner's free
+  **Cesium ion** account (asset 2275207); its token is read at run time from
+  `unity/Assets/StreamingAssets/cesium_ion_token.txt`, which is git-ignored (never commit a token). A Google
+  Map Tiles key in `google_maps_key.txt` works instead, if one is ever set up.
+- Screenshots of the city today: `docs/screenshots/e0-alquds-today-1.png` and `-2.png` (the Haram al-Sharif
+  and the Dome of the Rock, the Old City, the Mount of Olives, the Dead Sea on the horizon).
 
 Frame rate on this PC (Intel HD Graphics 4400-class): the editor's 2560 x 1440 game view ran at **10-12 FPS**
 before the low settings, 17 FPS without shadows, and 112 FPS with the camera off, so the limit is the graphics
 chip's drawing of pixels, not the game's logic. **The Windows build, at 1280 x 720 with the low settings,
 averages 118 FPS** over 67 s of autopilot driving (123-140 FPS once loaded). The Al-Quds scene runs at
-about 53 FPS in the editor with no map tiles loaded.
+20-27 FPS in the editor with about 400 map tiles loaded.
 
 Setting-up problems solved (written up in `docs/ENGINE_SETUP.md` 1b): the editor must be opened from Unity
 Hub to get its licence; this Intel GPU crashes under DirectX 12, so the editor runs with `-force-d3d11` and
@@ -211,16 +215,15 @@ Unity's background import workers are off; Unity 6.6 makes Terrain and Vehicles 
 
 Not done yet, and known issues:
 
-- **The 3D map does not show yet.** The owner's demo Google key is refused (HTTP 403, "Permission denied on
-  the service"): Google's Map Tiles API needs a key from the owner's own Cloud project with billing and the
-  API enabled. The easier route is a free Cesium ion account, which serves the same Google 3D Tiles; the
-  scene then reads a Cesium ion token instead. Waiting for the owner to choose.
+- On this PC, map tiles load more slowly than the camera turns, so grey patches show for a moment; the circle
+  is slowed to 4 minutes. The owner's demo Google key was refused (HTTP 403), hence Cesium ion.
+- Cesium ion's free tier is for non-commercial use ("Upgrade for commercial use" shows in the credits).
 - From high above, the road shows in dashes on distant hills, where the coarse terrain detail covers it; fine
   up close. The rock layer is barely visible, so the hills read as one sand colour.
 - The HUD is English only, since Unity's simple debug UI does not join Arabic letters; the real UI (E1) will.
 - The car, child and buildings are placeholders (boxes and a capsule), as E0 intends.
 
-Next: a working map key or Cesium ion token for Al-Quds today, with its screenshots; then E1, the realistic look on the cloud PC.
+Next: E1, the realistic look, on the cloud PC; and "then" views to sit beside "Al-Quds today".
 
 ## Pass R2: walking, history, driving and sound
 

@@ -36,8 +36,8 @@ namespace Rihla.EditorTools
             tilesGo.transform.SetParent(geoGo.transform, false);
             var tiles = tilesGo.AddComponent<Cesium3DTileset>();
             tiles.tilesetSource = CesiumDataSource.FromUrl;
-            tiles.url = "";               // set at run time from StreamingAssets/google_maps_key.txt
-            tiles.showCreditsOnScreen = true; // Google's terms require the attribution on screen
+            tiles.url = "";               // source and token are set at run time from git-ignored StreamingAssets files
+            tiles.showCreditsOnScreen = true; // Google and Cesium ion require their credits on screen
             tiles.maximumScreenSpaceError = 24f; // coarser than the default 16, for integrated graphics
             tiles.updateInEditor = false;
 

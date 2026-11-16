@@ -8,29 +8,46 @@ namespace Rihla
 {
     /// <summary>
     /// "Al-Quds today": a slow circle over the Old City on Google Photorealistic 3D Tiles, streamed by Cesium.
-    /// The Google Maps key is read at run time from StreamingAssets/google_maps_key.txt, which is never committed.
+    /// The Cesium ion token (or a Google Map Tiles key) is read at run time from git-ignored StreamingAssets files.
     /// Esc or C goes back to the Jericho road.
     /// </summary>
     public class AlQudsFlyover : MonoBehaviour
     {
         public Cesium3DTileset tileset;
-        public float radius = 900f, height = 450f, secondsPerCircle = 150f;
+        public float radius = 900f, height = 450f, secondsPerCircle = 240f;
         public string backScene = "E0_JerichoRoad";
 
         float angle; string message = ""; GUIStyle style;
 
+        /// <summary>Google Photorealistic 3D Tiles as served by Cesium ion.</summary>
+        public const long IonGoogleTilesAsset = 2275207;
+
         void Awake()
         {
-            string path = Path.Combine(Application.streamingAssetsPath, "google_maps_key.txt");
-            string key = File.Exists(path) ? File.ReadAllText(path).Trim() : "";
-            if (key.Length == 0)
+            // A Cesium ion token (free account) comes first; a Google Map Tiles API key is the alternative.
+            string ion = ReadSecret("cesium_ion_token.txt"), key = ReadSecret("google_maps_key.txt");
+            if (ion.Length > 0)
             {
-                message = "No Google Maps key: put it in StreamingAssets/google_maps_key.txt";
-                Debug.LogWarning("[Rihla] " + message);
-                return;
+                tileset.ionAccessToken = ion;
+                tileset.ionAssetID = IonGoogleTilesAsset;
+                tileset.tilesetSource = CesiumDataSource.FromCesiumIon;
             }
-            tileset.tilesetSource = CesiumDataSource.FromUrl;
-            tileset.url = "https://tile.googleapis.com/v1/3dtiles/root.json?key=" + key;
+            else if (key.Length > 0)
+            {
+                tileset.tilesetSource = CesiumDataSource.FromUrl;
+                tileset.url = "https://tile.googleapis.com/v1/3dtiles/root.json?key=" + key;
+            }
+            else
+            {
+                message = "No map key: put a Cesium ion token in StreamingAssets/cesium_ion_token.txt";
+                Debug.LogWarning("[Rihla] " + message);
+            }
+        }
+
+        static string ReadSecret(string file)
+        {
+            string path = Path.Combine(Application.streamingAssetsPath, file);
+            return File.Exists(path) ? File.ReadAllText(path).Trim() : "";
         }
 
         void Update()

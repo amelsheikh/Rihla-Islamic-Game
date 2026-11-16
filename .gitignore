@@ -27,3 +27,5 @@ unity/*.slnx
 # API keys stay on this PC, never in git
 unity/Assets/StreamingAssets/google_maps_key.txt
 unity/Assets/StreamingAssets/google_maps_key.txt.meta
+unity/Assets/StreamingAssets/cesium_ion_token.txt
+unity/Assets/StreamingAssets/cesium_ion_token.txt.meta
