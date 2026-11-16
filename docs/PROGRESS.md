@@ -214,8 +214,9 @@ Known issues:
 - Page and history text is long for a 10-year-old to read alone; Jiddo's voice (recorded or read aloud) would help.
 - The car and child are still placeholders; touch and gamepad buttons for the new keys (J, H, L) are not made yet.
 
-Next: E2, the Chapter 1 story itself (`docs/STORY.md` section 5): the riddles, three clues found on foot at each
-place, the keepers, the shepherd, Teta's call and the Dead Sea finale. "Then" pictures need the owner's sources.
+Next: the plan was revised for the owner's vision (`docs/STORY.md` 8b, `docs/ENGINE_SETUP.md` 4c). E2 is now
+**Walking Al-Quds, then and now**: one street route from Bab al-Asbat to al-Masjid al-Aqsa at walking height,
+with the first Time Lens reveal. Then E3 realism on the cloud PC, E4 ways to travel, E5 the rest of Chapter 1.
 
 ## Phase E0: Unity 6 on the owner's PC (done 16 November 2026)
 

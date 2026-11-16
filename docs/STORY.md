@@ -127,6 +127,26 @@ one family, and to come home.*
 8. Still to confirm: how present-day places are shown (no checkpoints or walls are drawn), and whether any
    place should be left out for now.
 
+## 8b. The owner's vision (16 November 2026)
+
+In the owner's words: a game they can play, or let children play, *as if they are visiting there and walking the
+blessed streets of Al-Quds and Palestine, learning about it, how it was, then revealing how it is now, with all
+the emotions. It is literally a journey where you can walk, ride a horse, a carriage, a bike, a car, or fly with
+a glider or a plane; so graphically beautiful and realistic that it gives the player a journey of a lifetime and
+really impactful learning.*
+
+What this asks of the game, and how the plan answers it:
+
+| The vision | What it means for the game | Where it is planned |
+|---|---|---|
+| Walking the blessed streets | Real streets at walking height, built in detail: stone, doorways, shops, light, people, sound. Google's 3D map is too blurry for this, so streets are built by hand, starting with one route. | E2: the walk from Bab al-Asbat to al-Masjid al-Aqsa |
+| How it was, then how it is now | The **Time Lens** becomes the heart of the game: the child walks a street as it was (for example about 1900, or in Zaynab's day), then the scene turns to today. "Then" needs sources (old photographs, drawings, scholarly descriptions) chosen with the owner. | E2 (first reveal), then every place |
+| With all the emotions | Music, ambient sound, the adhan, Jiddo's voice, slow camera at the reveal, quiet moments. How present-day places are shown stays the owner's decision (section 8, item 8). | E2 onwards |
+| Walk, horse, carriage, bike, car | Ways to travel that fit the era: on foot, horse and carriage in the "then" scenes, bicycle and car today. | E4 |
+| Glider and plane | Flying over the whole land on the real 3D map (Cesium), landing into a hand-built place. | E4, building on "Al-Quds today" |
+| Graphically beautiful and realistic | Needs the cloud graphics PC; the owner's Intel PC can build the logic but cannot show realism. A realism pass on the first street is the first job there. | E3 |
+| A journey of a lifetime, impactful learning | Every place keeps the loop of section 4: arrive, explore, learn, then and now, a page of the Rihla. | All chapters |
+
 ## 9. Proposed next step
 
 The game is moving to Unity (see `docs/ENGINE_SETUP.md`). Build **Chapter 1** there as described in section 5: the prologue walk in Al-Quds, the three pages with their

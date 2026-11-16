@@ -116,7 +116,20 @@ look waits for the cloud PC.
 5. Saving: language, the pages found and where the player is.
 6. Screenshots in both languages, FPS, a Windows build; commit and push.
 
-The riddles, clues on foot, keepers, the shepherd and Teta's call (the Chapter 1 story itself) follow in E2.
+## 4c. The road ahead, revised for the owner's vision (`docs/STORY.md` 8b)
+
+- **E2: Walking Al-Quds, then and now** (owner's PC, logic and block-out). One street route at walking height,
+  from Bab al-Asbat to al-Masjid al-Aqsa, built by hand to real measurements. A first-person and third-person
+  walk, the Chapter 1 prologue (three clues: the lions of Bab al-Asbat, the tiles of the Dome of the Rock, the
+  dome of the Qibli Mosque), and the first **Time Lens** reveal: the street as it was about 1900, turning to
+  today. Needs the owner's choice of "then" sources and decision on how present-day streets are shown.
+- **E3: Realism on the cloud PC.** Set up the cloud graphics PC; a realism pass on the E2 route (stone and
+  plaster materials, light, sky, people, sound); decide between URP and HDRP for the look.
+- **E4: Ways to travel.** Horse and carriage in "then" scenes, bicycle and car today, glider and plane over the
+  land on the 3D map, landing into hand-built places.
+- **E5: Chapter 1 complete.** The drive, Ariha, Maqam al-Nabi Musa and the Dead Sea with their keepers, clues,
+  riddles and Teta's call, each place with then and now.
+- Then the rest of Palestine (`docs/STORY.md` section 8, item 5).
 
 ## 5. Costs to expect
 
