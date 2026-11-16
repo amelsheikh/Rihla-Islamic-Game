@@ -52,6 +52,8 @@ namespace Rihla.EditorTools
             JToken domeB = null, qibliB = null, chainB = null, gateB = null;
             Buildings(json, streets, platform, ref domeB, ref qibliB, ref chainB, ref gateB);
             Trees(json, platform);
+            Facades(streets);
+            Roofs();
 
             var domeRenderer = DomeOfTheRock(Ring(domeB), out float domeR);
             DomeOfTheChain(Ring(chainB));
@@ -132,7 +134,7 @@ namespace Rihla.EditorTools
             // Early morning: the sun low in the east, light travelling west.
             var sun = new GameObject("Sun").AddComponent<Light>();
             sun.type = LightType.Directional; sun.color = new Color(1f, 0.87f, 0.72f); sun.intensity = 1.4f;
-            sun.shadows = LightShadows.Soft; sun.shadowStrength = 0.85f; sun.transform.rotation = Quaternion.Euler(24f, -78f, 0f);
+            sun.shadows = LightShadows.Soft; sun.shadowStrength = 0.8f; sun.transform.rotation = Quaternion.Euler(30f, -72f, 0f);
             RenderSettings.sun = sun;
             string skyPath = Built + "Sky.mat";
             var sky = AssetDatabase.LoadAssetAtPath<Material>(skyPath);
@@ -141,10 +143,14 @@ namespace Rihla.EditorTools
             sky.SetColor("_SkyTint", new Color(0.52f, 0.58f, 0.68f)); sky.SetColor("_GroundColor", new Color(0.55f, 0.5f, 0.45f));
             EditorUtility.SetDirty(sky);
             RenderSettings.skybox = sky;
-            RenderSettings.ambientMode = AmbientMode.Skybox; RenderSettings.ambientIntensity = 1.1f;
+            // Light bouncing off the pale stone fills the shadows of the lanes with warmth: sky above, warm stone around.
+            RenderSettings.ambientMode = AmbientMode.Trilight;
+            RenderSettings.ambientSkyColor = new Color(0.66f, 0.72f, 0.84f);
+            RenderSettings.ambientEquatorColor = new Color(0.78f, 0.69f, 0.57f);
+            RenderSettings.ambientGroundColor = new Color(0.62f, 0.52f, 0.4f);
             Look();
             RenderSettings.fog = true; RenderSettings.fogMode = FogMode.Linear;
-            RenderSettings.fogColor = new Color(0.84f, 0.8f, 0.74f); RenderSettings.fogStartDistance = 250f; RenderSettings.fogEndDistance = 1400f;
+            RenderSettings.fogColor = new Color(0.86f, 0.81f, 0.72f); RenderSettings.fogStartDistance = 180f; RenderSettings.fogEndDistance = 1100f;
         }
 
         /// <summary>The everyday look ("now"): filmic tone mapping, a little glow, warm morning colour.</summary>
@@ -156,8 +162,9 @@ namespace Rihla.EditorTools
             AssetDatabase.CreateAsset(profile, path);
             var tm = profile.Add<Tonemapping>(true); tm.mode.Override(TonemappingMode.ACES);
             var bl = profile.Add<Bloom>(true); bl.intensity.Override(0.3f); bl.threshold.Override(1.1f);
-            var ca = profile.Add<ColorAdjustments>(true); ca.postExposure.Override(0.35f); ca.contrast.Override(8f); ca.saturation.Override(6f);
-            var wb = profile.Add<WhiteBalance>(true); wb.temperature.Override(6f);
+            var ca = profile.Add<ColorAdjustments>(true); ca.postExposure.Override(0.35f); ca.contrast.Override(8f); ca.saturation.Override(-4f);
+            var wb = profile.Add<WhiteBalance>(true); wb.temperature.Override(5f);
+            var vg = profile.Add<Vignette>(true); vg.intensity.Override(0.18f); vg.smoothness.Override(0.6f);
             foreach (var c in profile.components) AssetDatabase.AddObjectToAsset(c, profile);
             EditorUtility.SetDirty(profile);
             var go = new GameObject("Look (now)");
@@ -238,8 +245,11 @@ namespace Rihla.EditorTools
             return t >= 0f && t <= 1f && u >= 0f && u <= 1f;
         }
 
+        static readonly List<(List<Vector2> ring, float base0, float h, long id)> houses = new List<(List<Vector2>, float, float, long)>();
+
         static void Buildings(JObject json, List<Street> streets, List<Vector2> platform, ref JToken dome, ref JToken qibli, ref JToken chain, ref JToken gate)
         {
+            houses.Clear();
             var tones = new[]
             {
                 Mesh("Buildings (limestone 1)", Mat("lime1", new Color(0.86f, 0.8f, 0.68f)), true),
@@ -262,7 +272,7 @@ namespace Rihla.EditorTools
                 float h = b["height"]?.Type == JTokenType.Float || b["height"]?.Type == JTokenType.Integer ? (float)b["height"] : 6.5f + (id % 5);
                 bool arch = (bool)b["gate"] || streets.Any(s => s.passage && Crosses(ring, s.line));
                 if (arch) ArchedPassage(gates, ring, c, streets, base0, Mathf.Max(h, ArchTop + 3f));
-                else Prism(tones[id % 3], ring, base0, base0 + h);
+                else { Prism(tones[id % 3], ring, base0, base0 + h); houses.Add((ring, base0, h, id)); }
             }
         }
 
@@ -316,8 +326,8 @@ namespace Rihla.EditorTools
                 Cap(grass, ring, (Inside(platform, c) ? Platform : 0f) + 0.06f);
             }
             var trunks = Mesh("Tree trunks", Mat("bark", new Color(0.33f, 0.27f, 0.21f)), true);
-            var olive = Mesh("Olive crowns", Mat("olive", new Color(0.33f, 0.39f, 0.27f), 0.1f), false);
-            var cypress = Mesh("Cypress crowns", Mat("cypress", new Color(0.15f, 0.24f, 0.15f), 0.1f), false);
+            var olive = Mesh("Olive crowns", Mat("olive", new Color(0.47f, 0.52f, 0.38f), 0.1f), false);
+            var cypress = Mesh("Cypress crowns", Mat("cypress", new Color(0.2f, 0.3f, 0.19f), 0.1f), false);
             int i = 0;
             foreach (var t in json["trees"] ?? new JArray())
             {
@@ -372,6 +382,124 @@ namespace Rihla.EditorTools
                 }
         }
 
+        // ------------------------------------------------------------------ building detail (E3)
+
+        /// <summary>
+        /// Doors and windows on the walls of houses that face a street or lane: an arched doorway at street level
+        /// and small windows above, each set in a lighter stone frame. Sizes and spacing are estimates (H17).
+        /// </summary>
+        static void Facades(List<Street> streets)
+        {
+            var doors = Mesh("Doors", Mat("door", new Color(0.32f, 0.22f, 0.14f), 0.25f), false);
+            var shutters = Mesh("Shop shutters", Mat("shutter", new Color(0.22f, 0.36f, 0.33f), 0.35f, 0.3f), false);
+            var windows = Mesh("Windows", Mat("window", new Color(0.06f, 0.06f, 0.07f), 0.7f), false);
+            var frames = Mesh("Stone frames", Mat("frame", new Color(0.93f, 0.88f, 0.78f), 0.2f), false);
+            var segs = new List<(Vector2 a, Vector2 b)>();
+            foreach (var st in streets) for (int i = 0; i < st.line.Count - 1; i++) segs.Add((st.line[i], st.line[i + 1]));
+            int n = 0;
+            foreach (var (ring, base0, h, id) in houses)
+            {
+                for (int i = 0; i < ring.Count; i++)
+                {
+                    Vector2 a = ring[i], b = ring[(i + 1) % ring.Count];
+                    float len = (b - a).magnitude; if (len < 2.5f) continue;
+                    Vector2 d = (b - a) / len, outN = new Vector2(d.y, -d.x), mid = (a + b) / 2f;
+                    // Does this wall face a street close by?
+                    bool faces = false;
+                    foreach (var (sa, sb) in segs)
+                    {
+                        Vector2 q = ClosestOnSeg(mid, sa, sb), to = q - mid;
+                        if (to.sqrMagnitude < 36f && Vector2.Dot(to, outN) > 0.3f) { faces = true; break; }
+                    }
+                    if (!faces) continue;
+                    n++;
+                    // Ground floor: a doorway, or a shop with a painted shutter, every 6-9 m.
+                    int bays = Mathf.Max(1, Mathf.FloorToInt(len / 7f));
+                    for (int k = 0; k < bays; k++)
+                    {
+                        float u = len * (k + 0.5f) / bays;
+                        bool shop = Hash(mid + d * u) < 0.35f;
+                        float w = shop ? 2.2f : 1.3f, top = shop ? 2.6f : 2.3f;
+                        if (u - w / 2f < 0.4f || u + w / 2f > len - 0.4f) continue;
+                        Panel(frames, a, d, outN, u, w + 0.5f, 0f, top + 0.35f, base0, 0.03f, true);
+                        Panel(shop ? shutters : doors, a, d, outN, u, w, 0f, top, base0, 0.06f, true);
+                    }
+                    // Upper floors: windows every 3.2 m, from 4 m up, if the house is tall enough.
+                    for (float y = 4f; y + 1.3f < h - 0.6f; y += 3.4f)
+                        for (float u = 1.6f; u + 1.2f < len; u += 3.2f)
+                        {
+                            Panel(frames, a, d, outN, u, 1.1f, y - 0.15f, y + 1.35f, base0, 0.03f, false);
+                            Panel(windows, a, d, outN, u, 0.75f, y, y + 1.15f, base0, 0.06f, false);
+                        }
+                }
+            }
+            Debug.Log($"[Rihla] facades on {n} street-facing walls");
+        }
+
+        /// <summary>
+        /// A flat panel on a wall, centred at u along it, from y0 to y1, standing out by "off"; with a pointed top
+        /// when arched. Drawn on both sides so its facing never matters.
+        /// </summary>
+        static void Panel(MB mb, Vector2 a, Vector2 d, Vector2 outN, float u, float w, float y0, float y1, float base0, float off, bool arched)
+        {
+            var prof = new List<Vector2> { new Vector2(-w / 2f, y0), new Vector2(w / 2f, y0) };
+            if (arched)
+            {
+                float spring = y1 - w * 0.45f;
+                prof.Add(new Vector2(w / 2f, spring));
+                for (int k = 1; k < 6; k++) { float t = k / 6f; float x = Mathf.Lerp(w / 2f, 0f, t); prof.Add(new Vector2(x, spring + (y1 - spring) * Mathf.Sin(t * Mathf.PI / 2f))); }
+                prof.Add(new Vector2(0f, y1));
+                for (int k = 5; k > 0; k--) { float t = k / 6f; float x = Mathf.Lerp(-w / 2f, 0f, t); prof.Add(new Vector2(x, spring + (y1 - spring) * Mathf.Sin(t * Mathf.PI / 2f))); }
+                prof.Add(new Vector2(-w / 2f, spring));
+            }
+            else { prof.Add(new Vector2(w / 2f, y1)); prof.Add(new Vector2(-w / 2f, y1)); }
+            var tris = EarClip(prof);
+            Vector2 c = a + d * u + outN * off;
+            // Each side gets its own vertices, so their lighting directions do not cancel out.
+            for (int side = 0; side < 2; side++)
+            {
+                int s0 = mb.v.Count;
+                foreach (var q in prof) { Vector2 g = c + d * q.x; mb.v.Add(new Vector3(g.x, base0 + q.y, g.y)); mb.uv.Add(q); }
+                for (int i = 0; i < tris.Count; i += 3)
+                    if (side == 0) mb.t.AddRange(new[] { s0 + tris[i], s0 + tris[i + 1], s0 + tris[i + 2] });
+                    else mb.t.AddRange(new[] { s0 + tris[i], s0 + tris[i + 2], s0 + tris[i + 1] });
+            }
+        }
+
+        /// <summary>
+        /// Roofs: a low parapet around every flat roof, and on some houses a small plastered dome, as on many
+        /// old houses of Al-Quds (which houses have them is not known from the map: an estimate, H17).
+        /// </summary>
+        static void Roofs()
+        {
+            var parapets = Mesh("Roof parapets", Mat("lime3", Color.white), false);
+            var domes = Mesh("Roof domes", Mat("roofdome", new Color(0.92f, 0.9f, 0.85f), 0.1f), false);
+            int domeCount = 0;
+            foreach (var (ring, base0, h, id) in houses)
+            {
+                for (int i = 0; i < ring.Count; i++)
+                {
+                    Vector2 a = ring[i], b = ring[(i + 1) % ring.Count], d = b - a;
+                    if (d.sqrMagnitude < 0.25f) continue;
+                    Vector2 inN = new Vector2(-d.y, d.x).normalized * 0.15f;
+                    Segment(parapets, a + inN, b + inN, 0.3f, base0 + h, base0 + h + 0.7f);
+                }
+                float area = 0f; for (int i = 0; i < ring.Count; i++) area += Cross2(ring[i], ring[(i + 1) % ring.Count]) / 2f;
+                Vector2 c = new Vector2(ring.Average(p => p.x), ring.Average(p => p.y));
+                if (area > 35f && area < 400f && Inside(ring, c) && Hash(c * 1.7f) < 0.4f)
+                {
+                    float r = Mathf.Clamp(Mathf.Sqrt(area) * 0.22f, 1.5f, 3.2f);
+                    float inner = float.MaxValue; for (int i = 0; i < ring.Count; i++) inner = Mathf.Min(inner, DistToSeg(c, ring[i], ring[(i + 1) % ring.Count]));
+                    r = Mathf.Min(r, inner - 0.4f);
+                    if (r < 1.2f) continue;
+                    Cylinder(domes, new Vector3(c.x, base0 + h, c.y), r, 0.5f, 12);
+                    Ellipsoid(domes, new Vector3(c.x, base0 + h + 0.5f, c.y), new Vector3(r, r * 0.75f, r), 12, 6);
+                    domeCount++;
+                }
+            }
+            Debug.Log($"[Rihla] roofs: parapets on {houses.Count} houses, {domeCount} small domes");
+        }
+
         static float DistToSeg(Vector2 p, Vector2 a, Vector2 b) => (p - ClosestOnSeg(p, a, b)).magnitude;
         static Vector2 ClosestOnSeg(Vector2 p, Vector2 a, Vector2 b)
         {
@@ -399,23 +527,28 @@ namespace Rihla.EditorTools
             Vector3 P(Vector2 q, float t) { Vector2 g = c + n * q.x + dir * t; return new Vector3(g.x, base0 + q.y, g.y); }
             var ccw = Ccw(new List<Vector2>(prof));
             var tris = EarClip(ccw);
+            // Both sides of every face, each with its own vertices so the lighting directions do not cancel out.
             foreach (float t in new[] { t0, t1 })
-            {
-                int s0 = mb.v.Count;
-                foreach (var q in ccw) { mb.v.Add(P(q, t)); mb.uv.Add(new Vector2(q.x, q.y)); }
-                for (int i = 0; i < tris.Count; i += 3)
+                for (int side = 0; side < 2; side++)
                 {
-                    mb.t.AddRange(new[] { s0 + tris[i], s0 + tris[i + 1], s0 + tris[i + 2] });
-                    mb.t.AddRange(new[] { s0 + tris[i], s0 + tris[i + 2], s0 + tris[i + 1] });
+                    int s0 = mb.v.Count;
+                    foreach (var q in ccw) { mb.v.Add(P(q, t)); mb.uv.Add(new Vector2(q.x, q.y)); }
+                    for (int i = 0; i < tris.Count; i += 3)
+                        if (side == 0) mb.t.AddRange(new[] { s0 + tris[i], s0 + tris[i + 1], s0 + tris[i + 2] });
+                        else mb.t.AddRange(new[] { s0 + tris[i], s0 + tris[i + 2], s0 + tris[i + 1] });
                 }
-            }
             for (int i = 0; i < ccw.Count; i++)
             {
                 Vector2 a = ccw[i], b = ccw[(i + 1) % ccw.Count];
-                int s0 = mb.v.Count; float len = (b - a).magnitude;
-                mb.v.Add(P(a, t0)); mb.v.Add(P(b, t0)); mb.v.Add(P(b, t1)); mb.v.Add(P(a, t1));
-                mb.uv.Add(new Vector2(0, 0)); mb.uv.Add(new Vector2(len, 0)); mb.uv.Add(new Vector2(len, t1 - t0)); mb.uv.Add(new Vector2(0, t1 - t0));
-                mb.t.AddRange(new[] { s0, s0 + 1, s0 + 2, s0, s0 + 2, s0 + 3, s0, s0 + 2, s0 + 1, s0, s0 + 3, s0 + 2 });
+                float len = (b - a).magnitude;
+                for (int side = 0; side < 2; side++)
+                {
+                    int s0 = mb.v.Count;
+                    mb.v.Add(P(a, t0)); mb.v.Add(P(b, t0)); mb.v.Add(P(b, t1)); mb.v.Add(P(a, t1));
+                    mb.uv.Add(new Vector2(0, 0)); mb.uv.Add(new Vector2(len, 0)); mb.uv.Add(new Vector2(len, t1 - t0)); mb.uv.Add(new Vector2(0, t1 - t0));
+                    if (side == 0) mb.t.AddRange(new[] { s0, s0 + 1, s0 + 2, s0, s0 + 2, s0 + 3 });
+                    else mb.t.AddRange(new[] { s0, s0 + 2, s0 + 1, s0, s0 + 3, s0 + 2 });
+                }
             }
         }
 
@@ -747,11 +880,11 @@ namespace Rihla.EditorTools
         /// <summary>Material name: texture (colour, normal), metres per repeat, and the tint over it.</summary>
         static readonly Dictionary<string, (string col, string nor, float metres, Color tint)> Textured = new Dictionary<string, (string, string, float, Color)>
         {
-            ["ground"] = ("PolyHaven/rock_tile_floor_diff_1k.jpg", "PolyHaven/rock_tile_floor_nor_gl_1k.jpg", 4f, new Color(1f, 0.97f, 0.9f)),
-            ["courtyard"] = ("PolyHaven/rock_tile_floor_diff_1k.jpg", "PolyHaven/rock_tile_floor_nor_gl_1k.jpg", 4.5f, new Color(1.05f, 1.02f, 0.96f)),
-            ["street"] = ("PolyHaven/rock_tile_floor_diff_1k.jpg", "PolyHaven/rock_tile_floor_nor_gl_1k.jpg", 2.2f, new Color(1f, 0.96f, 0.88f)),
+            ["ground"] = ("PolyHaven/rock_tile_floor_diff_1k.jpg", "PolyHaven/rock_tile_floor_nor_gl_1k.jpg", 4f, new Color(1.06f, 0.98f, 0.86f)),
+            ["courtyard"] = ("PolyHaven/rock_tile_floor_diff_1k.jpg", "PolyHaven/rock_tile_floor_nor_gl_1k.jpg", 4.5f, new Color(1.1f, 1.04f, 0.94f)),
+            ["street"] = ("PolyHaven/rock_tile_floor_diff_1k.jpg", "PolyHaven/rock_tile_floor_nor_gl_1k.jpg", 2.2f, new Color(1.08f, 1f, 0.88f)),
             ["platform"] = ("PolyHaven/rock_tile_floor_diff_1k.jpg", "PolyHaven/rock_tile_floor_nor_gl_1k.jpg", 5f, new Color(1.08f, 1.06f, 1.02f)),
-            ["wall"] = ("PolyHaven/yellow_stone_wall_diff_1k.jpg", "PolyHaven/yellow_stone_wall_nor_gl_1k.jpg", 4f, new Color(1f, 0.97f, 0.92f)),
+            ["wall"] = ("PolyHaven/sandstone_blocks_08_diff_1k.jpg", "PolyHaven/sandstone_blocks_08_nor_gl_1k.jpg", 4.5f, new Color(0.97f, 0.93f, 0.86f)),
             ["gate"] = ("PolyHaven/sandstone_blocks_08_diff_1k.jpg", "PolyHaven/sandstone_blocks_08_nor_gl_1k.jpg", 3f, new Color(0.97f, 0.93f, 0.85f)),
             ["lion"] = ("PolyHaven/sandstone_blocks_08_diff_1k.jpg", "PolyHaven/sandstone_blocks_08_nor_gl_1k.jpg", 1f, new Color(0.85f, 0.78f, 0.65f)),
             ["lime1"] = ("PolyHaven/sandstone_blocks_08_diff_1k.jpg", "PolyHaven/sandstone_blocks_08_nor_gl_1k.jpg", 3f, new Color(1f, 0.98f, 0.94f)),

@@ -42,8 +42,19 @@ namespace Rihla
             return p;
         }
 
+        bool bodyHidden;
+
+        /// <summary>In first person the child's own body is hidden, so the camera is not inside it.</summary>
+        void ShowBody(bool show)
+        {
+            if (!target || bodyHidden == !show) return;
+            bodyHidden = !show;
+            foreach (var r in target.GetComponentsInChildren<Renderer>()) r.enabled = show;
+        }
+
         void FirstPerson()
         {
+            ShowBody(false);
             transform.position = target.position + Vector3.up * eyeHeight;
             transform.rotation = Quaternion.Euler(pitch, target.eulerAngles.y, 0f);
         }
@@ -60,6 +71,7 @@ namespace Rihla
                 FirstPerson();
                 return;
             }
+            ShowBody(true);
             transform.position = Vector3.Lerp(transform.position, Desired(), 1f - Mathf.Exp(-stiffness * Time.deltaTime));
             transform.LookAt(target.position + Vector3.up * lookHeight);
         }

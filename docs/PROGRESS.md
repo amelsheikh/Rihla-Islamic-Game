@@ -14,7 +14,7 @@
 | E0 — Unity 6 project (owner's PC) | Done | Terrain, road, car on autopilot, child walking, Al-Quds today on Google 3D Tiles via Cesium ion, Windows build at 118 FPS. See below |
 | E1 — Chapter 1 teaching systems in Unity (owner's PC) | Done | Arabic and English UI, banners, journal page with Al-Isra 17:1, history beside "Al-Quds today", saving; 102 FPS. See below |
 | E2 — Walking Al-Quds, then and now (owner's PC, block-out) | Done | The walk from Bab al-Asbat to al-Masjid al-Aqsa at true scale with Jiddo, three clues and the first Time Lens reveal; 97-103 FPS. See below |
-| E3 — Realism on the owner's PC (first pass) | Done | Real stone textures, pointed-arch gates, battlements, 106 trees, sky, soft shadows, morning colour; 75 FPS. See below |
+| E3 — Realism on the owner's PC | Two passes done | Stone textures, arches, battlements, trees, sky; then doors, shop shutters, windows, roof domes, warm bounce light, ambient occlusion; 64 FPS. See below |
 
 ## Phase 1a: what works
 
@@ -199,11 +199,25 @@ Known issues and what would help most next:
 
 - **People.** The child and Jiddo are still a blue and a brown capsule; there are no other people. Proper
   characters are the biggest step left; free ones need checking for licences and for modest dress (brief section 5).
-- **Buildings are boxes:** no doors, windows, arches along the lanes, domed roofs, balconies or shop fronts yet.
+- Buildings now have doors, shops, windows and roof domes (second pass below); balconies, arches across the lanes and market stalls are still missing.
 - **No sound** yet (footsteps, birds, the city, the adhan).
 - **The ground is flat:** the real Old City slopes, and the platform's height is an estimate (H17).
 - Tree species and the arch and battlement sizes are estimates (`NEEDS_REVIEW.md` H17).
 - In the editor on this PC the walk shows about 20 FPS; the built game is what matters (75 FPS).
+
+### E3, second pass: building detail and light ("make it beautiful")
+
+- **Doors, shops and windows** on the 790 house walls that face a street or lane: arched doorways with wooden
+  doors, arched shop openings with painted metal shutters, and framed windows on the upper floors, all set in
+  pale stone frames (sizes and spacing are estimates, `NEEDS_REVIEW.md` H17).
+- **Roofs:** a low parapet around every flat roof, and small white plastered domes on 162 houses.
+- **Warmer, softer light:** sunlight bouncing off the pale stone is imitated with warm ambient light, so lanes in
+  shade glow instead of going grey; screen-space ambient occlusion (half resolution) darkens corners and the foot
+  of walls; paler, creamier stone on the city walls; silvery olive trees; a slightly higher morning sun.
+- Fixed: the child's body is hidden in first person (the camera sat inside it); doors, windows and arches no
+  longer render black (their two faces shared vertices, so their lighting cancelled out).
+- Windows build, the walk by itself for 5 minutes: **64 FPS average** (56-72), from 75 before this pass.
+- Screenshots: `docs/screenshots/e3b-*.png`.
 
 ## Phase E2: Walking Al-Quds, then and now (done 16 November 2026, block-out)
 
