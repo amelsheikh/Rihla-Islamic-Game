@@ -181,6 +181,7 @@ namespace Rihla
             var clue = clues[i]; string id = (string)clue["id"];
             var list = Found.ToList(); list.Add(id); SaveData.Current.clues = list.ToArray(); SaveData.Save();
             clueSpots[i].gameObject.SetActive(false);
+            Soundscape.Chime();
             var era = ContentLibrary.Instance.History?["sites"]?[(string)clue["site"]]?["eras"]?[(int)clue["era"]];
             ui.OpenModal(() =>
             {
@@ -201,6 +202,7 @@ namespace Rihla
             else if (Inside(new Vector2(c.x, c.z))) { main = Lang.T("w.aqsa"); other = ContentLibrary.Instance.T("w.aqsa", Lang.Arabic ? "en" : "ar"); }
             else { main = Name("al-quds", Lang.Current); other = Name("al-quds", Lang.Arabic ? "en" : "ar"); }
 
+            if (Soundscape.Instance) Soundscape.Instance.birdiness = Inside(new Vector2(c.x, c.z)) ? 0.85f : 0.25f;
             string hint = Lang.T("w.walkHint") + "\n" + Lang.T("w.view");
             if (lens.Revealed) hint += Lang.Sep + Lang.T("w.lens");
             if (nearClue >= 0) hint = Lang.T("w.look") + "\n" + hint;

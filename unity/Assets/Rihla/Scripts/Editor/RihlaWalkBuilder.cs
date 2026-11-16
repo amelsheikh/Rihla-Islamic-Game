@@ -105,6 +105,8 @@ namespace Rihla.EditorTools
             lens.thenColors = new[] { new Color(0.27f, 0.28f, 0.3f) }; lens.thenMetal = new[] { 0.35f };
             lens.onlyThen = new GameObject[0]; lens.onlyNow = new GameObject[0];
 
+            var sound = cam.gameObject.AddComponent<Soundscape>();
+            sound.child = child; sound.jiddo = jiddo; sound.lens = lens;
             var dir = new GameObject("Walk").AddComponent<WalkDirector>();
             dir.child = child; dir.cam = cam; dir.jiddo = jiddo; dir.lens = lens;
             dir.path = path.ToArray(); dir.stepAt = stepAt;

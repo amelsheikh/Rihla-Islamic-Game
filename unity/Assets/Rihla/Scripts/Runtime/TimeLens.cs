@@ -33,6 +33,7 @@ namespace Rihla
         public void Reveal()
         {
             Revealed = true;
+            Soundscape.Reveal();
             Set(false, revealSeconds);
         }
 

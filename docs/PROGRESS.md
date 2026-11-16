@@ -200,7 +200,7 @@ Known issues and what would help most next:
 - **People.** The child and Jiddo are still a blue and a brown capsule; there are no other people. Proper
   characters are the biggest step left; free ones need checking for licences and for modest dress (brief section 5).
 - Buildings now have doors, shops, windows and roof domes (second pass below); balconies, arches across the lanes and market stalls are still missing.
-- **No sound** yet (footsteps, birds, the city, the adhan).
+- Sound was added later (see "Sound in the walk"); the adhan still needs a real recording.
 - **The ground is flat:** the real Old City slopes, and the platform's height is an estimate (H17).
 - Tree species and the arch and battlement sizes are estimates (`NEEDS_REVIEW.md` H17).
 - In the editor on this PC the walk shows about 20 FPS; the built game is what matters (75 FPS).
@@ -218,6 +218,17 @@ Known issues and what would help most next:
   longer render black (their two faces shared vertices, so their lighting cancelled out).
 - Windows build, the walk by itself for 5 minutes: **64 FPS average** (56-72), from 75 before this pass.
 - Screenshots: `docs/screenshots/e3b-*.png`.
+
+### Sound in the walk (16 November 2026)
+
+- `Soundscape.cs`, made by code like the browser prototype's sound, so no recordings are needed: a soft morning
+  breeze that swells and fades; birdsong in short bursts, livelier inside al-Masjid al-Aqsa among its trees;
+  footsteps on stone for the child (one every 0.7 m) and, softer, for Jiddo; two bell notes when a clue is found;
+  a warm rising chord for the Time Lens reveal; and in the "then" view everything sounds slightly muffled, like a
+  memory. Pages opened halve the volume.
+- Checked: it plays with no errors and costs nothing measurable (65 FPS). **Nobody has listened to it yet**; the
+  owner's ears decide the levels.
+- The adhan is not synthesised: it needs a real recording with permission (`NEEDS_REVIEW.md` R4).
 
 ## Phase E2: Walking Al-Quds, then and now (done 16 November 2026, block-out)
 
