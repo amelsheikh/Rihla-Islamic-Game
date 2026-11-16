@@ -100,6 +100,24 @@ watch and play on the same screen.
 6. Install Cesium for Unity and test flying over Al-Quds (needs the owner's Google Maps API key).
 7. Screenshots and a Windows build; commit and push.
 
+## 4b. Phase E1: Chapter 1's teaching systems (on the owner's PC)
+
+E0 left the Unity game able to drive, walk and fly, but with an English-only debug HUD and none of the browser
+prototype's teaching. `docs/STORY.md` section 9 asks for Chapter 1 next, and teaching comes first, so E1 brings
+the teaching systems across. All of it is game logic and interface, which the owner's PC can do; the realistic
+look waits for the cloud PC.
+
+1. A real interface in English and Arabic (UI Toolkit, the Amiri typeface, right to left, Eastern Arabic
+   digits), replacing the debug HUD, with a language switch.
+2. Arrival banners at each place and the sea-level banner, from `content/places.json`.
+3. The journal: Page 1 of the Rihla with Surah Al-Isra 17:1 from `content/religious_texts.json`, and a Journal button.
+4. Then and now: the Dome of the Rock's timeline from `content/history.json`, opened in "Al-Quds today", beside
+   the 3D city of today.
+5. Saving: language, the pages found and where the player is.
+6. Screenshots in both languages, FPS, a Windows build; commit and push.
+
+The riddles, clues on foot, keepers, the shepherd and Teta's call (the Chapter 1 story itself) follow in E2.
+
 ## 5. Costs to expect
 
 - The cloud PC: about $30–60 a month.

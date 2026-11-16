@@ -38,26 +38,64 @@ namespace Rihla.EditorTools
             Markers(road);
             var (car, walker, cam) = Player(road);
 
-            var content = new GameObject("Content").AddComponent<ContentLibrary>();
-            content.places = Load(Content + "places.json");
-            content.history = Load(Content + "history.json");
-            content.journal = Load(Content + "journal.json");
-            content.religiousTexts = Load(Content + "religious_texts.json");
-            content.english = Load(Content + "i18n/en.json");
-            content.arabic = Load(Content + "i18n/ar.json");
+            RihlaUIBuilder.AddContent();
+            RihlaUIBuilder.AddUI();
 
             var sw = new GameObject("Player").AddComponent<PlayerSwitch>();
             sw.car = car; sw.walker = walker; sw.cam = cam;
             var hud = new GameObject("HUD").AddComponent<Hud>();
             hud.car = car; hud.player = sw; hud.road = road;
+            var teach = new GameObject("Teaching").AddComponent<Teaching>();
+            teach.car = car; teach.player = sw; teach.road = road; teach.hud = hud;
+            teach.pageMarker = PageMarker(road, json);
 
             EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(), ScenePath);
-            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
+            EditorBuildSettings.scenes = File.Exists(RihlaCesiumBuilder.ScenePath)
+                ? new[] { new EditorBuildSettingsScene(ScenePath, true), new EditorBuildSettingsScene(RihlaCesiumBuilder.ScenePath, true) }
+                : new[] { new EditorBuildSettingsScene(ScenePath, true) };
             AssetDatabase.SaveAssets();
             Debug.Log($"[Rihla] E0 scene built: {terrains.Count} terrains, road {road.points.Length} points ({road.Length:0} m), {road.places.Length} places");
         }
 
-        static TextAsset Load(string p) => AssetDatabase.LoadAssetAtPath<TextAsset>(p);
+        /// <summary>
+        /// The first page of the Rihla, a golden scroll on a stone beside the road at its place (Khan al-Hatruri),
+        /// on the khan's side, as in the browser prototype.
+        /// </summary>
+        static Transform PageMarker(RoadPath road, JObject json)
+        {
+            var journal = JObject.Parse(File.ReadAllText(Content + "journal.json"));
+            string placeId = (string)journal["pages"]?[0]?["place"];
+            int pi = System.Array.FindIndex(road.places, p => p.id == placeId);
+            if (pi < 0) { Debug.LogWarning("[Rihla] page place not found: " + placeId); return null; }
+            var place = road.places[pi];
+            int i = 0; while (i < road.points.Length - 2 && road.distances[i] < place.roadDist) i++;
+            Vector3 r = road.points[i], d = road.points[i + 1] - r; d.y = 0f; d.Normalize();
+            Vector3 side = new Vector3(d.z, 0f, -d.x); // right of the direction of travel
+            if (Vector3.Dot(side, place.position - r) < 0f) side = -side;
+            Vector3 at = r + side * (road.width / 2f + 3.2f); at.y = Ground(at.x, at.z);
+
+            var root = new GameObject("Rihla page (" + placeId + ")").transform;
+            root.position = at;
+            var plinth = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            plinth.name = "stone"; plinth.transform.SetParent(root, false);
+            plinth.transform.localPosition = new Vector3(0f, 0.5f, 0f); plinth.transform.localScale = new Vector3(1.5f, 0.5f, 1.5f);
+            plinth.GetComponent<MeshRenderer>().sharedMaterial = Mat("page_stone", new Color(0.81f, 0.76f, 0.64f));
+            var scrollMat = Mat("page_scroll", new Color(0.95f, 0.87f, 0.63f), 0.5f);
+            scrollMat.EnableKeyword("_EMISSION"); scrollMat.SetColor("_EmissionColor", new Color(0.85f, 0.66f, 0.23f) * 2.5f);
+            scrollMat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+            var scroll = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            scroll.name = "scroll"; scroll.transform.SetParent(root, false);
+            Object.DestroyImmediate(scroll.GetComponent<Collider>());
+            scroll.transform.localPosition = new Vector3(0f, 1.75f, 0f); scroll.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+            scroll.transform.localScale = new Vector3(0.32f, 0.5f, 0.32f);
+            scroll.GetComponent<MeshRenderer>().sharedMaterial = scrollMat;
+            var beam = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            beam.name = "beam"; beam.transform.SetParent(root, false);
+            Object.DestroyImmediate(beam.GetComponent<Collider>());
+            beam.transform.localPosition = new Vector3(0f, 14f, 0f); beam.transform.localScale = new Vector3(0.25f, 12f, 0.25f);
+            beam.GetComponent<MeshRenderer>().sharedMaterial = scrollMat;
+            return root;
+        }
 
         static Material Mat(string name, Color c, float smooth = 0.2f)
         {

@@ -47,6 +47,9 @@ namespace Rihla.EditorTools
             var fly = camGo.AddComponent<Rihla.AlQudsFlyover>(); fly.tileset = tiles;
             camGo.transform.position = new Vector3(0f, fly.height, -fly.radius); camGo.transform.LookAt(Vector3.zero);
 
+            RihlaUIBuilder.AddContent();
+            RihlaUIBuilder.AddUI();
+
             EditorSceneManager.SaveScene(scene, ScenePath);
             var list = new System.Collections.Generic.List<EditorBuildSettingsScene>();
             list.Add(new EditorBuildSettingsScene(RihlaSceneBuilder.ScenePath, true));

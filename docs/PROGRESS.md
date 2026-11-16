@@ -12,6 +12,7 @@
 | 6 — Egypt and Sinai | Not started | |
 | 7 — Polish and release | Not started | |
 | E0 — Unity 6 project (owner's PC) | Done | Terrain, road, car on autopilot, child walking, Al-Quds today on Google 3D Tiles via Cesium ion, Windows build at 118 FPS. See below |
+| E1 — Chapter 1 teaching systems in Unity (owner's PC) | Done | Arabic and English UI, banners, journal page with Al-Isra 17:1, history beside "Al-Quds today", saving; 102 FPS. See below |
 
 ## Phase 1a: what works
 
@@ -164,6 +165,58 @@ walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
 
+## Phase E1: Chapter 1's teaching systems in Unity (done 16 November 2026)
+
+Plan: `docs/ENGINE_SETUP.md` 4b. Everything the browser prototype teaches on the Jericho road now works in Unity,
+in English and Arabic.
+
+What works:
+
+- **A real interface in both languages** (UI Toolkit, `RihlaUI.cs`), replacing E0's English-only debug box.
+  Unity 6.6's *Advanced* text generator joins Arabic letters, places vowel marks and lays out right to left
+  correctly (its *Standard* generator does not). The Amiri typeface is used throughout. In Arabic the whole
+  layout mirrors, numbers use Eastern Arabic digits (٧١٦ م فوق سطح البحر), and "·" separators are shown as
+  "—", because a middle dot looks exactly like the Arabic zero ٠. **L** or the button switches language at any
+  time, even with a page open.
+- **HUD:** speed, true elevation above or below sea level, the objective ("Find the first page at Khan
+  al-Hatruri", with the distance) or the distance to Ariha, the nearest place in both languages, key hints, FPS.
+- **Banners** on reaching each place (in both languages) and on crossing sea level.
+- **The opening card** on a new game, and **the first page of the Rihla**: a golden scroll on a stone beside the
+  road at Khan al-Hatruri. Stopping beside it (or walking up to it) opens the page: Zaynab's words, Jiddo's
+  explanation, Surah Al-Isra 17:1 in Arabic with its reference and English meaning, and the facts. Then the
+  Journal button (**J**) keeps it.
+- **History of this place** (**H**) near the six places that have one in `content/history.json`, and in
+  "Al-Quds today" a list of the Old City's places (the Dome of the Rock, Al-Qibli Mosque, the walls and Bab
+  al-Asbat). Reading the Dome of the Rock's story through 1,300 years over the live 3D city of today is the
+  first real "then and now" in the Unity game.
+- **Saving:** language, pages found, the opening card seen, and where the car is (every 10 s and on quitting).
+  `-newgame` starts afresh; `-arabic` starts in Arabic.
+- All text comes from `content/`; new interface strings are `u.*` keys in `content/i18n/` (Arabic listed in
+  `NEEDS_REVIEW.md` R6).
+
+Checks run:
+
+| Check | Result |
+|---|---|
+| Opening card, HUD, history, page, verse, banners, in both languages (editor) | Working; screenshots `docs/screenshots/e1-*.png` |
+| Saving | Quit at Khan al-Hatruri, restarted there with the page and language kept and no opening card |
+| Sea-level banner | Shown in Arabic on crossing 0 m (`e1-sea-level-ar.png`) |
+| Windows build, 7 minutes of autopilot in Arabic (`-autopilot -newgame -arabic -quitafter 480`) | **102 FPS average** at 1280 x 720 (96-110), place banners in Arabic at Bab al-Asbat, Al-Eizariya, Khan al-Ahmar and Khan al-Hatruri |
+| "Al-Quds today" with the interface (editor) | 26-29 FPS |
+
+Known issues:
+
+- **"Then" is told, not yet shown:** the history pages tell each place's story, but there is no picture or
+  model of how it looked. Old photographs (for example the Dome of the Rock with its lead dome about 1910) or
+  rebuilt models are the next step and need the owner's choice of sources.
+- In the 7-minute test the game once went to "Al-Quds today" and straight back, most likely a key press
+  reaching the window; keys are now ignored for the first second after a scene opens.
+- Page and history text is long for a 10-year-old to read alone; Jiddo's voice (recorded or read aloud) would help.
+- The car and child are still placeholders; touch and gamepad buttons for the new keys (J, H, L) are not made yet.
+
+Next: E2, the Chapter 1 story itself (`docs/STORY.md` section 5): the riddles, three clues found on foot at each
+place, the keepers, the shepherd, Teta's call and the Dead Sea finale. "Then" pictures need the owner's sources.
+
 ## Phase E0: Unity 6 on the owner's PC (done 16 November 2026)
 
 Working on the owner's own PC first (`docs/ENGINE_SETUP.md` section 1b): Intel HD Graphics, 16 GB memory.
@@ -220,10 +273,10 @@ Not done yet, and known issues:
 - Cesium ion's free tier is for non-commercial use ("Upgrade for commercial use" shows in the credits).
 - From high above, the road shows in dashes on distant hills, where the coarse terrain detail covers it; fine
   up close. The rock layer is barely visible, so the hills read as one sand colour.
-- The HUD is English only, since Unity's simple debug UI does not join Arabic letters; the real UI (E1) will.
+- The HUD was English only in E0; E1 replaced it with the bilingual interface.
 - The car, child and buildings are placeholders (boxes and a capsule), as E0 intends.
 
-Next: E1, the realistic look, on the cloud PC; and "then" views to sit beside "Al-Quds today".
+Next (done): E1, Chapter 1's teaching systems; see above.
 
 ## Pass R2: walking, history, driving and sound
 

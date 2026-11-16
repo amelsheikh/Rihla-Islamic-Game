@@ -64,5 +64,15 @@
   "getIn": "Get back in the car",
   "walkBack": "Walk back to the car to drive on",
   "parkHere": "Cars cannot go through the old gates. Stop here and walk in.",
-  "stopFirst": "Stop the car first"
+  "stopFirst": "Stop the car first",
+  "u.driving": "Driving · E to get out when stopped · P: Jiddo drives",
+  "u.jiddoDrives": "Jiddo is driving · P to take over",
+  "u.onFoot": "On foot · E beside the car to get back in",
+  "u.toFly": "C: Al-Quds today, from the air · L: language",
+  "u.alQudsToday": "Al-Quds today",
+  "u.flyHelp": "The city as it is today, on Google's 3D map",
+  "u.flyKeys": "Arrows: turn · C or Esc: back to the road · L: language",
+  "u.historyHere": "Places of the Old City",
+  "u.km": "km",
+  "u.m": "m"
 }

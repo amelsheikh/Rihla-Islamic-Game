@@ -1,0 +1,275 @@
+using System;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
+
+namespace Rihla
+{
+    /// <summary>
+    /// The game's interface in English and Arabic, built with UI Toolkit. Text uses the Advanced text generator,
+    /// which joins Arabic letters and lays out right-to-left text properly, and the Amiri typeface. The whole
+    /// layout mirrors when the language is Arabic. Controllers (Teaching, AlQudsFlyover) fill it every frame.
+    /// Keys: L language, J journal, H history, Esc or Enter closes a page.
+    /// </summary>
+    public class RihlaUI : MonoBehaviour
+    {
+        public PanelSettings panelSettings;
+        public Font regular, bold;
+
+        public static RihlaUI Instance { get; private set; }
+        public bool ModalOpen => modal != null && modal.style.display == DisplayStyle.Flex;
+        /// <summary>Called when the Journal or History button (or J / H) is used.</summary>
+        public Action OnJournal, OnHistory;
+
+        static readonly Color Ink = new Color(0.96f, 0.93f, 0.87f), Gold = new Color(0.91f, 0.78f, 0.42f),
+            Panel = new Color(0.09f, 0.07f, 0.05f, 0.74f), Paper = new Color(0.95f, 0.91f, 0.82f), PaperInk = new Color(0.17f, 0.13f, 0.09f);
+
+        VisualElement root, hud, buttons, banner, modal, sheet, body;
+        Label speed, line1, line2, placeMain, placeSub, hint, fps, bannerTitle, bannerSub;
+        Button langBtn, journalBtn, historyBtn, closeBtn;
+        float bannerTimer; Action onClose, rebuild; float savedTimeScale = 1f;
+
+        void Awake()
+        {
+            Instance = this;
+            if (Array.IndexOf(Environment.GetCommandLineArgs(), "-newgame") >= 0) SaveData.Reset();
+            if (Array.IndexOf(Environment.GetCommandLineArgs(), "-arabic") >= 0) SaveData.Current.lang = "ar";
+            Lang.Set(SaveData.Current.lang);
+            var doc = gameObject.AddComponent<UIDocument>();
+            doc.panelSettings = panelSettings;
+            root = doc.rootVisualElement;
+            root.style.flexGrow = 1;
+            root.pickingMode = PickingMode.Ignore;
+            Build();
+            Lang.Changed += Relayout;
+            Relayout();
+        }
+
+        // The content library loads in its own Awake, so the button labels are filled again once it has.
+        void Start() => Relayout();
+
+        void OnDestroy() { Lang.Changed -= Relayout; if (Instance == this) Instance = null; }
+
+        // ------------------------------------------------------------------ building blocks
+
+        public Label Text(string s, float size, bool isBold = false, Color? color = null)
+        {
+            var l = new Label(s);
+            l.style.unityFontDefinition = FontDefinition.FromFont(isBold && bold ? bold : regular);
+            l.style.unityTextGenerator = TextGeneratorType.Advanced;
+            l.style.fontSize = size;
+            l.style.color = color ?? Ink;
+            l.style.whiteSpace = WhiteSpace.Normal;
+            l.style.marginTop = l.style.marginBottom = 1; l.style.paddingLeft = l.style.paddingRight = 0;
+            l.pickingMode = PickingMode.Ignore;
+            return l;
+        }
+
+        Button MakeButton(string s, Action click)
+        {
+            var b = new Button(click) { text = s };
+            b.style.unityFontDefinition = FontDefinition.FromFont(bold ? bold : regular);
+            b.style.unityTextGenerator = TextGeneratorType.Advanced;
+            b.style.fontSize = 17; b.style.color = Ink;
+            b.style.backgroundColor = Panel;
+            b.style.borderTopWidth = b.style.borderBottomWidth = b.style.borderLeftWidth = b.style.borderRightWidth = 1;
+            b.style.borderTopColor = b.style.borderBottomColor = b.style.borderLeftColor = b.style.borderRightColor = Gold;
+            b.style.borderTopLeftRadius = b.style.borderTopRightRadius = b.style.borderBottomLeftRadius = b.style.borderBottomRightRadius = 8;
+            b.style.paddingLeft = b.style.paddingRight = 14; b.style.paddingTop = b.style.paddingBottom = 4;
+            b.style.marginLeft = b.style.marginRight = 4; b.style.marginTop = b.style.marginBottom = 4;
+            return b;
+        }
+
+        static void Pad(VisualElement e, float v, float h)
+        {
+            e.style.paddingTop = e.style.paddingBottom = v; e.style.paddingLeft = e.style.paddingRight = h;
+        }
+
+        static void Round(VisualElement e, float r)
+        {
+            e.style.borderTopLeftRadius = e.style.borderTopRightRadius = e.style.borderBottomLeftRadius = e.style.borderBottomRightRadius = r;
+        }
+
+        void Build()
+        {
+            // The HUD box (top left in English, top right in Arabic).
+            hud = new VisualElement(); hud.style.position = Position.Absolute; hud.style.top = 14; hud.style.width = 380;
+            hud.style.backgroundColor = Panel; Pad(hud, 10, 14); Round(hud, 10); hud.pickingMode = PickingMode.Ignore;
+            speed = Text("", 30, true, Gold); line1 = Text("", 17); line2 = Text("", 17);
+            placeMain = Text("", 22, true); placeSub = Text("", 15, false, new Color(0.85f, 0.82f, 0.75f));
+            hint = Text("", 15, false, new Color(0.85f, 0.82f, 0.75f)); fps = Text("", 12, false, new Color(0.7f, 0.68f, 0.62f));
+            placeMain.style.marginTop = 6;
+            hud.Add(speed); hud.Add(line1); hud.Add(line2); hud.Add(placeMain); hud.Add(placeSub); hud.Add(hint); hud.Add(fps);
+            root.Add(hud);
+
+            // Buttons (the opposite top corner).
+            buttons = new VisualElement(); buttons.style.position = Position.Absolute; buttons.style.top = 10;
+            buttons.style.flexDirection = FlexDirection.Row;
+            langBtn = MakeButton("", Lang.Toggle);
+            journalBtn = MakeButton("", () => OnJournal?.Invoke());
+            historyBtn = MakeButton("", () => OnHistory?.Invoke());
+            buttons.Add(historyBtn); buttons.Add(journalBtn); buttons.Add(langBtn);
+            root.Add(buttons);
+            SetJournalVisible(false); SetHistoryVisible(false);
+
+            // The banner, centred near the top.
+            banner = new VisualElement(); banner.style.position = Position.Absolute; banner.style.top = 90;
+            banner.style.left = new Length(50, LengthUnit.Percent); banner.style.translate = new Translate(new Length(-50, LengthUnit.Percent), 0);
+            banner.style.minWidth = 420; banner.style.maxWidth = 760; banner.style.alignItems = Align.Center;
+            banner.style.backgroundColor = Panel; Pad(banner, 12, 24); Round(banner, 12);
+            banner.style.borderBottomWidth = 2; banner.style.borderBottomColor = Gold; banner.pickingMode = PickingMode.Ignore;
+            bannerTitle = Text("", 30, true, Gold); bannerSub = Text("", 18);
+            bannerTitle.style.unityTextAlign = bannerSub.style.unityTextAlign = TextAnchor.MiddleCenter;
+            banner.Add(bannerTitle); banner.Add(bannerSub);
+            banner.style.display = DisplayStyle.None;
+            root.Add(banner);
+
+            // The page sheet for the journal, history and the opening card.
+            modal = new VisualElement(); modal.style.position = Position.Absolute;
+            modal.style.left = modal.style.right = modal.style.top = modal.style.bottom = 0;
+            modal.style.backgroundColor = new Color(0f, 0f, 0f, 0.45f);
+            modal.style.alignItems = Align.Center; modal.style.justifyContent = Justify.Center;
+            sheet = new VisualElement(); sheet.style.width = new Length(70, LengthUnit.Percent); sheet.style.maxWidth = 900;
+            sheet.style.height = new Length(84, LengthUnit.Percent);
+            sheet.style.backgroundColor = Paper; Round(sheet, 14); Pad(sheet, 18, 28);
+            sheet.style.borderTopWidth = sheet.style.borderBottomWidth = sheet.style.borderLeftWidth = sheet.style.borderRightWidth = 3;
+            sheet.style.borderTopColor = sheet.style.borderBottomColor = sheet.style.borderLeftColor = sheet.style.borderRightColor = Gold;
+            var scroll = new ScrollView(ScrollViewMode.Vertical); scroll.style.flexGrow = 1;
+            body = new VisualElement(); scroll.Add(body);
+            closeBtn = MakeButton("", CloseModal); closeBtn.style.alignSelf = Align.Center; closeBtn.style.marginTop = 10;
+            sheet.Add(scroll); sheet.Add(closeBtn); modal.Add(sheet);
+            modal.style.display = DisplayStyle.None;
+            root.Add(modal);
+        }
+
+        /// <summary>Mirrors the layout for the current language and refreshes fixed labels and any open page.</summary>
+        void Relayout()
+        {
+            bool ar = Lang.Arabic;
+            root.languageDirection = ar ? LanguageDirection.RTL : LanguageDirection.LTR;
+            hud.style.left = ar ? StyleKeyword.Auto : 14; hud.style.right = ar ? 14 : StyleKeyword.Auto;
+            buttons.style.right = ar ? StyleKeyword.Auto : 10; buttons.style.left = ar ? 10 : StyleKeyword.Auto;
+            buttons.style.flexDirection = ar ? FlexDirection.RowReverse : FlexDirection.Row;
+            langBtn.text = ar ? "English" : "عربي";
+            journalBtn.text = Lang.T("journal");
+            historyBtn.text = Lang.T("history");
+            root.Query<Label>().ForEach(l =>
+            {
+                if (l == bannerTitle || l == bannerSub || l.ClassListContains("center")) return;
+                l.style.unityTextAlign = ar ? TextAnchor.UpperRight : TextAnchor.UpperLeft;
+            });
+            if (ModalOpen && rebuild != null) { body.Clear(); rebuild(); AlignBody(); }
+        }
+
+        void AlignBody()
+        {
+            body.Query<Label>().ForEach(l => { if (!l.ClassListContains("center")) l.style.unityTextAlign = Lang.Arabic ? TextAnchor.UpperRight : TextAnchor.UpperLeft; });
+        }
+
+        // ------------------------------------------------------------------ what controllers call
+
+        public void SetHud(string big, string a, string b, string place, string placeOther, string hintText)
+        {
+            speed.text = big; line1.text = a; line2.text = b;
+            placeMain.text = place; placeSub.text = placeOther; hint.text = hintText;
+            line2.style.display = string.IsNullOrEmpty(b) ? DisplayStyle.None : DisplayStyle.Flex;
+            hint.style.display = string.IsNullOrEmpty(hintText) ? DisplayStyle.None : DisplayStyle.Flex;
+        }
+
+        public void SetFps(float value) => fps.text = Lang.Num(value) + " fps";
+        public void SetJournalVisible(bool v) => journalBtn.style.display = v ? DisplayStyle.Flex : DisplayStyle.None;
+        public void SetHistoryVisible(bool v) => historyBtn.style.display = v ? DisplayStyle.Flex : DisplayStyle.None;
+
+        public void Banner(string title, string sub, float seconds = 5f)
+        {
+            bannerTitle.text = title; bannerSub.text = sub;
+            bannerSub.style.display = string.IsNullOrEmpty(sub) ? DisplayStyle.None : DisplayStyle.Flex;
+            banner.style.display = DisplayStyle.Flex; bannerTimer = seconds;
+            Debug.Log($"[Rihla] banner ({Lang.Current}): {title}" + (string.IsNullOrEmpty(sub) ? "" : $" / {sub}"));
+        }
+
+        /// <summary>Opens a page. <paramref name="build"/> fills it and is called again if the language changes.</summary>
+        public void OpenModal(Action build, string closeKey, Action closed)
+        {
+            if (ModalOpen) { onClose = null; CloseModal(); }
+            rebuild = () => { build(); closeBtn.text = Lang.T(closeKey); };
+            onClose = closed;
+            body.Clear(); rebuild(); AlignBody();
+            modal.style.display = DisplayStyle.Flex;
+            savedTimeScale = Time.timeScale; Time.timeScale = 0f;
+        }
+
+        public void CloseModal()
+        {
+            if (!ModalOpen) return;
+            modal.style.display = DisplayStyle.None; Time.timeScale = savedTimeScale <= 0f ? 1f : savedTimeScale;
+            var c = onClose; onClose = null; rebuild = null; c?.Invoke();
+        }
+
+        // Page content helpers.
+        public void H1(string s) { var l = Text(s, 32, true, PaperInk); l.style.marginBottom = 8; body.Add(l); }
+        public void H2(string s) { var l = Text(s, 21, true, new Color(0.55f, 0.36f, 0.08f)); l.style.marginTop = 12; body.Add(l); }
+        public void P(string s, bool italic = false)
+        {
+            var l = Text(s, 19, false, PaperInk); l.style.marginBottom = 6;
+            if (italic) l.style.unityFontStyleAndWeight = FontStyle.Italic;
+            body.Add(l);
+        }
+
+        /// <summary>A Quran verse or hadith: the Arabic always, its reference, and the meaning in English.</summary>
+        public void Verse(string arabic, string reference, string meaning)
+        {
+            var box = new VisualElement(); box.style.backgroundColor = new Color(1f, 0.98f, 0.92f); Pad(box, 10, 16); Round(box, 10);
+            box.style.borderLeftWidth = box.style.borderRightWidth = 4; box.style.borderLeftColor = box.style.borderRightColor = Gold;
+            box.style.marginTop = 6; box.style.marginBottom = 8;
+            var ar = Text(arabic, 28, false, PaperInk); ar.languageDirection = LanguageDirection.RTL;
+            ar.style.unityTextAlign = TextAnchor.MiddleCenter; ar.AddToClassList("center"); box.Add(ar);
+            var r = Text(reference, 15, false, new Color(0.45f, 0.35f, 0.2f)); r.style.unityTextAlign = TextAnchor.MiddleCenter; r.AddToClassList("center"); box.Add(r);
+            if (!string.IsNullOrEmpty(meaning)) { var m = Text(meaning, 18, false, PaperInk); m.style.marginTop = 6; box.Add(m); }
+            body.Add(box);
+        }
+
+        public void Facts(System.Collections.Generic.IEnumerable<string> facts)
+        {
+            var row = new VisualElement(); row.style.flexDirection = FlexDirection.Row; row.style.flexWrap = Wrap.Wrap; row.style.marginTop = 8;
+            foreach (var f in facts)
+            {
+                var chip = Text(f, 16, false, PaperInk); chip.style.backgroundColor = new Color(0.91f, 0.84f, 0.66f);
+                Pad(chip, 4, 10); Round(chip, 12); chip.style.marginRight = chip.style.marginLeft = 3; chip.style.marginBottom = 6;
+                row.Add(chip);
+            }
+            body.Add(row);
+        }
+
+        public void Era(string when, string text)
+        {
+            var row = new VisualElement(); row.style.marginTop = 6; row.style.paddingBottom = 6;
+            row.style.borderBottomWidth = 1; row.style.borderBottomColor = new Color(0.8f, 0.7f, 0.5f);
+            row.Add(Text(when, 18, true, new Color(0.55f, 0.36f, 0.08f)));
+            row.Add(Text(text, 18, false, PaperInk));
+            body.Add(row);
+        }
+
+        public void Choice(string label, Action pick)
+        {
+            var b = MakeButton(label, pick); b.style.alignSelf = Align.Stretch; b.style.marginTop = 6; body.Add(b);
+        }
+
+        // ------------------------------------------------------------------ per frame
+
+        void Update()
+        {
+            if (bannerTimer > 0f && (bannerTimer -= Time.unscaledDeltaTime) <= 0f) banner.style.display = DisplayStyle.None;
+            var kb = Keyboard.current; if (kb == null) return;
+            if (ModalOpen)
+            {
+                if (kb.escapeKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame) CloseModal();
+                if (kb.lKey.wasPressedThisFrame) Lang.Toggle();
+                return;
+            }
+            if (kb.lKey.wasPressedThisFrame) Lang.Toggle();
+            if (kb.jKey.wasPressedThisFrame && journalBtn.style.display == DisplayStyle.Flex) OnJournal?.Invoke();
+            if (kb.hKey.wasPressedThisFrame && historyBtn.style.display == DisplayStyle.Flex) OnHistory?.Invoke();
+        }
+    }
+}
