@@ -123,7 +123,7 @@ look waits for the cloud PC.
   walk, the Chapter 1 prologue (three clues: the lions of Bab al-Asbat, the tiles of the Dome of the Rock, the
   dome of the Qibli Mosque), and the first **Time Lens** reveal: the street as it was about 1900, turning to
   today. Needs the owner's choice of "then" sources and decision on how present-day streets are shown.
-- **E3: Realism on the cloud PC.** Set up the cloud graphics PC; a realism pass on the E2 route (stone and
+- **E3: Realism.** *First pass done on the owner's PC, 16 November 2026 (the owner chose to stay on it); see `docs/PROGRESS.md`.* Originally planned on the cloud PC: Set up the cloud graphics PC; a realism pass on the E2 route (stone and
   plaster materials, light, sky, people, sound); decide between URP and HDRP for the look.
 - **E4: Ways to travel.** Horse and carriage in "then" scenes, bicycle and car today, glider and plane over the
   land on the 3D map, landing into hand-built places.

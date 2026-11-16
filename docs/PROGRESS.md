@@ -14,6 +14,7 @@
 | E0 — Unity 6 project (owner's PC) | Done | Terrain, road, car on autopilot, child walking, Al-Quds today on Google 3D Tiles via Cesium ion, Windows build at 118 FPS. See below |
 | E1 — Chapter 1 teaching systems in Unity (owner's PC) | Done | Arabic and English UI, banners, journal page with Al-Isra 17:1, history beside "Al-Quds today", saving; 102 FPS. See below |
 | E2 — Walking Al-Quds, then and now (owner's PC, block-out) | Done | The walk from Bab al-Asbat to al-Masjid al-Aqsa at true scale with Jiddo, three clues and the first Time Lens reveal; 97-103 FPS. See below |
+| E3 — Realism on the owner's PC (first pass) | Done | Real stone textures, pointed-arch gates, battlements, 106 trees, sky, soft shadows, morning colour; 75 FPS. See below |
 
 ## Phase 1a: what works
 
@@ -165,6 +166,44 @@ Palestine comes after Chapter 1, "then and now" is central, and the world should
 walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
+
+## Phase E3: realism on the owner's PC, first pass (done 16 November 2026)
+
+The owner chose to continue on their own PC instead of the cloud PC (Intel HD Graphics). The aim is the best look
+this hardware allows, which also means the game will run on ordinary family laptops.
+
+What changed in the walk (`RihlaWalkBuilder.cs`):
+
+- **Real materials** from Poly Haven (CC0, 1K, listed in `ASSETS.md`): golden rough-faced blocks on the city
+  walls, pale ashlar and white plaster on the houses and gates, pale stone slabs in the lanes, the courtyard and
+  on the platform, marble on the Dome of the Rock's lower walls. All surfaces are now in metres, so stones are the
+  right size everywhere.
+- **Pointed-arch passages:** Bab al-Asbat and every gate or building over a street now has two piers, a pointed
+  arch and solid stone above, lined up with the street, so the child walks through an arch, not under a box.
+- **Battlements** along the tops of the city walls, on the outer side.
+- **Trees:** the 106 trees OpenStreetMap maps one by one in this area, as olive and cypress shapes, and its grass
+  and garden areas.
+- **Light:** a real sky (procedural, with the low morning sun), soft shadows, filmic colour (ACES), a little glow
+  and a warm morning white balance. The Time Lens's old-photograph look sits on top of this.
+- **The Dome of the Rock's tiled walls** show a plain, generic tile grid. It is deliberately not a copy of the
+  real patterns or the inscription, which must be made properly (`NEEDS_REVIEW.md` R5).
+
+Checks run:
+
+| Check | Result |
+|---|---|
+| Views at the gate (then and now), lane, courtyard, platform and close to the Dome, English and Arabic | `docs/screenshots/e3-*.png` |
+| Windows build, the whole walk by itself (`-walk -autowalk -newgame -quitafter 660`) | All of Jiddo's lines in order; **75 FPS average** at 1280 x 720 (63-86), down from about 100 before the new look |
+
+Known issues and what would help most next:
+
+- **People.** The child and Jiddo are still a blue and a brown capsule; there are no other people. Proper
+  characters are the biggest step left; free ones need checking for licences and for modest dress (brief section 5).
+- **Buildings are boxes:** no doors, windows, arches along the lanes, domed roofs, balconies or shop fronts yet.
+- **No sound** yet (footsteps, birds, the city, the adhan).
+- **The ground is flat:** the real Old City slopes, and the platform's height is an estimate (H17).
+- Tree species and the arch and battlement sizes are estimates (`NEEDS_REVIEW.md` H17).
+- In the editor on this PC the walk shows about 20 FPS; the built game is what matters (75 FPS).
 
 ## Phase E2: Walking Al-Quds, then and now (done 16 November 2026, block-out)
 

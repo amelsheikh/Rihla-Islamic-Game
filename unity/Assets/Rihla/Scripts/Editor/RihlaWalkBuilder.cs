@@ -21,7 +21,9 @@ namespace Rihla.EditorTools
         const string Built = "Assets/Rihla/Built/Walk/";
         /// <summary>Height of the raised platform of the Dome of the Rock above the courtyard (estimate, H17).</summary>
         const float Platform = 4f;
-        const float WallHeight = 12f, WallThickness = 3f, ArchBase = 4.5f;
+        const float WallHeight = 12f, WallThickness = 3f;
+        /// <summary>A gate or covered passage: 4.4 m wide, the pointed arch springing at 3.5 m, solid above 6.4 m (estimates, H17).</summary>
+        const float ArchHalf = 2.2f, ArchSpring = 3.5f, ArchTop = 6.4f;
 
         [MenuItem("Rihla/Build E2 walk (Al-Quds)")]
         public static void Build()
@@ -49,6 +51,7 @@ namespace Rihla.EditorTools
             var dome = V2(points["domeOfTheRock"]); var qibli = V2(points["alQibli"]); var gateC = V2(points["babAlAsbat"]);
             JToken domeB = null, qibliB = null, chainB = null, gateB = null;
             Buildings(json, streets, platform, ref domeB, ref qibliB, ref chainB, ref gateB);
+            Trees(json, platform);
 
             var domeRenderer = DomeOfTheRock(Ring(domeB), out float domeR);
             DomeOfTheChain(Ring(chainB));
@@ -129,19 +132,43 @@ namespace Rihla.EditorTools
             // Early morning: the sun low in the east, light travelling west.
             var sun = new GameObject("Sun").AddComponent<Light>();
             sun.type = LightType.Directional; sun.color = new Color(1f, 0.87f, 0.72f); sun.intensity = 1.4f;
-            sun.shadows = LightShadows.Hard; sun.transform.rotation = Quaternion.Euler(24f, -78f, 0f);
+            sun.shadows = LightShadows.Soft; sun.shadowStrength = 0.85f; sun.transform.rotation = Quaternion.Euler(24f, -78f, 0f);
             RenderSettings.sun = sun;
-            RenderSettings.skybox = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Skybox.mat");
-            RenderSettings.ambientMode = AmbientMode.Skybox;
+            string skyPath = Built + "Sky.mat";
+            var sky = AssetDatabase.LoadAssetAtPath<Material>(skyPath);
+            if (!sky) { sky = new Material(Shader.Find("Skybox/Procedural")); AssetDatabase.CreateAsset(sky, skyPath); }
+            sky.SetFloat("_SunSize", 0.035f); sky.SetFloat("_AtmosphereThickness", 1.15f); sky.SetFloat("_Exposure", 1.25f);
+            sky.SetColor("_SkyTint", new Color(0.52f, 0.58f, 0.68f)); sky.SetColor("_GroundColor", new Color(0.55f, 0.5f, 0.45f));
+            EditorUtility.SetDirty(sky);
+            RenderSettings.skybox = sky;
+            RenderSettings.ambientMode = AmbientMode.Skybox; RenderSettings.ambientIntensity = 1.1f;
+            Look();
             RenderSettings.fog = true; RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogColor = new Color(0.84f, 0.8f, 0.74f); RenderSettings.fogStartDistance = 250f; RenderSettings.fogEndDistance = 1400f;
         }
 
+        /// <summary>The everyday look ("now"): filmic tone mapping, a little glow, warm morning colour.</summary>
+        static void Look()
+        {
+            string path = Built + "Look.asset";
+            AssetDatabase.DeleteAsset(path);
+            var profile = ScriptableObject.CreateInstance<VolumeProfile>();
+            AssetDatabase.CreateAsset(profile, path);
+            var tm = profile.Add<Tonemapping>(true); tm.mode.Override(TonemappingMode.ACES);
+            var bl = profile.Add<Bloom>(true); bl.intensity.Override(0.3f); bl.threshold.Override(1.1f);
+            var ca = profile.Add<ColorAdjustments>(true); ca.postExposure.Override(0.35f); ca.contrast.Override(8f); ca.saturation.Override(6f);
+            var wb = profile.Add<WhiteBalance>(true); wb.temperature.Override(6f);
+            foreach (var c in profile.components) AssetDatabase.AddObjectToAsset(c, profile);
+            EditorUtility.SetDirty(profile);
+            var go = new GameObject("Look (now)");
+            var vol = go.AddComponent<Volume>(); vol.isGlobal = true; vol.priority = 0f; vol.sharedProfile = profile;
+        }
+
         static void Ground(List<Vector2> compound, List<Street> streets)
         {
-            var g = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            g.name = "Ground"; g.transform.position = new Vector3(-150f, 0f, -250f); g.transform.localScale = new Vector3(160f, 1f, 160f);
-            g.GetComponent<MeshRenderer>().sharedMaterial = Mat("ground", new Color(0.66f, 0.6f, 0.5f));
+            // The ground as a mesh in metres, so its stone paving repeats at the right size.
+            var ground = Mesh("Ground", Mat("ground", new Color(0.66f, 0.6f, 0.5f)), true);
+            Cap(ground, new List<Vector2> { new Vector2(-950f, -1050f), new Vector2(650f, -1050f), new Vector2(650f, 550f), new Vector2(-950f, 550f) }, 0f);
             var court = Mesh("Courtyard of al-Masjid al-Aqsa", Mat("courtyard", new Color(0.86f, 0.82f, 0.74f)), false);
             Cap(court, compound, 0.02f);
             var paving = Mesh("Streets", Mat("street", new Color(0.78f, 0.74f, 0.66f)), false);
@@ -157,6 +184,7 @@ namespace Rihla.EditorTools
         {
             var mb = Mesh("City walls", Mat("wall", new Color(0.8f, 0.74f, 0.62f)), true);
             var low = Mesh("Retaining walls", Mat("wall", new Color(0.8f, 0.74f, 0.62f)), true);
+            var merlons = Mesh("Battlements", Mat("wall", new Color(0.8f, 0.74f, 0.62f)), false);
             foreach (var w in json["walls"])
             {
                 if ((string)w["name"] == "rock-platform") continue;
@@ -164,7 +192,24 @@ namespace Rihla.EditorTools
                 var line = w["line"].Select(V2).ToList();
                 for (int i = 0; i < line.Count - 1; i++)
                     foreach (var (a, b) in Gaps(line[i], line[i + 1], streets))
+                    {
                         Segment(city ? mb : low, a, b, city ? WallThickness : 1f, 0f, city ? WallHeight : 1.2f);
+                        if (city) Merlons(merlons, a, b);
+                    }
+            }
+        }
+
+        /// <summary>Battlements along the top of a city wall, on the side away from the Old City (outside).</summary>
+        static void Merlons(MB mb, Vector2 a, Vector2 b)
+        {
+            Vector2 d = b - a; float len = d.magnitude; if (len < 1.5f) return; d /= len;
+            Vector2 n = new Vector2(-d.y, d.x);
+            Vector2 mid = (a + b) / 2f, city = new Vector2(-450f, -350f); // roughly the middle of the Old City
+            if (((mid + n) - city).sqrMagnitude < ((mid - n) - city).sqrMagnitude) n = -n;
+            for (float t = 0.6f; t + 1f < len; t += 2.2f)
+            {
+                Vector2 p = a + d * t + n * (WallThickness / 2f - 0.4f);
+                Segment(mb, p, p + d * 1f, 0.8f, WallHeight, WallHeight + 1.2f);
             }
         }
 
@@ -216,8 +261,161 @@ namespace Rihla.EditorTools
                 float base0 = Inside(platform, c) ? Platform : 0f;
                 float h = b["height"]?.Type == JTokenType.Float || b["height"]?.Type == JTokenType.Integer ? (float)b["height"] : 6.5f + (id % 5);
                 bool arch = (bool)b["gate"] || streets.Any(s => s.passage && Crosses(ring, s.line));
-                if (arch) Prism(gates, ring, base0 + ArchBase, base0 + Mathf.Max(h, ArchBase + 3f));
+                if (arch) ArchedPassage(gates, ring, c, streets, base0, Mathf.Max(h, ArchTop + 3f));
                 else Prism(tones[id % 3], ring, base0, base0 + h);
+            }
+        }
+
+
+        /// <summary>
+        /// A gate (or a building over a street) with a pointed-arch passage along the street: solid piers either
+        /// side, solid above the arch, and the arch itself, so the child walks through it.
+        /// </summary>
+        static void ArchedPassage(MB mb, List<Vector2> ring, Vector2 centre, List<Street> streets, float base0, float h)
+        {
+            // The street that runs through (or nearest to) the building gives the passage's line.
+            Vector2 a0 = default, b0 = default; float best = float.MaxValue;
+            foreach (var st in streets)
+                for (int i = 0; i < st.line.Count - 1; i++)
+                {
+                    Vector2 a = st.line[i], b = st.line[i + 1];
+                    float d = DistToSeg(centre, a, b) - (st.passage ? 50f : 0f);
+                    if (d < best) { best = d; a0 = a; b0 = b; }
+                }
+            Vector2 dir = (b0 - a0).normalized, n = new Vector2(-dir.y, dir.x);
+            Vector2 c = ClosestOnSeg(centre, a0, b0);
+            var left = Clip(ring, c, -n, ArchHalf); var right = Clip(ring, c, n, ArchHalf);
+            var mid = Clip(Clip(ring, c, n, -ArchHalf), c, -n, -ArchHalf);
+            if (left.Count >= 3) Prism(mb, Ccw(left), base0, base0 + h);
+            if (right.Count >= 3) Prism(mb, Ccw(right), base0, base0 + h);
+            if (mid.Count < 3) return;
+            Prism(mb, Ccw(mid), base0 + ArchTop, base0 + h);
+            float t0 = mid.Min(p => Vector2.Dot(p - c, dir)), t1 = mid.Max(p => Vector2.Dot(p - c, dir));
+            // The arch: the space between a pointed arch and the solid above, extruded along the passage.
+            var prof = new List<Vector2> { new Vector2(-ArchHalf, ArchSpring) };
+            float r = ArchHalf * 1.3f, off = ArchHalf * 0.3f;
+            for (int k = 1; k <= 8; k++) { float x = -ArchHalf + ArchHalf * k / 8f; prof.Add(new Vector2(x, ArchSpring + Mathf.Sqrt(Mathf.Max(0f, r * r - (x - off) * (x - off))))); }
+            for (int k = 7; k >= 0; k--) { float x = ArchHalf - ArchHalf * k / 8f; prof.Add(new Vector2(x, ArchSpring + Mathf.Sqrt(Mathf.Max(0f, r * r - (x + off) * (x + off))))); }
+            prof.Add(new Vector2(ArchHalf, ArchTop)); prof.Add(new Vector2(-ArchHalf, ArchTop));
+            for (int i = 0; i < prof.Count; i++) prof[i] = new Vector2(prof[i].x, Mathf.Min(prof[i].y, ArchTop));
+            Extrude(mb, prof, c, n, dir, t0, t1, base0);
+        }
+
+        /// <summary>
+        /// Trees where OpenStreetMap maps one, and its grass and garden areas. OSM does not say the species, so
+        /// they are drawn as a mix of olive (wide, grey-green) and cypress (tall, dark) shapes (estimate, H17).
+        /// </summary>
+        static void Trees(JObject json, List<Vector2> platform)
+        {
+            var grass = Mesh("Grass", Mat("grass", new Color(0.42f, 0.46f, 0.28f)), false);
+            foreach (var g in json["greens"] ?? new JArray())
+            {
+                var ring = Ccw(g.Select(V2).ToList());
+                if (ring.Count < 3) continue;
+                Vector2 c = new Vector2(ring.Average(p => p.x), ring.Average(p => p.y));
+                Cap(grass, ring, (Inside(platform, c) ? Platform : 0f) + 0.06f);
+            }
+            var trunks = Mesh("Tree trunks", Mat("bark", new Color(0.33f, 0.27f, 0.21f)), true);
+            var olive = Mesh("Olive crowns", Mat("olive", new Color(0.33f, 0.39f, 0.27f), 0.1f), false);
+            var cypress = Mesh("Cypress crowns", Mat("cypress", new Color(0.15f, 0.24f, 0.15f), 0.1f), false);
+            int i = 0;
+            foreach (var t in json["trees"] ?? new JArray())
+            {
+                Vector2 p = V2(t); i++;
+                float y = Inside(platform, p) ? Platform : 0f;
+                float r = Hash(p) ; // 0..1, the same each build
+                var at = new Vector3(p.x, y, p.y);
+                if (r < 0.3f)
+                {
+                    float h = 8f + r * 10f;
+                    Cylinder(trunks, at, 0.18f, 1.2f, 6);
+                    Ellipsoid(cypress, at + Vector3.up * (1f + h / 2f), new Vector3(1.1f, h / 2f, 1.1f), 8, 7);
+                }
+                else
+                {
+                    float s = 0.8f + r * 0.6f;
+                    Cylinder(trunks, at, 0.22f * s, 1.7f * s, 6);
+                    Ellipsoid(olive, at + new Vector3(0f, 2.6f * s, 0f), new Vector3(2.4f, 1.3f, 2.4f) * s, 8, 6);
+                    Ellipsoid(olive, at + new Vector3(0.9f, 2.2f * s, 0.5f) * s, new Vector3(1.5f, 1f, 1.5f) * s, 7, 5);
+                    Ellipsoid(olive, at + new Vector3(-0.8f, 2.3f * s, -0.6f) * s, new Vector3(1.4f, 0.9f, 1.4f) * s, 7, 5);
+                }
+            }
+        }
+
+        static float Hash(Vector2 p) { float h = Mathf.Sin(p.x * 12.9898f + p.y * 78.233f) * 43758.5453f; return h - Mathf.Floor(h); }
+
+        static void Cylinder(MB mb, Vector3 at, float r, float h, int segs)
+        {
+            var ring = new List<Vector2>();
+            for (int k = 0; k < segs; k++) { float a = k * Mathf.PI * 2f / segs; ring.Add(new Vector2(at.x + Mathf.Cos(a) * r, at.z + Mathf.Sin(a) * r)); }
+            Prism(mb, Ccw(ring), at.y, at.y + h);
+        }
+
+        static void Ellipsoid(MB mb, Vector3 c, Vector3 radii, int segs, int rings)
+        {
+            int s0 = mb.v.Count;
+            for (int j = 0; j <= rings; j++)
+            {
+                float v = Mathf.PI * j / rings, y = Mathf.Cos(v), rr = Mathf.Sin(v);
+                for (int k = 0; k <= segs; k++)
+                {
+                    float u = 2f * Mathf.PI * k / segs;
+                    var n = new Vector3(Mathf.Cos(u) * rr, y, Mathf.Sin(u) * rr);
+                    mb.v.Add(c + Vector3.Scale(n, radii)); mb.uv.Add(new Vector2(k / (float)segs, j / (float)rings));
+                }
+            }
+            for (int j = 0; j < rings; j++)
+                for (int k = 0; k < segs; k++)
+                {
+                    int a = s0 + j * (segs + 1) + k, b = a + segs + 1;
+                    mb.t.AddRange(new[] { a, a + 1, b, a + 1, b + 1, b });
+                }
+        }
+
+        static float DistToSeg(Vector2 p, Vector2 a, Vector2 b) => (p - ClosestOnSeg(p, a, b)).magnitude;
+        static Vector2 ClosestOnSeg(Vector2 p, Vector2 a, Vector2 b)
+        {
+            Vector2 ab = b - a; float t = ab.sqrMagnitude < 1e-6f ? 0f : Mathf.Clamp01(Vector2.Dot(p - a, ab) / ab.sqrMagnitude);
+            return a + ab * t;
+        }
+
+        /// <summary>Keeps the part of a ring where dot(p - c, n) >= d (Sutherland-Hodgman).</summary>
+        static List<Vector2> Clip(List<Vector2> ring, Vector2 c, Vector2 n, float d)
+        {
+            var o = new List<Vector2>();
+            for (int i = 0; i < ring.Count; i++)
+            {
+                Vector2 a = ring[i], b = ring[(i + 1) % ring.Count];
+                float da = Vector2.Dot(a - c, n) - d, db = Vector2.Dot(b - c, n) - d;
+                if (da >= 0f) o.Add(a);
+                if ((da >= 0f) != (db >= 0f)) o.Add(Vector2.Lerp(a, b, da / (da - db)));
+            }
+            return o;
+        }
+
+        /// <summary>Extrudes a profile (s across, y up) along a direction; faces are made on both sides.</summary>
+        static void Extrude(MB mb, List<Vector2> prof, Vector2 c, Vector2 n, Vector2 dir, float t0, float t1, float base0)
+        {
+            Vector3 P(Vector2 q, float t) { Vector2 g = c + n * q.x + dir * t; return new Vector3(g.x, base0 + q.y, g.y); }
+            var ccw = Ccw(new List<Vector2>(prof));
+            var tris = EarClip(ccw);
+            foreach (float t in new[] { t0, t1 })
+            {
+                int s0 = mb.v.Count;
+                foreach (var q in ccw) { mb.v.Add(P(q, t)); mb.uv.Add(new Vector2(q.x, q.y)); }
+                for (int i = 0; i < tris.Count; i += 3)
+                {
+                    mb.t.AddRange(new[] { s0 + tris[i], s0 + tris[i + 1], s0 + tris[i + 2] });
+                    mb.t.AddRange(new[] { s0 + tris[i], s0 + tris[i + 2], s0 + tris[i + 1] });
+                }
+            }
+            for (int i = 0; i < ccw.Count; i++)
+            {
+                Vector2 a = ccw[i], b = ccw[(i + 1) % ccw.Count];
+                int s0 = mb.v.Count; float len = (b - a).magnitude;
+                mb.v.Add(P(a, t0)); mb.v.Add(P(b, t0)); mb.v.Add(P(b, t1)); mb.v.Add(P(a, t1));
+                mb.uv.Add(new Vector2(0, 0)); mb.uv.Add(new Vector2(len, 0)); mb.uv.Add(new Vector2(len, t1 - t0)); mb.uv.Add(new Vector2(0, t1 - t0));
+                mb.t.AddRange(new[] { s0, s0 + 1, s0 + 2, s0, s0 + 2, s0 + 3, s0, s0 + 2, s0 + 1, s0, s0 + 3, s0 + 2 });
             }
         }
 
@@ -237,18 +435,47 @@ namespace Rihla.EditorTools
             radius = ring.Average(p => (p - c).magnitude);
             var root = new GameObject("Dome of the Rock").transform;
             Prism(Mesh("Marble", Mat("marble", new Color(0.93f, 0.92f, 0.89f), 0.4f), true, root), ring, Platform, Platform + 5.5f);
-            Prism(Mesh("Tiles", Mat("tiles", new Color(0.16f, 0.42f, 0.62f), 0.55f), true, root), ring, Platform + 5.5f, Platform + 11f);
+            Prism(Mesh("Tiles", TileMat(), true, root), ring, Platform + 5.5f, Platform + 11f);
             float drumR = radius * 0.42f, top = Platform + 11f;
             var drum = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             drum.name = "Drum"; drum.transform.SetParent(root); drum.transform.position = new Vector3(c.x, top + 3f, c.y);
             drum.transform.localScale = new Vector3(drumR * 2f, 3f, drumR * 2f);
-            drum.GetComponent<MeshRenderer>().sharedMaterial = Mat("tiles", new Color(0.16f, 0.42f, 0.62f), 0.55f);
+            drum.GetComponent<MeshRenderer>().sharedMaterial = TileMat();
             var d = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             d.name = "Dome"; d.transform.SetParent(root); Object.DestroyImmediate(d.GetComponent<Collider>());
             d.transform.position = new Vector3(c.x, top + 6f, c.y);
             d.transform.localScale = new Vector3(drumR * 2.1f, drumR * 2.3f, drumR * 2.1f);
             var r = d.GetComponent<MeshRenderer>(); r.sharedMaterial = Mat("dome", new Color(0.93f, 0.72f, 0.28f), 0.75f, 0.9f);
             return r;
+        }
+
+        /// <summary>
+        /// A plain, generic tile grid for the Dome of the Rock's tiled walls: blue tiles, light joints and a turquoise
+        /// square in each. It does not copy the real patterns or the inscription, which must not be imitated (R5).
+        /// </summary>
+        static Material TileMat()
+        {
+            string texPath = Built + "tiles_generic.png";
+            if (!File.Exists(texPath))
+            {
+                const int N = 128; var t = new Texture2D(N, N, TextureFormat.RGB24, true);
+                Color blue = new Color(0.12f, 0.33f, 0.58f), joint = new Color(0.82f, 0.85f, 0.86f), turq = new Color(0.2f, 0.62f, 0.66f);
+                for (int y = 0; y < N; y++)
+                    for (int x = 0; x < N; x++)
+                    {
+                        int u = x % 32, v = y % 32;
+                        bool j = u < 2 || v < 2;
+                        bool sq = Mathf.Abs(u - 16) + Mathf.Abs(v - 16) < 7;
+                        t.SetPixel(x, y, j ? joint : sq ? turq : blue);
+                    }
+                t.Apply(); File.WriteAllBytes(texPath, t.EncodeToPNG()); Object.DestroyImmediate(t);
+                AssetDatabase.ImportAsset(texPath);
+            }
+            var m = Mat("tiles", Color.white, 0.55f);
+            m.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(texPath));
+            m.mainTextureScale = new Vector2(1f / 1.2f, 1f / 1.2f); // tiles about 30 cm across
+            EditorUtility.SetDirty(m);
+            return m;
         }
 
         static void DomeOfTheChain(List<Vector2> ring)
@@ -516,11 +743,44 @@ namespace Rihla.EditorTools
             return northern ? zs.Max() : zs.Min();
         }
 
+        const string Tex = "Assets/Rihla/Textures/";
+        /// <summary>Material name: texture (colour, normal), metres per repeat, and the tint over it.</summary>
+        static readonly Dictionary<string, (string col, string nor, float metres, Color tint)> Textured = new Dictionary<string, (string, string, float, Color)>
+        {
+            ["ground"] = ("PolyHaven/rock_tile_floor_diff_1k.jpg", "PolyHaven/rock_tile_floor_nor_gl_1k.jpg", 4f, new Color(1f, 0.97f, 0.9f)),
+            ["courtyard"] = ("PolyHaven/rock_tile_floor_diff_1k.jpg", "PolyHaven/rock_tile_floor_nor_gl_1k.jpg", 4.5f, new Color(1.05f, 1.02f, 0.96f)),
+            ["street"] = ("PolyHaven/rock_tile_floor_diff_1k.jpg", "PolyHaven/rock_tile_floor_nor_gl_1k.jpg", 2.2f, new Color(1f, 0.96f, 0.88f)),
+            ["platform"] = ("PolyHaven/rock_tile_floor_diff_1k.jpg", "PolyHaven/rock_tile_floor_nor_gl_1k.jpg", 5f, new Color(1.08f, 1.06f, 1.02f)),
+            ["wall"] = ("PolyHaven/yellow_stone_wall_diff_1k.jpg", "PolyHaven/yellow_stone_wall_nor_gl_1k.jpg", 4f, new Color(1f, 0.97f, 0.92f)),
+            ["gate"] = ("PolyHaven/sandstone_blocks_08_diff_1k.jpg", "PolyHaven/sandstone_blocks_08_nor_gl_1k.jpg", 3f, new Color(0.97f, 0.93f, 0.85f)),
+            ["lion"] = ("PolyHaven/sandstone_blocks_08_diff_1k.jpg", "PolyHaven/sandstone_blocks_08_nor_gl_1k.jpg", 1f, new Color(0.85f, 0.78f, 0.65f)),
+            ["lime1"] = ("PolyHaven/sandstone_blocks_08_diff_1k.jpg", "PolyHaven/sandstone_blocks_08_nor_gl_1k.jpg", 3f, new Color(1f, 0.98f, 0.94f)),
+            ["lime2"] = ("PolyHaven/white_sandstone_blocks_02_diff_1k.jpg", "PolyHaven/white_sandstone_blocks_02_nor_gl_1k.jpg", 3f, new Color(1f, 0.96f, 0.88f)),
+            ["lime3"] = ("PolyHaven/white_plaster_rough_01_diff_1k.jpg", "PolyHaven/white_plaster_rough_01_nor_gl_1k.jpg", 3f, new Color(0.98f, 0.96f, 0.91f)),
+            ["marble"] = ("PolyHaven/marble_01_diff_1k.jpg", "PolyHaven/marble_01_nor_gl_1k.jpg", 2f, Color.white),
+        };
+
+        static Texture2D LoadTex(string path, bool normal)
+        {
+            string full = Tex + path;
+            var imp = AssetImporter.GetAtPath(full) as TextureImporter;
+            if (imp && normal && imp.textureType != TextureImporterType.NormalMap) { imp.textureType = TextureImporterType.NormalMap; imp.SaveAndReimport(); }
+            if (imp && imp.maxTextureSize > 1024) { imp.maxTextureSize = 1024; imp.SaveAndReimport(); }
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(full);
+        }
+
         static Material Mat(string name, Color c, float smooth = 0.15f, float metal = 0f, Color? emission = null)
         {
             string p = Built + name + ".mat";
             var m = AssetDatabase.LoadAssetAtPath<Material>(p);
             if (!m) { m = new Material(Shader.Find("Universal Render Pipeline/Lit")); AssetDatabase.CreateAsset(m, p); }
+            if (Textured.TryGetValue(name, out var tx))
+            {
+                c = tx.tint;
+                m.SetTexture("_BaseMap", LoadTex(tx.col, false));
+                m.SetTexture("_BumpMap", LoadTex(tx.nor, true)); m.EnableKeyword("_NORMALMAP"); m.SetFloat("_BumpScale", 1f);
+                m.mainTextureScale = Vector2.one / tx.metres;
+            }
             m.SetColor("_BaseColor", c); m.SetFloat("_Smoothness", smooth); m.SetFloat("_Metallic", metal);
             if (emission.HasValue) { m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", emission.Value); m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None; }
             EditorUtility.SetDirty(m);
