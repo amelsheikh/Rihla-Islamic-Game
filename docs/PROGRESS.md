@@ -306,7 +306,7 @@ Known issues and what would help most next:
 
 - **9 children** (boys and girls, about two-thirds of a grown-up's height) each walk beside a parent, along the
   lanes and across the courtyard; the parent slows to a child's pace (`Townsfolk.leader`).
-  - Today: boys in a shirt and trousers or a thobe and white cap; girls in a long dress and headscarf, as Maryam.
+  - Today: boys in a shirt and trousers or a thobe and white cap; girls in a long dress and headscarf, as Maryam (the owner chose to keep the headscarf for the girls).
   - About 1910: boys in a long robe with a sash and a tarboush or white cap; girls in a long dress, some
     embroidered, with a white head cloth.
 - **10 elders** walk slowly (about half the usual pace): old men with a white or grey beard, a thobe and a kufiya or
