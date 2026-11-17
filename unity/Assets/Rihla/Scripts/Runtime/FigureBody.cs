@@ -8,7 +8,8 @@ namespace Rihla
     /// A simple, stylised person made from smooth shapes when the scene starts: a robe or shirt and trousers, a head
     /// with a kufiya, cap, headscarf or hair, arms that swing and feet that step as the person walks. Faces have no
     /// features. Every look is modest (brief section 5): long robes and dresses, headscarves for women, sleeves to the
-    /// wrist. Which dress each person wears is an estimate for today's Old City (NEEDS_REVIEW H18).
+    /// wrist. Which dress each person wears is an estimate for today's Old City (NEEDS_REVIEW H18). In the Time Lens's
+    /// "then" view the townspeople wear the dress of about 1910 instead (see Period below; also an estimate, H18).
     /// </summary>
     public class FigureBody : MonoBehaviour
     {
@@ -27,16 +28,77 @@ namespace Rihla
         float speed, phase, cullTimer, scale = 1f;
         bool culled;
         Renderer[] renderers;
+        Transform figure;
 
-        enum Head { None, Hair, Kufiya, Taqiyah, Hijab }
+        /// <summary>A built body, kept so a townsperson can switch between the dress of 1910 and of today without
+        /// building it again (building all of them takes about 75 ms, a visible stutter).</summary>
+        class Built
+        {
+            public Transform figure, bodyT, armL, armR, legL, legR, footL, footR;
+            public Vector3 bodyBase, footLBase, footRBase;
+            public Renderer[] renderers;
+            public float scale;
+        }
+        Built thenBody, nowBody;
+
+        enum Head { None, Hair, Kufiya, Taqiyah, Hijab, Tarboush }
 
         class Spec
         {
             public float scale = 1f, headScale = 1f;
-            public bool trousers, wideHem, beard, tatreez;
+            public bool trousers, wideHem, beard, tatreez, turban, cloak, longWrap, sash;
             public Head head;
-            public Color skin, robe, legs, shoes = new Color(0.16f, 0.12f, 0.1f), head1, head2, trim;
+            public Color skin, robe, legs, shoes = new Color(0.16f, 0.12f, 0.1f), head1, head2, trim, cloak1, cloak2, sashColor;
+            /// <summary>Second colour for vertical stripes on the robe (alpha 0 = plain).</summary>
+            public Color stripe;
         }
+
+        // ------------------------------------------------------------------ the era (Time Lens)
+
+        static readonly List<FigureBody> all = new List<FigureBody>();
+        /// <summary>True while the walk shows "then" (about 1910): townspeople wear the dress of that time.</summary>
+        public static bool Then { get; private set; }
+
+        /// <summary>Called by the Time Lens when the view crosses between "then" and "now".</summary>
+        public static void SetEra(bool then)
+        {
+            if (Then == then) return;
+            Then = then;
+            foreach (var f in all) if (f && f.Townsperson) f.ShowEra();
+        }
+
+        /// <summary>Keeps the body of the era being left, and shows the other era's body (built the first time).</summary>
+        void ShowEra()
+        {
+            if (!figure) { Rebuild(); return; }
+            var leaving = new Built
+            {
+                figure = figure, bodyT = bodyT, armL = armL, armR = armR, legL = legL, legR = legR, footL = footL, footR = footR,
+                bodyBase = bodyBase, footLBase = footLBase, footRBase = footRBase, renderers = renderers, scale = scale,
+            };
+            if (Then) nowBody = leaving; else thenBody = leaving;
+            figure.gameObject.SetActive(false);
+            var next = Then ? thenBody : nowBody;
+            if (next != null && next.figure)
+            {
+                figure = next.figure; bodyT = next.bodyT; armL = next.armL; armR = next.armR; legL = next.legL; legR = next.legR;
+                footL = next.footL; footR = next.footR; bodyBase = next.bodyBase; footLBase = next.footLBase; footRBase = next.footRBase;
+                renderers = next.renderers; scale = next.scale;
+                figure.gameObject.SetActive(true);
+                foreach (var rd in renderers) rd.enabled = true;
+            }
+            else
+            {
+                armL = armR = legL = legR = footL = footR = null;
+                Build(Then ? Period() : MakeSpec());
+            }
+            culled = false;
+        }
+
+        bool Townsperson => !hero && look != Look.Jiddo;
+
+        void OnEnable() { if (!all.Contains(this)) all.Add(this); }
+        void OnDestroy() => all.Remove(this);
 
         // The children's colours, shared with the card where the player chooses (TeachingPages.ChooseHero).
         public static readonly Color ChildSkin = new Color(0.8f, 0.62f, 0.49f);
@@ -53,9 +115,14 @@ namespace Rihla
         public void Rebuild()
         {
             if (hero) look = SaveData.Current.hero == "maryam" ? Look.Maryam : Look.Yusuf;
-            var old = transform.Find("Figure");
-            if (old) { old.gameObject.SetActive(false); Destroy(old.gameObject); }
-            Build(MakeSpec());
+            var old = figure;
+            if (old)
+            {
+                foreach (var mf in old.GetComponentsInChildren<MeshFilter>(true)) Destroy(mf.sharedMesh);
+                old.gameObject.SetActive(false); Destroy(old.gameObject);
+            }
+            armL = armR = legL = legR = footL = footR = null;
+            Build(Then && Townsperson ? Period() : MakeSpec());
             culled = false;
         }
 
@@ -138,17 +205,85 @@ namespace Rihla
             return s;
         }
 
+        /// <summary>
+        /// The dress of about 1910, an estimate from period photographs that needs checking (NEEDS_REVIEW H18). Men of
+        /// the town in a red tarboush (some wound with a white turban), a long striped robe and a sash; men from the
+        /// villages in a kufiya and agal with a striped abaya over the robe; men in European jackets with a tarboush;
+        /// women of the town in a dark wrap from head to below the waist; village women in a long embroidered thob and a
+        /// white veil. Faces stay without features, everyone stays covered (brief section 5).
+        /// </summary>
+        Spec Period()
+        {
+            var r = new System.Random(seed * 6151 + (int)look * 31337);
+            T Pick<T>(T[] a) => a[r.Next(a.Length)];
+            float Range(float a, float b) => a + (float)r.NextDouble() * (b - a);
+            var s = new Spec { skin = Pick(Skins) };
+            Color red = new Color(0.58f, 0.1f, 0.1f), white = new Color(0.93f, 0.92f, 0.88f);
+            switch (look)
+            {
+                case Look.Man:
+                    s.scale = Range(0.97f, 1.05f);
+                    s.beard = r.NextDouble() < 0.7; s.trim = r.NextDouble() < 0.6 ? new Color(0.18f, 0.14f, 0.12f) : new Color(0.6f, 0.58f, 0.55f);
+                    if (r.NextDouble() < 0.45)
+                    {
+                        // Of the town: tarboush, striped robe (qumbaz) and a sash.
+                        s.head = Head.Tarboush; s.head1 = red; s.turban = r.NextDouble() < 0.35; s.head2 = white;
+                        s.robe = Pick(new[] { new Color(0.82f, 0.78f, 0.68f), new Color(0.7f, 0.66f, 0.55f), new Color(0.55f, 0.5f, 0.42f) });
+                        s.stripe = Pick(new[] { new Color(0.42f, 0.33f, 0.24f), new Color(0.3f, 0.32f, 0.4f), new Color(0.5f, 0.2f, 0.18f) });
+                        s.sash = true; s.sashColor = Pick(new[] { new Color(0.3f, 0.22f, 0.15f), new Color(0.8f, 0.75f, 0.6f), new Color(0.4f, 0.12f, 0.12f) });
+                    }
+                    else
+                    {
+                        // From the villages: kufiya and agal, a white robe and a striped abaya.
+                        s.head = Head.Kufiya; s.head1 = white; s.head2 = r.NextDouble() < 0.5 ? new Color(0.1f, 0.1f, 0.11f) : white;
+                        s.robe = new Color(0.88f, 0.86f, 0.8f);
+                        s.cloak = true;
+                        s.cloak1 = Pick(new[] { new Color(0.34f, 0.24f, 0.16f), new Color(0.15f, 0.13f, 0.12f), new Color(0.45f, 0.35f, 0.24f) });
+                        s.cloak2 = Pick(new[] { new Color(0.86f, 0.82f, 0.72f), new Color(0.62f, 0.52f, 0.38f) });
+                    }
+                    break;
+                case Look.ManModern:
+                    // A European jacket and trousers with a tarboush.
+                    s.scale = Range(0.96f, 1.05f); s.trousers = true;
+                    s.robe = Pick(new[] { new Color(0.16f, 0.16f, 0.18f), new Color(0.3f, 0.26f, 0.22f), new Color(0.22f, 0.24f, 0.3f) });
+                    s.legs = s.robe * 0.9f; s.legs.a = 1f;
+                    s.head = Head.Tarboush; s.head1 = red;
+                    s.beard = r.NextDouble() < 0.4; s.trim = new Color(0.14f, 0.11f, 0.09f);
+                    break;
+                case Look.Woman:
+                    s.scale = Range(0.92f, 0.98f); s.wideHem = true; s.head = Head.Hijab;
+                    if (r.NextDouble() < 0.5)
+                    {
+                        // Of the town: a dark wrap from the head to below the waist over a long dress.
+                        s.robe = Pick(new[] { new Color(0.1f, 0.1f, 0.12f), new Color(0.14f, 0.15f, 0.22f), new Color(0.25f, 0.2f, 0.18f) });
+                        s.head1 = Pick(new[] { new Color(0.08f, 0.08f, 0.09f), new Color(0.12f, 0.12f, 0.16f) });
+                        s.longWrap = true;
+                    }
+                    else
+                    {
+                        // From the villages: a long thob, white or indigo, with red embroidery, and a white veil.
+                        s.robe = r.NextDouble() < 0.5 ? new Color(0.86f, 0.83f, 0.75f) : new Color(0.13f, 0.15f, 0.26f);
+                        s.tatreez = true; s.trim = new Color(0.62f, 0.1f, 0.12f);
+                        s.head1 = white;
+                    }
+                    break;
+                default:
+                    return MakeSpec(); // the older women's dark thob with tatreez and a white veil fits both times
+            }
+            return s;
+        }
+
         // ------------------------------------------------------------------ building the body
 
         void Build(Spec s)
         {
             scale = s.scale;
-            var root = new GameObject("Figure").transform;
+            var root = new GameObject("Figure").transform; figure = root;
             root.SetParent(transform, false); root.localScale = Vector3.one * s.scale;
             float hs = s.headScale, hy = 1.61f + (hs - 1f) * 0.07f;
 
             var body = new Parts();
-            Material skin = Mat(s.skin, 0.3f), robe = Mat(s.robe, 0.08f), shoes = Mat(s.shoes, 0.35f);
+            Material skin = Mat(s.skin, 0.3f), robe = s.stripe.a > 0f ? Mat(Color.white, 0.08f, Stripes(s.robe, s.stripe, 3)) : Mat(s.robe, 0.08f), shoes = Mat(s.shoes, 0.35f);
             if (s.trousers)
                 Lathe(body.Of(robe), Shirt, 0.66f, 0f, 360f);
             else
@@ -158,6 +293,22 @@ namespace Rihla
                 var trim = body.Of(Mat(s.trim, 0.15f));
                 Lathe(trim, new[] { new Vector2(1.04f, 0.198f), new Vector2(1.2f, 0.208f), new Vector2(1.34f, 0.218f) }, 0.68f, -38f, 38f, 1.03f, true);
                 Lathe(trim, new[] { new Vector2(0.06f, 0.307f), new Vector2(0.17f, 0.297f) }, 0.68f, 0f, 360f, 1.02f, true);
+            }
+            if (s.sash)
+                Lathe(body.Of(Mat(s.sashColor, 0.1f)), new[] { new Vector2(0.96f, 0.207f), new Vector2(1.06f, 0.209f) }, 0.68f, 0f, 360f, 1.03f);
+            if (s.cloak)
+            {
+                // The abaya: a wide cloak with broad stripes, open at the front.
+                var cloak = new[] { new Vector2(0.2f, 0.29f), new Vector2(0.7f, 0.265f), new Vector2(1.1f, 0.25f), new Vector2(1.34f, 0.255f),
+                                    new Vector2(1.42f, 0.215f), new Vector2(1.47f, 0.13f), new Vector2(1.5f, 0.09f) };
+                Lathe(body.Of(Mat(Color.white, 0.05f, Stripes(s.cloak1, s.cloak2, 1))), cloak, 0.72f, 32f, 328f, 1f, true);
+            }
+            if (s.longWrap)
+            {
+                // The wrap of the town's women falls from the head over the shoulders and arms to below the waist.
+                var wrap = new[] { new Vector2(0.86f, 0.3f), new Vector2(1.1f, 0.285f), new Vector2(1.34f, 0.28f), new Vector2(1.43f, 0.23f),
+                                   new Vector2(1.5f, 0.15f), new Vector2(1.56f, 0.09f) };
+                Lathe(body.Of(Mat(s.head1, 0.06f)), wrap, 0.74f, 0f, 360f, 1f, true);
             }
             Lathe(body.Of(skin), new[] { new Vector2(1.44f, 0f), new Vector2(1.44f, 0.05f), new Vector2(1.58f, 0.045f), new Vector2(1.58f, 0f) }, 1f, 0f, 360f);
             Ellipsoid(body.Of(skin), new Vector3(0f, hy, 0f), new Vector3(0.09f, 0.11f, 0.1f) * hs);
@@ -200,7 +351,7 @@ namespace Rihla
                     if (side < 0) { footL = t; footLBase = t.localPosition; } else { footR = t; footRBase = t.localPosition; }
                 }
             }
-            renderers = GetComponentsInChildren<Renderer>();
+            renderers = root.GetComponentsInChildren<Renderer>();
             foreach (var rd in renderers) { rd.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On; rd.receiveShadows = true; }
         }
 
@@ -211,6 +362,21 @@ namespace Rihla
                 case Head.Hair:
                     Ellipsoid(body.Of(Mat(s.head1, 0.25f)), new Vector3(0f, hy + 0.022f * hs, -0.022f * hs), new Vector3(0.095f, 0.103f, 0.1f) * hs);
                     break;
+                case Head.Tarboush:
+                {
+                    // A red felt tarboush, a cut-off cone, with a short black tassel; some wound with a white turban.
+                    float b = hy + 0.045f * hs, top = hy + 0.17f * hs;
+                    Lathe(body.Of(Mat(s.head1, 0.15f)), new[] { new Vector2(b, 0f), new Vector2(b, 0.094f * hs), new Vector2(top, 0.074f * hs), new Vector2(top, 0f) },
+                          1f, 0f, 360f, 1f, false, new Vector3(0f, 0f, -0.012f * hs));
+                    Ellipsoid(body.Of(Mat(new Color(0.05f, 0.05f, 0.06f), 0.2f)), new Vector3(0f, top - 0.035f * hs, -0.085f * hs), new Vector3(0.012f, 0.04f, 0.012f) * hs, 6, 5);
+                    if (s.turban)
+                    {
+                        var ring = new[] { new Vector2(-0.035f, 0.098f), new Vector2(0f, 0.122f), new Vector2(0.035f, 0.098f), new Vector2(0f, 0.08f), new Vector2(-0.035f, 0.098f) };
+                        for (int i = 0; i < ring.Length; i++) ring[i] = new Vector2(ring[i].x * hs + hy + 0.08f * hs, ring[i].y * hs);
+                        Lathe(body.Of(Mat(s.head2, 0.05f)), ring, 1f, 0f, 360f, 1f, false, new Vector3(0f, 0f, -0.012f * hs));
+                    }
+                    break;
+                }
                 case Head.Taqiyah:
                     Ellipsoid(body.Of(Mat(s.head1, 0.1f)), new Vector3(0f, hy + 0.058f * hs, -0.008f * hs), new Vector3(0.096f, 0.066f, 0.105f) * hs);
                     break;
@@ -397,6 +563,26 @@ namespace Rihla
             if (tex) m.SetTexture("_BaseMap", tex);
             mats[key] = m;
             return m;
+        }
+
+        static readonly Dictionary<string, Texture2D> stripes = new Dictionary<string, Texture2D>();
+
+        /// <summary>Vertical stripes of the line colour over the cloth colour, for a white material: narrow for a robe
+        /// (kind 3), broad for an abaya (kind 1).</summary>
+        static Texture2D Stripes(Color cloth, Color line, int kind)
+        {
+            string key = ColorUtility.ToHtmlStringRGB(cloth) + ColorUtility.ToHtmlStringRGB(line) + kind;
+            if (stripes.TryGetValue(key, out var t) && t) return t;
+            const int n = 32;
+            t = new Texture2D(n, 4, TextureFormat.RGBA32, true) { name = "stripe" + key, wrapMode = TextureWrapMode.Repeat };
+            for (int x = 0; x < n; x++)
+            {
+                bool on = kind == 1 ? (x / 8) % 2 == 1 : x % 16 < 3;
+                for (int y = 0; y < 4; y++) t.SetPixel(x, y, on ? line : cloth);
+            }
+            t.Apply(true);
+            stripes[key] = t;
+            return t;
         }
 
         /// <summary>The kufiya's woven check: a fine grid of the second colour over white cloth.</summary>

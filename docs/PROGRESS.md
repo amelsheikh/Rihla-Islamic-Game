@@ -14,7 +14,7 @@
 | E0 — Unity 6 project (owner's PC) | Done | Terrain, road, car on autopilot, child walking, Al-Quds today on Google 3D Tiles via Cesium ion, Windows build at 118 FPS. See below |
 | E1 — Chapter 1 teaching systems in Unity (owner's PC) | Done | Arabic and English UI, banners, journal page with Al-Isra 17:1, history beside "Al-Quds today", saving; 102 FPS. See below |
 | E2 — Walking Al-Quds, then and now (owner's PC, block-out) | Done | The walk from Bab al-Asbat to al-Masjid al-Aqsa at true scale with Jiddo, three clues and the first Time Lens reveal; 97-103 FPS. See below |
-| E3 — Realism on the owner's PC | Three passes done | Stone textures, arches, battlements, trees, sky; then doors, shop shutters, windows, roof domes, warm bounce light, ambient occlusion; then sound, and people in modest dress (Jiddo, Yusuf or Maryam, 46 townspeople); 68 FPS. See below |
+| E3 — Realism on the owner's PC | Three passes done | Stone textures, arches, battlements, trees, sky; then doors, shop shutters, windows, roof domes, warm bounce light, ambient occlusion; then sound, and people in modest dress (Jiddo, Yusuf or Maryam, 46 townspeople, in 1910 dress in the "then" view); 62-69 FPS. See below |
 
 ## Phase 1a: what works
 
@@ -246,8 +246,7 @@ Known issues and what would help most next:
   red tatreez on the chest and hem and a white veil. Who wears what is an estimate (`NEEDS_REVIEW.md` H18).
 - They are hidden beyond 85 m (the haze hides them there anyway), so the walk is no slower: the Windows build
   averages **68 FPS** over the first 95 s of the walk (63-70), with no errors.
-- Not yet: the townspeople look the same in the "then" view (people of about 1910 would dress differently); no
-  children or elders walking slowly with a stick yet; no one prays, because how prayer is shown is for the owner
+- Not yet (the 1910 dress is now done, see "Townspeople in 1910 dress" below): no children or elders walking slowly with a stick yet; no one prays, because how prayer is shown is for the owner
   and a scholar to decide (brief section 5).
 - Screenshots: `docs/screenshots/e3c-*.png`.
 
@@ -280,6 +279,28 @@ Known issues and what would help most next:
   `Generated/walk.json`; restore them with git after running it (`git ls-files -d`) until the script is fixed.
 - Screenshots: `docs/screenshots/e3d-*.png` (the Jiddo line in `e3d-maryam-feminine-walk-ar.png` was shown on
   demand for the picture).
+
+### Townspeople in 1910 dress (17 November 2026)
+
+- In the Time Lens's "then" view (about 1910) the townspeople wear the dress of that time; when the view turns to
+  "now" they change to today's dress, and back again with T. Jiddo, Yusuf and Maryam keep their own clothes.
+- The 1910 dress (`FigureBody.Period`), an estimate from what period photographs commonly show, to be checked
+  (`NEEDS_REVIEW.md` H18):
+  - Men of the town: a red tarboush, some wound with a white turban; a long striped robe and a sash.
+  - Men from the villages: a white kufiya and black agal, a white robe and a striped abaya (cloak) open at the front.
+  - Men in a European jacket and trousers with a tarboush.
+  - Women of the town: a dark wrap from the head to below the waist over a long dark dress.
+  - Women from the villages: a long white or indigo thob with a red embroidered chest panel and hem, and a white veil.
+  - Older women: the black thob with red tatreez and the white veil, as today.
+  Everyone stays covered and faces stay without features (brief section 5).
+- Each townsperson keeps both bodies once built and only switches which one is shown, so changing era costs
+  nothing (building all 46 again took about 75 ms, a visible stutter).
+- Checked in the Editor: everyone is in 1910 dress at the start, in today's dress after the reveal, and they keep
+  walking after the switch.
+- Windows build: **63.9 and 61.7 FPS** average over 95 s of the walk (the whole run is in the "then" view), no
+  errors; within this laptop's usual range (61-69).
+- Screenshots: `docs/screenshots/e3e-townspeople-1910.png` and `e3e-townspeople-today.png`, the same eight people
+  in each era, stood in a row in front of Bab al-Asbat for the picture (in the game they walk the lanes).
 
 ## Phase E2: Walking Al-Quds, then and now (done 16 November 2026, block-out)
 

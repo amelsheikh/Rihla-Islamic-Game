@@ -79,6 +79,7 @@ namespace Rihla
                 block.SetFloat("_Metallic", Mathf.Lerp(nowMetal[i], thenMetal[i], w));
                 changing[i].SetPropertyBlock(block);
             }
+            FigureBody.SetEra(showThen); // the townspeople's dress of about 1910, or of today
             foreach (var g in onlyThen) if (g) g.SetActive(showThen);
             foreach (var g in onlyNow) if (g) g.SetActive(!showThen);
         }
