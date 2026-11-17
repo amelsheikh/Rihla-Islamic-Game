@@ -5,7 +5,7 @@ namespace Rihla
     /// <summary>
     /// A person of the town going about the morning: walks a lane back and forth at an easy pace, pauses now and then,
     /// and stops to let the child pass. With a one-point route the person stands, facing <see cref="faceTo"/>, as if
-    /// talking with a neighbour.
+    /// talking with a neighbour. With a <see cref="leader"/> (a child with a parent) the person walks beside them.
     /// </summary>
     public class Townsfolk : MonoBehaviour
     {
@@ -13,6 +13,9 @@ namespace Rihla
         public float speed = 1.1f;
         public Vector3 faceTo;
         public Transform child;
+        /// <summary>The grown-up a child walks beside, on the side given by <see cref="beside"/> (metres, + = right).</summary>
+        public Townsfolk leader;
+        public float beside = 0.7f;
 
         int next = 1, dir = 1;
         float wait;
@@ -20,6 +23,7 @@ namespace Rihla
         void Start()
         {
             wait = Random.Range(0f, 3f);
+            if (leader) { transform.position = Ground(transform.position); return; }
             if (route == null || route.Length == 0) route = new[] { transform.position };
             transform.position = Ground(route[0]);
             if (route.Length == 1) Face(faceTo - transform.position, 1f);
@@ -27,8 +31,9 @@ namespace Rihla
 
         void Update()
         {
-            if (route.Length < 2) return;
             float dt = Time.deltaTime;
+            if (leader) { Follow(dt); return; }
+            if (route.Length < 2) return;
             if (wait > 0f) { wait -= dt; return; }
             Vector3 p = transform.position, goal = route[next], d = goal - p; d.y = 0f;
             // Let the child pass: stop when the child is close in front.
@@ -47,6 +52,18 @@ namespace Rihla
             }
             transform.position = Ground(p + d.normalized * move);
             Face(d, dt * 5f);
+        }
+
+        void Follow(float dt)
+        {
+            var lt = leader.transform;
+            Vector3 p = transform.position, goal = lt.position + lt.right * beside, d = goal - p; d.y = 0f;
+            if (d.magnitude > 0.08f)
+            {
+                transform.position = Ground(Vector3.MoveTowards(p, new Vector3(goal.x, p.y, goal.z), (leader.speed * 1.4f + 0.3f) * dt));
+                Face(d.magnitude > 0.3f ? d : lt.forward, dt * 5f);
+            }
+            else Face(lt.forward, dt * 3f);
         }
 
         void Face(Vector3 d, float t)

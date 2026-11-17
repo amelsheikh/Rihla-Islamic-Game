@@ -13,7 +13,7 @@ namespace Rihla
     /// </summary>
     public class FigureBody : MonoBehaviour
     {
-        public enum Look { Jiddo, Yusuf, Maryam, Man, ManModern, Woman, WomanElder }
+        public enum Look { Jiddo, Yusuf, Maryam, Man, ManModern, Woman, WomanElder, ElderMan, Boy, Girl }
 
         public Look look = Look.Man;
         /// <summary>Picks the colours and small differences between people of the same look.</summary>
@@ -25,6 +25,8 @@ namespace Rihla
 
         Transform bodyT, armL, armR, legL, legR, footL, footR;
         Vector3 lastPos, bodyBase, footLBase, footRBase;
+        /// <summary>How far the right arm swings: less when it holds a walking stick.</summary>
+        float swingR = 1f;
         float speed, phase, cullTimer, scale = 1f;
         bool culled;
         Renderer[] renderers;
@@ -37,7 +39,7 @@ namespace Rihla
             public Transform figure, bodyT, armL, armR, legL, legR, footL, footR;
             public Vector3 bodyBase, footLBase, footRBase;
             public Renderer[] renderers;
-            public float scale;
+            public float scale, swingR;
         }
         Built thenBody, nowBody;
 
@@ -46,7 +48,7 @@ namespace Rihla
         class Spec
         {
             public float scale = 1f, headScale = 1f;
-            public bool trousers, wideHem, beard, tatreez, turban, cloak, longWrap, sash;
+            public bool trousers, wideHem, beard, tatreez, turban, cloak, longWrap, sash, stick;
             public Head head;
             public Color skin, robe, legs, shoes = new Color(0.16f, 0.12f, 0.1f), head1, head2, trim, cloak1, cloak2, sashColor;
             /// <summary>Second colour for vertical stripes on the robe (alpha 0 = plain).</summary>
@@ -74,7 +76,7 @@ namespace Rihla
             var leaving = new Built
             {
                 figure = figure, bodyT = bodyT, armL = armL, armR = armR, legL = legL, legR = legR, footL = footL, footR = footR,
-                bodyBase = bodyBase, footLBase = footLBase, footRBase = footRBase, renderers = renderers, scale = scale,
+                bodyBase = bodyBase, footLBase = footLBase, footRBase = footRBase, renderers = renderers, scale = scale, swingR = swingR,
             };
             if (Then) nowBody = leaving; else thenBody = leaving;
             figure.gameObject.SetActive(false);
@@ -83,7 +85,7 @@ namespace Rihla
             {
                 figure = next.figure; bodyT = next.bodyT; armL = next.armL; armR = next.armR; legL = next.legL; legR = next.legR;
                 footL = next.footL; footR = next.footR; bodyBase = next.bodyBase; footLBase = next.footLBase; footRBase = next.footRBase;
-                renderers = next.renderers; scale = next.scale;
+                renderers = next.renderers; scale = next.scale; swingR = next.swingR;
                 figure.gameObject.SetActive(true);
                 foreach (var rd in renderers) rd.enabled = true;
             }
@@ -196,10 +198,31 @@ namespace Rihla
                     s.head = Head.Hijab; s.head1 = Pick(Scarves);
                     break;
                 case Look.WomanElder:
-                    // A dark Palestinian thob with red cross-stitch (tatreez) on the chest and hem, and a white veil.
+                    // A dark Palestinian thob with red cross-stitch (tatreez) on the chest and hem, and a white veil;
+                    // some walk with a stick.
                     s.scale = Range(0.9f, 0.95f); s.wideHem = true; s.robe = new Color(0.11f, 0.1f, 0.12f);
                     s.tatreez = true; s.trim = new Color(0.66f, 0.12f, 0.13f);
                     s.head = Head.Hijab; s.head1 = new Color(0.94f, 0.93f, 0.9f);
+                    s.stick = r.NextDouble() < 0.6;
+                    break;
+                case Look.ElderMan:
+                    // An old man with a white or grey beard and a walking stick, in a thobe with a kufiya or a white cap.
+                    ElderMan(s, r, Pick(Thobes), r.NextDouble() < 0.6 ? Head.Kufiya : Head.Taqiyah);
+                    break;
+                case Look.Boy:
+                    s.scale = Range(0.6f, 0.76f); s.headScale = 1.26f; s.skin = Pick(Skins);
+                    if (r.NextDouble() < 0.7)
+                    {
+                        s.trousers = true; s.robe = Pick(Shirts); s.legs = Pick(new[] { new Color(0.22f, 0.24f, 0.3f), new Color(0.3f, 0.28f, 0.25f) });
+                        s.head = Head.Hair; s.head1 = new Color(0.13f, 0.09f, 0.07f); s.shoes = Pick(new[] { new Color(0.9f, 0.9f, 0.88f), new Color(0.2f, 0.2f, 0.22f) });
+                    }
+                    else { s.robe = Pick(Thobes); s.head = Head.Taqiyah; s.head1 = new Color(0.93f, 0.92f, 0.88f); }
+                    break;
+                case Look.Girl:
+                    // Girls as Maryam is dressed: a long dress and a headscarf (the owner's choice for Maryam, H18).
+                    s.scale = Range(0.6f, 0.76f); s.headScale = 1.26f; s.skin = Pick(Skins);
+                    s.wideHem = true; s.robe = Pick(new[] { new Color(0.45f, 0.28f, 0.4f), new Color(0.24f, 0.36f, 0.5f), new Color(0.32f, 0.42f, 0.32f), new Color(0.55f, 0.35f, 0.28f) });
+                    s.head = Head.Hijab; s.head1 = Pick(Scarves); s.shoes = new Color(0.9f, 0.9f, 0.88f);
                     break;
             }
             return s;
@@ -267,10 +290,39 @@ namespace Rihla
                         s.head1 = white;
                     }
                     break;
+                case Look.ElderMan:
+                    ElderMan(s, r, new Color(0.84f, 0.8f, 0.7f), r.NextDouble() < 0.5 ? Head.Kufiya : Head.Tarboush);
+                    if (s.head == Head.Tarboush) { s.head1 = red; s.turban = true; s.head2 = white; s.stripe = new Color(0.42f, 0.33f, 0.24f); s.sash = true; s.sashColor = new Color(0.3f, 0.22f, 0.15f); }
+                    else { s.head1 = white; s.cloak = true; s.cloak1 = new Color(0.3f, 0.22f, 0.15f); s.cloak2 = new Color(0.86f, 0.82f, 0.72f); }
+                    break;
+                case Look.Boy:
+                    // A long robe with a sash, and a tarboush or a white cap.
+                    s.scale = Range(0.6f, 0.76f); s.headScale = 1.26f;
+                    s.robe = Pick(new[] { new Color(0.86f, 0.83f, 0.75f), new Color(0.7f, 0.66f, 0.55f) });
+                    s.sash = true; s.sashColor = Pick(new[] { new Color(0.4f, 0.12f, 0.12f), new Color(0.3f, 0.22f, 0.15f) });
+                    bool tarboush = r.NextDouble() < 0.5;
+                    s.head = tarboush ? Head.Tarboush : Head.Taqiyah; s.head1 = tarboush ? red : white;
+                    break;
+                case Look.Girl:
+                    // A long dress, some embroidered, and a white head cloth.
+                    s.scale = Range(0.6f, 0.76f); s.headScale = 1.26f; s.wideHem = true;
+                    s.robe = Pick(new[] { new Color(0.86f, 0.83f, 0.75f), new Color(0.13f, 0.15f, 0.26f), new Color(0.4f, 0.2f, 0.2f) });
+                    s.tatreez = r.NextDouble() < 0.5; s.trim = new Color(0.62f, 0.1f, 0.12f);
+                    s.head = Head.Hijab; s.head1 = white;
+                    break;
                 default:
                     return MakeSpec(); // the older women's dark thob with tatreez and a white veil fits both times
             }
             return s;
+        }
+
+        static void ElderMan(Spec s, System.Random r, Color robe, Head head)
+        {
+            s.scale = 0.93f + (float)r.NextDouble() * 0.06f; s.robe = robe; s.head = head; s.stick = true;
+            s.head1 = new Color(0.94f, 0.93f, 0.89f);
+            s.head2 = r.NextDouble() < 0.6 ? new Color(0.1f, 0.1f, 0.11f) : new Color(0.62f, 0.12f, 0.12f);
+            s.beard = true; s.trim = r.NextDouble() < 0.5 ? new Color(0.9f, 0.89f, 0.86f) : new Color(0.66f, 0.64f, 0.6f);
+            s.skin = new Color(0.72f, 0.55f, 0.43f);
         }
 
         // ------------------------------------------------------------------ building the body
@@ -324,6 +376,14 @@ namespace Rihla
                 var arm = new Parts();
                 Lathe(arm.Of(robe), sleeve, 1f, 0f, 360f);
                 Ellipsoid(arm.Of(skin), new Vector3(0f, -0.6f, 0.01f), new Vector3(0.038f, 0.055f, 0.034f));
+                if (s.stick && side > 0)
+                {
+                    // A plain wooden walking stick from the hand to the ground, a little forward, with a rounded top.
+                    var wood = arm.Of(Mat(new Color(0.3f, 0.2f, 0.12f), 0.25f));
+                    Lathe(wood, new[] { new Vector2(-1.39f, 0f), new Vector2(-1.39f, 0.013f), new Vector2(-0.56f, 0.015f), new Vector2(-0.56f, 0f) },
+                          1f, 0f, 360f, 1f, false, new Vector3(0f, 0f, 0.06f));
+                    Ellipsoid(wood, new Vector3(0f, -0.545f, 0.06f), new Vector3(0.022f, 0.02f, 0.03f), 8, 5);
+                }
                 var t = arm.Make(side < 0 ? "Arm L" : "Arm R", bodyT, new Vector3(0.205f * side, 1.39f, 0f));
                 t.localRotation = Quaternion.Euler(0f, 0f, 4f * side);
                 if (side < 0) armL = t; else armR = t;
@@ -351,6 +411,7 @@ namespace Rihla
                     if (side < 0) { footL = t; footLBase = t.localPosition; } else { footR = t; footRBase = t.localPosition; }
                 }
             }
+            swingR = s.stick ? 0.35f : 1f;
             renderers = root.GetComponentsInChildren<Renderer>();
             foreach (var rd in renderers) { rd.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On; rd.receiveShadows = true; }
         }
@@ -443,7 +504,7 @@ namespace Rihla
             phase += speed * dt / (0.62f * scale) * Mathf.PI;
             float sw = Mathf.Sin(phase);
             if (armL) armL.localRotation = Quaternion.Euler(sw * 26f * k, 0f, -4f);
-            if (armR) armR.localRotation = Quaternion.Euler(-sw * 26f * k, 0f, 4f);
+            if (armR) armR.localRotation = Quaternion.Euler(-sw * 26f * k * swingR, 0f, 4f);
             if (legL) legL.localRotation = Quaternion.Euler(-sw * 24f * k, 0f, 0f);
             if (legR) legR.localRotation = Quaternion.Euler(sw * 24f * k, 0f, 0f);
             if (footL) footL.localPosition = footLBase + new Vector3(0f, Mathf.Max(0f, -Mathf.Cos(phase)) * 0.03f * k, sw * 0.14f * k);

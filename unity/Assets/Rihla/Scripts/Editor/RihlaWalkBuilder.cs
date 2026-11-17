@@ -732,7 +732,9 @@ namespace Rihla.EditorTools
             var rng = new System.Random(1187);
             float R() => (float)rng.NextDouble();
             var looks = new[] { FigureBody.Look.Man, FigureBody.Look.Man, FigureBody.Look.ManModern, FigureBody.Look.ManModern,
-                                FigureBody.Look.Woman, FigureBody.Look.Woman, FigureBody.Look.Woman, FigureBody.Look.WomanElder };
+                                FigureBody.Look.Woman, FigureBody.Look.Woman, FigureBody.Look.Woman, FigureBody.Look.WomanElder,
+                                FigureBody.Look.ElderMan };
+            var walkers = new List<Townsfolk>();
             int n = 0;
             bool Blocked(Vector2 p)
             {
@@ -747,7 +749,10 @@ namespace Rihla.EditorTools
                 var go = new GameObject("Person " + (++n));
                 go.transform.SetParent(parent); go.transform.position = route[0];
                 var f = go.AddComponent<FigureBody>(); f.look = looks[rng.Next(looks.Length)]; f.seed = n; f.cullDistance = 85f;
-                var t = go.AddComponent<Townsfolk>(); t.route = route; t.faceTo = faceTo; t.speed = speed; t.child = child;
+                // Elders walk slowly, with a stick.
+                bool elder = f.look == FigureBody.Look.ElderMan || f.look == FigureBody.Look.WomanElder;
+                var t = go.AddComponent<Townsfolk>(); t.route = route; t.faceTo = faceTo; t.speed = elder ? 0.5f + R() * 0.15f : speed; t.child = child;
+                if (route.Length > 1 && !elder) walkers.Add(t);
             }
 
             // Along the lanes: up to 60 m of a street near the route, on one side of it so there is room to pass.
@@ -792,7 +797,22 @@ namespace Rihla.EditorTools
                 Person(new[] { p1 }, p2, 0f); Person(new[] { p2 }, p1, 0f);
                 pairs++;
             }
-            Debug.Log($"[Rihla] townspeople: {n} ({courtyard} crossing the courtyard, {pairs} pairs talking)");
+            // Children walking beside a parent, along the lanes and across the courtyard.
+            int kids = 0;
+            foreach (var w in walkers.OrderBy(_ => R()).ToList())
+            {
+                if (kids >= 9) break;
+                var go = new GameObject("Person " + (++n) + " (child)");
+                go.transform.SetParent(parent);
+                float side = R() < 0.5f ? -0.7f : 0.7f;
+                go.transform.position = w.route[0] + new Vector3(side, 0f, 0f);
+                var f = go.AddComponent<FigureBody>(); f.look = R() < 0.5f ? FigureBody.Look.Boy : FigureBody.Look.Girl; f.seed = n; f.cullDistance = 85f;
+                var t = go.AddComponent<Townsfolk>(); t.leader = w; t.beside = side; t.child = child;
+                w.speed = Mathf.Min(w.speed, 0.95f); // a grown-up keeps to a child's pace
+                kids++;
+            }
+            int elders = parent.GetComponentsInChildren<FigureBody>().Count(f => f.look == FigureBody.Look.ElderMan || f.look == FigureBody.Look.WomanElder);
+            Debug.Log($"[Rihla] townspeople: {n} ({courtyard} crossing the courtyard, {pairs} pairs talking, {kids} children with a parent, {elders} elders)");
         }
 
         static Vector2 Random2(System.Func<float> r) { float a = r() * Mathf.PI * 2f; return new Vector2(Mathf.Cos(a), Mathf.Sin(a)); }

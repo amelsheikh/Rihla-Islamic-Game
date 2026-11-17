@@ -14,7 +14,7 @@
 | E0 — Unity 6 project (owner's PC) | Done | Terrain, road, car on autopilot, child walking, Al-Quds today on Google 3D Tiles via Cesium ion, Windows build at 118 FPS. See below |
 | E1 — Chapter 1 teaching systems in Unity (owner's PC) | Done | Arabic and English UI, banners, journal page with Al-Isra 17:1, history beside "Al-Quds today", saving; 102 FPS. See below |
 | E2 — Walking Al-Quds, then and now (owner's PC, block-out) | Done | The walk from Bab al-Asbat to al-Masjid al-Aqsa at true scale with Jiddo, three clues and the first Time Lens reveal; 97-103 FPS. See below |
-| E3 — Realism on the owner's PC | Three passes done | Stone textures, arches, battlements, trees, sky; then doors, shop shutters, windows, roof domes, warm bounce light, ambient occlusion; then sound, and people in modest dress (Jiddo, Yusuf or Maryam, 46 townspeople, in 1910 dress in the "then" view); 62-69 FPS. See below |
+| E3 — Realism on the owner's PC | Three passes done | Stone textures, arches, battlements, trees, sky; then doors, shop shutters, windows, roof domes, warm bounce light, ambient occlusion; then sound, and people in modest dress (Jiddo, Yusuf or Maryam, 55 townspeople with children and elders, in 1910 dress in the "then" view); 62-70 FPS. See below |
 
 ## Phase 1a: what works
 
@@ -246,7 +246,7 @@ Known issues and what would help most next:
   red tatreez on the chest and hem and a white veil. Who wears what is an estimate (`NEEDS_REVIEW.md` H18).
 - They are hidden beyond 85 m (the haze hides them there anyway), so the walk is no slower: the Windows build
   averages **68 FPS** over the first 95 s of the walk (63-70), with no errors.
-- Not yet (the 1910 dress is now done, see "Townspeople in 1910 dress" below): no children or elders walking slowly with a stick yet; no one prays, because how prayer is shown is for the owner
+- Not yet (the 1910 dress, children and elders are now done, see below): or elders walking slowly with a stick yet; no one prays, because how prayer is shown is for the owner
   and a scholar to decide (brief section 5).
 - Screenshots: `docs/screenshots/e3c-*.png`.
 
@@ -301,6 +301,25 @@ Known issues and what would help most next:
   errors; within this laptop's usual range (61-69).
 - Screenshots: `docs/screenshots/e3e-townspeople-1910.png` and `e3e-townspeople-today.png`, the same eight people
   in each era, stood in a row in front of Bab al-Asbat for the picture (in the game they walk the lanes).
+
+### Children and elders among the townspeople (17 November 2026)
+
+- **9 children** (boys and girls, about two-thirds of a grown-up's height) each walk beside a parent, along the
+  lanes and across the courtyard; the parent slows to a child's pace (`Townsfolk.leader`).
+  - Today: boys in a shirt and trousers or a thobe and white cap; girls in a long dress and headscarf, as Maryam.
+  - About 1910: boys in a long robe with a sash and a tarboush or white cap; girls in a long dress, some
+    embroidered, with a white head cloth.
+- **10 elders** walk slowly (about half the usual pace): old men with a white or grey beard, a thobe and a kufiya or
+  white cap (in 1910 a tarboush with a turban, or a kufiya with an abaya), and the older women in the black thob with
+  tatreez. All the old men and more than half of the old women lean on a plain wooden walking stick in the right
+  hand, and that arm swings less.
+- Now 55 townspeople in all. Who wears what is an estimate (`NEEDS_REVIEW.md` H18).
+- Checked in the Editor: children keep beside their parent while walking, elders walk slowly with the stick, and
+  both change dress with the Time Lens.
+- Windows build: **70.5 and 68.7 FPS** average over 95 s of the walk, no errors.
+- Screenshots: `docs/screenshots/e3f-children-elders-1910.png` and `e3f-children-elders-today.png` (four children and
+  four elders stood in a row for the picture), and `e3f-child-with-mother-1910.png` (a boy walking beside his mother
+  in the courtyard, as in the game).
 
 ## Phase E2: Walking Al-Quds, then and now (done 16 November 2026, block-out)
 
