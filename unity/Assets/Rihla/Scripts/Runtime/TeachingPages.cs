@@ -70,6 +70,34 @@ namespace Rihla
             }, "begin", closed);
         }
 
+        /// <summary>
+        /// Choose the child: Yusuf or Maryam (STORY section 1). Picking one saves it and closes the page; closing the
+        /// page keeps whoever was chosen before (Yusuf the first time).
+        /// </summary>
+        public static void ChooseHero(Action closed = null)
+        {
+            if (UI == null) return;
+            void Pick(string hero)
+            {
+                var s = SaveData.Current; s.hero = hero; s.heroChosen = true; SaveData.Save();
+                UnityEngine.Debug.Log("[Rihla] hero: " + hero);
+                HeroChanged?.Invoke();
+                UI.CloseModal();
+            }
+            UI.OpenModal(() =>
+            {
+                UI.H1(Lang.T("hero.title"));
+                UI.P(Lang.T("hero.text"));
+                // Neither is marked until the player has chosen once.
+                var s = SaveData.Current; bool m = s.hero == "maryam";
+                UI.PersonCard(Lang.T("hero.yusuf"), FigureBody.YusufHair, FigureBody.ChildSkin, FigureBody.YusufShirt, false, s.heroChosen && !m, () => Pick("yusuf"));
+                UI.PersonCard(Lang.T("hero.maryam"), FigureBody.MaryamScarf, FigureBody.ChildSkin, FigureBody.MaryamDress, true, s.heroChosen && m, () => Pick("maryam"));
+            }, "close", () => { if (!SaveData.Current.heroChosen) { SaveData.Current.heroChosen = true; SaveData.Save(); } closed?.Invoke(); });
+        }
+
+        /// <summary>Raised when the player picks Yusuf or Maryam, so the child in the scene can be rebuilt.</summary>
+        public static event Action HeroChanged;
+
         /// <summary>A Quran verse or hadith from religious_texts.json, with its introduction if given.</summary>
         static void AddText(string id, JToken intro)
         {

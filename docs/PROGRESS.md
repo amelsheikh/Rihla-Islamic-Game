@@ -238,8 +238,7 @@ Known issues and what would help most next:
 - **Jiddo Ibrahim:** a white thobe, a black-and-white checked kufiya falling behind his shoulders, a black agal,
   and a grey beard.
 - **The child:** Yusuf (blue shirt, dark trousers, white trainers) or Maryam (a long plum dress and a cream
-  headscarf). The choice is saved (`SaveData.hero`); there is no menu for it yet, so `-maryam` on the command line
-  picks Maryam for now.
+  headscarf). The choice is saved (`SaveData.hero`) and made on a card (see "Choosing Yusuf or Maryam" below).
 - **46 townspeople** (`Townsfolk.cs`): 22 walk the lanes near the route, keeping to one side; 14 cross the
   courtyard of al-Masjid al-Aqsa, keeping off the platform and away from the buildings; 5 pairs stand talking.
   They pause at the end of their walk and stop to let the child pass. Men wear a thobe with a kufiya or a white
@@ -251,6 +250,27 @@ Known issues and what would help most next:
   children or elders walking slowly with a stick yet; no one prays, because how prayer is shown is for the owner
   and a scholar to decide (brief section 5).
 - Screenshots: `docs/screenshots/e3c-*.png`.
+
+### Choosing Yusuf or Maryam (16 November 2026)
+
+- A card asks "Who walks with Jiddo Ibrahim?" and shows the two children side by side, each as a small figure in
+  their own colours with their name; the chosen one has a gold border. It is in English and Arabic (right to left).
+- When it appears: on the Jericho road right after the opening card, the first time the game is played; and at the
+  start of the walk if no one has chosen yet. **C** on the walk opens it again to change, and the child in the
+  scene is rebuilt at once as the other child, with a banner. Closing the card without picking keeps Yusuf.
+- Saved in `SaveData.hero` and `SaveData.heroChosen`; `-maryam` on the command line still picks Maryam.
+- Code: `TeachingPages.ChooseHero`, `RihlaUI.PersonCard`, `FigureBody.Rebuild`; strings `hero.*` and `w.hero` in
+  `content/i18n`.
+- Checked in the Editor: the card in both languages, picking Maryam by the card (saved, child rebuilt as Maryam,
+  card closed). Not yet checked by hand: the card after the opening card on the road.
+- Windows build: **60.7 FPS** average over 95 s of the walk on two runs (57-68), no errors. That is lower than
+  the 68 FPS of the earlier run, by about the same share in every 10 s stretch; the card does no work while
+  walking, so this is most likely the laptop's integrated graphics running warmer, but it was not proven.
+- Known issue: Arabic text speaks to the child in the masculine form (for example "وجدتَ دليلًا"), also when Maryam
+  is chosen (`NEEDS_REVIEW.md` L1).
+- `npm run unity:export` deletes Unity's `.meta` files in `unity/Assets/Rihla/Content` and `Generated`, and
+  `Generated/walk.json`; restore them with git after running it (`git ls-files -d`) until the script is fixed.
+- Screenshots: `docs/screenshots/e3d-*.png`.
 
 ## Phase E2: Walking Al-Quds, then and now (done 16 November 2026, block-out)
 

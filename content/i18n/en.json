@@ -85,5 +85,11 @@
   "w.look": "E: look closely",
   "w.clueFound": "Clue found",
   "w.walkHint": "WASD: walk · Shift: run · right mouse: look",
-  "w.aqsa": "al-Masjid al-Aqsa"
+  "w.aqsa": "al-Masjid al-Aqsa",
+  "w.hero": "C: Yusuf or Maryam",
+  "hero.title": "Who walks with Jiddo Ibrahim?",
+  "hero.text": "Choose the child you will play. You can change your mind on the walk with C.",
+  "hero.yusuf": "Yusuf",
+  "hero.maryam": "Maryam",
+  "hero.chosen": "Walking with Jiddo"
 }

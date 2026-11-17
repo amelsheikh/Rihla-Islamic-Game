@@ -45,6 +45,19 @@ namespace Rihla
             cam.Snap();
             ui.Banner(Lang.Pick(walk["title"]), Lang.Pick(ContentLibrary.Instance.Places?["places"]?.FirstOrDefault(p => (string)p["id"] == "al-quds")?["name"]), 6f);
             for (int i = 0; i < clueSpots.Length; i++) if (clueSpots[i]) clueSpots[i].gameObject.SetActive(!Has((string)clues[i]["id"]));
+            TeachingPages.HeroChanged += RebuildChild;
+            if (!SaveData.Current.heroChosen && !autoWalk && !pickedOnCommandLine) TeachingPages.ChooseHero();
+        }
+
+        static bool pickedOnCommandLine = System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-maryam") >= 0;
+
+        void OnDestroy() => TeachingPages.HeroChanged -= RebuildChild;
+
+        void RebuildChild()
+        {
+            var f = child ? child.GetComponent<FigureBody>() : null;
+            if (f) f.Rebuild();
+            ui.Banner(Lang.T("hero.chosen"), Lang.T(SaveData.Current.hero == "maryam" ? "hero.maryam" : "hero.yusuf"), 3f);
         }
 
         static bool Has(string clue) => System.Array.IndexOf(Found, clue) >= 0;
@@ -93,6 +106,7 @@ namespace Rihla
             var kb = Keyboard.current; if (kb == null) return;
             if (kb.vKey.wasPressedThisFrame) { cam.firstPerson = !cam.firstPerson; cam.Snap(); }
             if (kb.tKey.wasPressedThisFrame) lens.Toggle();
+            if (kb.cKey.wasPressedThisFrame) TeachingPages.ChooseHero();
             if (kb.gKey.wasPressedThisFrame && Time.timeSinceLevelLoad > 1f && CanLeave(c)) SceneManager.LoadScene(roadScene);
         }
 
@@ -203,7 +217,7 @@ namespace Rihla
             else { main = Name("al-quds", Lang.Current); other = Name("al-quds", Lang.Arabic ? "en" : "ar"); }
 
             if (Soundscape.Instance) Soundscape.Instance.birdiness = Inside(new Vector2(c.x, c.z)) ? 0.85f : 0.25f;
-            string hint = Lang.T("w.walkHint") + "\n" + Lang.T("w.view");
+            string hint = Lang.T("w.walkHint") + "\n" + Lang.T("w.view") + Lang.Sep + Lang.T("w.hero");
             if (lens.Revealed) hint += Lang.Sep + Lang.T("w.lens");
             if (nearClue >= 0) hint = Lang.T("w.look") + "\n" + hint;
             if (CanLeave(c)) hint += "\n" + Lang.T("w.toCar");

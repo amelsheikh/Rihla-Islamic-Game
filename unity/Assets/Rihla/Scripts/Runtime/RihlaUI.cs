@@ -268,6 +268,48 @@ namespace Rihla
             body.Add(row);
         }
 
+        /// <summary>
+        /// A card to pick a person: a small figure in their colours (headwear, face, clothes), the name, and a gold
+        /// border when chosen. Cards added one after another sit side by side.
+        /// </summary>
+        public void PersonCard(string name, Color headwear, Color skin, Color clothes, bool scarf, bool chosen, Action pick)
+        {
+            VisualElement row = body.childCount > 0 && body[body.childCount - 1].name == "cards" ? body[body.childCount - 1] : null;
+            if (row == null)
+            {
+                row = new VisualElement { name = "cards" };
+                row.style.flexDirection = Lang.Arabic ? FlexDirection.RowReverse : FlexDirection.Row;
+                row.style.justifyContent = Justify.Center; row.style.marginTop = 10; row.style.marginBottom = 4;
+                body.Add(row);
+            }
+            var card = new Button(pick) { text = "" };
+            card.style.width = 230; card.style.height = 300; card.style.marginLeft = card.style.marginRight = 14;
+            card.style.backgroundColor = chosen ? new Color(1f, 0.96f, 0.84f) : new Color(0.97f, 0.93f, 0.83f);
+            int bw = chosen ? 4 : 1;
+            card.style.borderTopWidth = card.style.borderBottomWidth = card.style.borderLeftWidth = card.style.borderRightWidth = bw;
+            card.style.borderTopColor = card.style.borderBottomColor = card.style.borderLeftColor = card.style.borderRightColor = chosen ? Gold : new Color(0.8f, 0.7f, 0.5f);
+            Round(card, 14); card.style.alignItems = Align.Center; card.style.justifyContent = Justify.FlexEnd; Pad(card, 10, 8);
+
+            // The figure: a head (in a scarf, or with hair on top), and the clothes below.
+            var fig = new VisualElement(); fig.style.alignItems = Align.Center; fig.style.justifyContent = Justify.FlexEnd; fig.style.height = 200; fig.pickingMode = PickingMode.Ignore;
+            VisualElement Blob(float w, float h, Color c, float r)
+            {
+                var e = new VisualElement(); e.style.width = w; e.style.height = h; e.style.backgroundColor = c; Round(e, r);
+                e.pickingMode = PickingMode.Ignore; return e;
+            }
+            var head = Blob(scarf ? 84 : 74, scarf ? 92 : 78, scarf ? headwear : skin, 40); head.style.alignItems = Align.Center;
+            if (scarf) { var face = Blob(50, 56, skin, 25); face.style.marginTop = 16; head.Add(face); }
+            else { var hair = Blob(74, 30, headwear, 15); hair.style.borderBottomLeftRadius = hair.style.borderBottomRightRadius = 5; head.Add(hair); }
+            fig.Add(head);
+            var clothes1 = Blob(scarf ? 124 : 104, scarf ? 100 : 108, clothes, 22); clothes1.style.marginTop = scarf ? -14 : 5;
+            clothes1.style.borderBottomLeftRadius = clothes1.style.borderBottomRightRadius = scarf ? 8 : 12;
+            fig.Add(clothes1);
+            card.Add(fig);
+            var label = Text(name, 28, true, PaperInk); label.style.marginTop = 12; label.style.unityTextAlign = TextAnchor.MiddleCenter;
+            card.Add(label);
+            row.Add(card);
+        }
+
         public void Choice(string label, Action pick)
         {
             var b = MakeButton(label, pick); b.style.alignSelf = Align.Stretch; b.style.marginTop = 6; body.Add(b);

@@ -38,15 +38,26 @@ namespace Rihla
             public Color skin, robe, legs, shoes = new Color(0.16f, 0.12f, 0.1f), head1, head2, trim;
         }
 
+        // The children's colours, shared with the card where the player chooses (TeachingPages.ChooseHero).
+        public static readonly Color ChildSkin = new Color(0.8f, 0.62f, 0.49f);
+        public static readonly Color YusufShirt = new Color(0.24f, 0.44f, 0.72f), YusufHair = new Color(0.17f, 0.11f, 0.08f);
+        public static readonly Color MaryamDress = new Color(0.5f, 0.3f, 0.44f), MaryamScarf = new Color(0.94f, 0.87f, 0.72f);
+
         void Awake()
         {
-            if (hero)
-            {
-                if (Array.IndexOf(Environment.GetCommandLineArgs(), "-maryam") >= 0) SaveData.Current.hero = "maryam";
-                look = SaveData.Current.hero == "maryam" ? Look.Maryam : Look.Yusuf;
-            }
-            Build(MakeSpec());
+            if (hero && Array.IndexOf(Environment.GetCommandLineArgs(), "-maryam") >= 0) { SaveData.Current.hero = "maryam"; SaveData.Current.heroChosen = true; }
+            Rebuild();
             lastPos = transform.position;
+        }
+
+        /// <summary>Builds the body again (for the child, as Yusuf or Maryam from the save).</summary>
+        public void Rebuild()
+        {
+            if (hero) look = SaveData.Current.hero == "maryam" ? Look.Maryam : Look.Yusuf;
+            var old = transform.Find("Figure");
+            if (old) { old.gameObject.SetActive(false); Destroy(old.gameObject); }
+            Build(MakeSpec());
+            culled = false;
         }
 
         // ------------------------------------------------------------------ looks
@@ -91,14 +102,14 @@ namespace Rihla
                     s.beard = true; s.trim = new Color(0.86f, 0.85f, 0.82f); s.shoes = new Color(0.25f, 0.17f, 0.11f);
                     break;
                 case Look.Yusuf:
-                    s.scale = 0.74f; s.headScale = 1.28f; s.skin = new Color(0.8f, 0.62f, 0.49f);
-                    s.trousers = true; s.robe = new Color(0.24f, 0.44f, 0.72f); s.legs = new Color(0.27f, 0.28f, 0.33f);
-                    s.head = Head.Hair; s.head1 = new Color(0.17f, 0.11f, 0.08f); s.shoes = new Color(0.92f, 0.92f, 0.9f);
+                    s.scale = 0.74f; s.headScale = 1.28f; s.skin = ChildSkin;
+                    s.trousers = true; s.robe = YusufShirt; s.legs = new Color(0.27f, 0.28f, 0.33f);
+                    s.head = Head.Hair; s.head1 = YusufHair; s.shoes = new Color(0.92f, 0.92f, 0.9f);
                     break;
                 case Look.Maryam:
-                    s.scale = 0.74f; s.headScale = 1.28f; s.skin = new Color(0.8f, 0.62f, 0.49f);
-                    s.wideHem = true; s.robe = new Color(0.5f, 0.3f, 0.44f);
-                    s.head = Head.Hijab; s.head1 = new Color(0.94f, 0.87f, 0.72f); s.shoes = new Color(0.92f, 0.92f, 0.9f);
+                    s.scale = 0.74f; s.headScale = 1.28f; s.skin = ChildSkin;
+                    s.wideHem = true; s.robe = MaryamDress;
+                    s.head = Head.Hijab; s.head1 = MaryamScarf; s.shoes = new Color(0.92f, 0.92f, 0.9f);
                     break;
                 case Look.Man:
                     s.scale = Range(0.97f, 1.05f); s.robe = Pick(Thobes);
