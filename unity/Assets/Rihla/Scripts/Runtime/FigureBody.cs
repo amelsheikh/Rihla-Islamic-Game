@@ -45,7 +45,6 @@ namespace Rihla
 
         void Awake()
         {
-            if (hero && Array.IndexOf(Environment.GetCommandLineArgs(), "-maryam") >= 0) { SaveData.Current.hero = "maryam"; SaveData.Current.heroChosen = true; }
             Rebuild();
             lastPos = transform.position;
         }

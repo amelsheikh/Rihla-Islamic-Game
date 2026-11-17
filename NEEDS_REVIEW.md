@@ -30,7 +30,7 @@ Nothing on this list is treated as settled.
 
 | # | Item | Why it matters | Status |
 |---|---|---|---|
-| L1 | Arabic text in the game speaks to the child in the masculine form (for example "وجدتَ دليلًا", "اضغط", "اختر"), also when Maryam is chosen. The new card "مَن يمشي مع جدّو إبراهيم؟" is in the same style. | Whether a girl playing as Maryam is spoken to correctly. | A native speaker to decide: feminine forms when Maryam is chosen, or wording that avoids gender. |
+| L1 | Arabic feminine forms used when Maryam is chosen (the owner chose this, 16 November 2026): the ".f" strings in `content/i18n/ar.json` and the "ar_f" lines in `content/walk.json` and `content/journal.json`, written by Claude (for example "وجدتِ دليلًا", "اضغطي E لتنظري عن قرب", "انظري إلى جانبَي الباب. ماذا ترين؟", "تعيشين في القدس مع جدّكِ"). The choosing card is written to avoid gender. New Arabic text that speaks to the child needs a feminine version too. | Whether a girl playing as Maryam is spoken to correctly and naturally. | A native speaker to check every feminine string. |
 
 ## Religious
 

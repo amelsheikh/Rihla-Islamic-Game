@@ -29,12 +29,39 @@ namespace Rihla
         /// </summary>
         public static string Sep => Arabic ? " — " : " · ";
 
-        /// <summary>A UI string from content/i18n.</summary>
-        public static string T(string key) => Clean(ContentLibrary.Instance ? ContentLibrary.Instance.T(key, Current) : key);
+        /// <summary>
+        /// True when the text speaks to Maryam in Arabic, which needs the feminine forms ("وجدتِ", "اضغطي").
+        /// English needs none.
+        /// </summary>
+        public static bool Feminine => Arabic && SaveData.Current.hero == "maryam";
 
-        /// <summary>The current language's text from a {"en": ..., "ar": ...} field.</summary>
-        public static string Pick(JToken field) =>
-            Clean(field == null ? "" : field.Type == JTokenType.String ? (string)field : (string)field[Current] ?? (string)field["en"] ?? "");
+        /// <summary>
+        /// A UI string from content/i18n. When speaking to Maryam in Arabic, the key with ".f" added is used if
+        /// ar.json has it (for example "w.look.f").
+        /// </summary>
+        public static string T(string key)
+        {
+            var lib = ContentLibrary.Instance;
+            if (!lib) return key;
+            if (Feminine) { string f = lib.T(key + ".f", "ar"); if (f != key + ".f") return Clean(f); }
+            return Clean(lib.T(key, Current));
+        }
+
+        /// <summary>
+        /// The current language's text from a {"en": ..., "ar": ...} field; "ar_f" when speaking to Maryam in Arabic,
+        /// if the field has one.
+        /// </summary>
+        public static string Pick(JToken field)
+        {
+            if (field == null) return "";
+            if (field.Type == JTokenType.String) return Clean((string)field);
+            if (Feminine && field["ar_f"] is JValue f) return Clean((string)f);
+            return Clean((string)field[Current] ?? (string)field["en"] ?? "");
+        }
+
+        /// <summary>The paragraphs of a {"en": [...], "ar": [...]} field, with "ar_f" for Maryam in Arabic.</summary>
+        public static JArray Paragraphs(JToken field) =>
+            (Feminine ? field?["ar_f"] as JArray : null) ?? field?[Current] as JArray;
 
         /// <summary>
         /// In Arabic: a middle dot between parts of a line is shown as a dash, since "·" reads as the zero "٠", and
@@ -80,7 +107,24 @@ namespace Rihla
         static SaveData current;
         public static SaveData Current => current ??= Load();
 
+        /// <summary>
+        /// Reads the save once per run, then applies the command line, in this order so that nothing undoes it:
+        /// -newgame starts afresh, -arabic picks Arabic, -maryam picks Maryam.
+        /// </summary>
         static SaveData Load()
+        {
+            var s = Read();
+            var args = Environment.GetCommandLineArgs();
+            bool Has(string a) => Array.IndexOf(args, a) >= 0;
+            if (Has("-newgame")) s = new SaveData();
+            if (Has("-arabic")) s.lang = "ar";
+            if (Has("-maryam")) { s.hero = "maryam"; s.heroChosen = true; }
+            current = s;
+            if (Has("-newgame") || Has("-arabic") || Has("-maryam")) Save();
+            return s;
+        }
+
+        static SaveData Read()
         {
             try
             {

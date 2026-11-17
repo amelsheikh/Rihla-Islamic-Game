@@ -255,22 +255,31 @@ Known issues and what would help most next:
 
 - A card asks "Who walks with Jiddo Ibrahim?" and shows the two children side by side, each as a small figure in
   their own colours with their name; the chosen one has a gold border. It is in English and Arabic (right to left).
-- When it appears: on the Jericho road right after the opening card, the first time the game is played; and at the
-  start of the walk if no one has chosen yet. **C** on the walk opens it again to change, and the child in the
+- When it appears: on the Jericho road just before the opening card, the first time the game is played (so the
+  opening card already speaks to the chosen child); and at the start of the walk if no one has chosen yet. **C** on the walk opens it again to change, and the child in the
   scene is rebuilt at once as the other child, with a banner. Closing the card without picking keeps Yusuf.
 - Saved in `SaveData.hero` and `SaveData.heroChosen`; `-maryam` on the command line still picks Maryam.
 - Code: `TeachingPages.ChooseHero`, `RihlaUI.PersonCard`, `FigureBody.Rebuild`; strings `hero.*` and `w.hero` in
   `content/i18n`.
 - Checked in the Editor: the card in both languages, picking Maryam by the card (saved, child rebuilt as Maryam,
-  card closed). Not yet checked by hand: the card after the opening card on the road.
+  card closed), and on the road the card followed by the opening card.
 - Windows build: **60.7 FPS** average over 95 s of the walk on two runs (57-68), no errors. That is lower than
   the 68 FPS of the earlier run, by about the same share in every 10 s stretch; the card does no work while
   walking, so this is most likely the laptop's integrated graphics running warmer, but it was not proven.
-- Known issue: Arabic text speaks to the child in the masculine form (for example "وجدتَ دليلًا"), also when Maryam
-  is chosen (`NEEDS_REVIEW.md` L1).
+- **Arabic speaks to Maryam as a girl** (the owner's choice): when Maryam is chosen, Arabic text uses feminine forms,
+  "وجدتِ دليلًا", "اضغطي E لتنظري عن قرب", and Jiddo says "انظري… ماذا ترين؟". UI strings take a feminine version
+  from the key with ".f" added in `content/i18n/ar.json` (33 strings); bilingual fields take "ar_f" (Jiddo's five
+  walk lines that speak to the child in `content/walk.json`, his words on the first page in `content/journal.json`).
+  `Lang.T` and `Lang.Pick` choose them. English is unchanged. The choosing card itself avoids gender, as nobody has
+  chosen yet. The feminine forms need a native speaker's check (`NEEDS_REVIEW.md` L1).
+- Fixed: `-newgame` reset the save after `-maryam` had been read, so a build started with both played Maryam in
+  Yusuf's words. The command line (`-newgame`, `-arabic`, `-maryam`) is now applied once, when the save is read.
+- Windows build after these changes: **69.1 FPS** average over 95 s of the walk, with `-maryam -arabic`, no errors.
+  The 60.7 FPS above was the laptop, not the card.
 - `npm run unity:export` deletes Unity's `.meta` files in `unity/Assets/Rihla/Content` and `Generated`, and
   `Generated/walk.json`; restore them with git after running it (`git ls-files -d`) until the script is fixed.
-- Screenshots: `docs/screenshots/e3d-*.png`.
+- Screenshots: `docs/screenshots/e3d-*.png` (the Jiddo line in `e3d-maryam-feminine-walk-ar.png` was shown on
+  demand for the picture).
 
 ## Phase E2: Walking Al-Quds, then and now (done 16 November 2026, block-out)
 

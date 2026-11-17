@@ -24,7 +24,7 @@ namespace Rihla
                 UI.H2(Lang.T("ancestorSays"));
                 UI.P(Lang.Pick(page["ancestor"]), true);
                 UI.H2(Lang.T("jiddoSays"));
-                if (page["jiddo"]?[Lang.Current] is JArray paras) foreach (var p in paras) UI.P((string)p);
+                if (Lang.Paragraphs(page["jiddo"]) is JArray paras) foreach (var p in paras) UI.P((string)p);
                 AddText((string)page["verse"], page["verseIntro"]);
                 var facts = new List<string>();
                 if (page["facts"] is JArray fs) foreach (var f in fs) facts.Add(Lang.Pick(f));

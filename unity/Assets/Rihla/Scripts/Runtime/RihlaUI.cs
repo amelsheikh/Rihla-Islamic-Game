@@ -33,8 +33,6 @@ namespace Rihla
         {
             Instance = this;
             Time.timeScale = 1f; // a page left open when the last scene closed must not keep this one paused
-            if (Array.IndexOf(Environment.GetCommandLineArgs(), "-newgame") >= 0) SaveData.Reset();
-            if (Array.IndexOf(Environment.GetCommandLineArgs(), "-arabic") >= 0) SaveData.Current.lang = "ar";
             Lang.Set(SaveData.Current.lang);
             var doc = gameObject.AddComponent<UIDocument>();
             doc.panelSettings = panelSettings;

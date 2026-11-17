@@ -31,11 +31,10 @@ namespace Rihla
             ui.OnHistory = () => { if (historySite.Length > 0) TeachingPages.ShowHistory(historySite); };
             RestorePosition();
             if (!SaveData.Current.introSeen && !car.autopilot)
-                TeachingPages.ShowIntro(() =>
-                {
-                    SaveData.Current.introSeen = true; SaveData.Save();
-                    if (!SaveData.Current.heroChosen) TeachingPages.ChooseHero();
-                });
+            {
+                void Intro() => TeachingPages.ShowIntro(() => { SaveData.Current.introSeen = true; SaveData.Save(); });
+                if (SaveData.Current.heroChosen) Intro(); else TeachingPages.ChooseHero(Intro);
+            }
         }
 
         bool Found => pageId != null && SaveData.Current.HasPage(pageId);

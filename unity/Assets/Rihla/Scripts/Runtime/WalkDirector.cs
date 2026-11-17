@@ -46,10 +46,8 @@ namespace Rihla
             ui.Banner(Lang.Pick(walk["title"]), Lang.Pick(ContentLibrary.Instance.Places?["places"]?.FirstOrDefault(p => (string)p["id"] == "al-quds")?["name"]), 6f);
             for (int i = 0; i < clueSpots.Length; i++) if (clueSpots[i]) clueSpots[i].gameObject.SetActive(!Has((string)clues[i]["id"]));
             TeachingPages.HeroChanged += RebuildChild;
-            if (!SaveData.Current.heroChosen && !autoWalk && !pickedOnCommandLine) TeachingPages.ChooseHero();
+            if (!SaveData.Current.heroChosen && !autoWalk) TeachingPages.ChooseHero();
         }
-
-        static bool pickedOnCommandLine = System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-maryam") >= 0;
 
         void OnDestroy() => TeachingPages.HeroChanged -= RebuildChild;
 
