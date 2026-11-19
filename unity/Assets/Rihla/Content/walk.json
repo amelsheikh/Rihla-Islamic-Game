@@ -1,6 +1,9 @@
 {
   "note": "The walk with Jiddo from Bab al-Asbat to al-Masjid al-Aqsa (Phase E2). Clue facts are not written here: each clue points to an era in history.json, so every fact stays in one place and in NEEDS_REVIEW.md. Jiddo's lines are listed in NEEDS_REVIEW.md (H17, R6).",
-  "title": { "en": "Al-Quds at dawn", "ar": "القدس عند الفجر" },
+  "title": {
+    "en": "Al-Quds at dawn",
+    "ar": "القدس عند الفجر"
+  },
   "steps": [
     {
       "id": "gate",
@@ -67,27 +70,90 @@
   "clues": [
     {
       "id": "lions",
-      "title": { "en": "The lions of Bab al-Asbat", "ar": "أسود باب الأسباط" },
+      "title": {
+        "en": "The lions of Bab al-Asbat",
+        "ar": "أسود باب الأسباط"
+      },
       "site": "bab-al-asbat",
-      "era": 1
+      "era": 1,
+      "goal": {
+        "en": "Find the carved lions beside the gate. Walk into the golden light.",
+        "ar": "ابحث عن الأسود المنحوتة بجانب الباب. ادخل في الضوء الذهبي.",
+        "ar_f": "ابحثي عن الأسود المنحوتة بجانب الباب. ادخلي في الضوء الذهبي."
+      }
     },
     {
       "id": "tiles",
-      "title": { "en": "The tiles of the Dome of the Rock", "ar": "بلاط قبّة الصخرة" },
+      "title": {
+        "en": "The tiles of the Dome of the Rock",
+        "ar": "بلاط قبّة الصخرة"
+      },
       "site": "dome-of-the-rock",
-      "era": 3
+      "era": 3,
+      "goal": {
+        "en": "Go close to the Dome of the Rock and find the golden light by its tiles.",
+        "ar": "اقترب من قبة الصخرة وابحث عن الضوء الذهبي عند بلاطها.",
+        "ar_f": "اقتربي من قبة الصخرة وابحثي عن الضوء الذهبي عند بلاطها."
+      }
     },
     {
       "id": "qibli-dome",
-      "title": { "en": "The Qibli Mosque", "ar": "المسجد القبلي" },
+      "title": {
+        "en": "The Qibli Mosque",
+        "ar": "المسجد القبلي"
+      },
       "site": "al-qibli",
-      "era": 2
+      "era": 2,
+      "goal": {
+        "en": "Walk to the Qibli Mosque and find the golden light in front of it.",
+        "ar": "امشِ إلى المسجد القبلي وابحث عن الضوء الذهبي أمامه.",
+        "ar_f": "امشي إلى المسجد القبلي وابحثي عن الضوء الذهبي أمامه."
+      }
     }
   ],
   "timeLens": {
     "site": "dome-of-the-rock",
     "thenEra": 4,
     "nowEra": 5,
-    "label": { "en": "Time Lens", "ar": "عدسة الزمن" }
+    "label": {
+      "en": "Time Lens",
+      "ar": "عدسة الزمن"
+    }
+  },
+  "goals": {
+    "follow": {
+      "en": "Follow Jiddo. Walk along the golden arrows.",
+      "ar": "اتبع جدّو. امشِ على الأسهم الذهبية.",
+      "ar_f": "اتبعي جدّو. امشي على الأسهم الذهبية."
+    },
+    "listen": {
+      "en": "Stop and listen to Jiddo.",
+      "ar": "توقّف واستمع إلى جدّو.",
+      "ar_f": "توقّفي واستمعي إلى جدّو."
+    },
+    "back": {
+      "en": "You are off the road. Follow the arrows back to Jiddo.",
+      "ar": "ابتعدتَ عن الطريق. اتبع الأسهم لتعود إلى جدّو.",
+      "ar_f": "ابتعدتِ عن الطريق. اتبعي الأسهم لتعودي إلى جدّو."
+    },
+    "lens": {
+      "en": "Watch the Dome of the Rock through Jiddo's Time Lens.",
+      "ar": "شاهد قبة الصخرة بعدسة الزمن مع جدّو.",
+      "ar_f": "شاهدي قبة الصخرة بعدسة الزمن مع جدّو."
+    },
+    "end": {
+      "en": "Well done! Press G to go back to the car and drive down to Ariha.",
+      "ar": "أحسنت! اضغط G لتعود إلى السيارة وتنزل إلى أريحا.",
+      "ar_f": "أحسنتِ! اضغطي G لتعودي إلى السيارة وتنزلي إلى أريحا."
+    },
+    "start": {
+      "en": "Walk with W A S D or the arrow keys. Hold the right mouse button to look around.",
+      "ar": "امشِ بالأزرار W A S D أو بالأسهم. اضغط زر الفأرة الأيمن لتنظر حولك.",
+      "ar_f": "امشي بالأزرار W A S D أو بالأسهم. اضغطي زر الفأرة الأيمن لتنظري حولك."
+    },
+    "metres": {
+      "en": "{0} m",
+      "ar": "{0} م"
+    }
   }
 }

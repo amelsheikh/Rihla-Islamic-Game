@@ -24,7 +24,8 @@ namespace Rihla
         static readonly Color Ink = new Color(0.96f, 0.93f, 0.87f), Gold = new Color(0.91f, 0.78f, 0.42f),
             Panel = new Color(0.09f, 0.07f, 0.05f, 0.74f), Paper = new Color(0.95f, 0.91f, 0.82f), PaperInk = new Color(0.17f, 0.13f, 0.09f);
 
-        VisualElement root, hud, buttons, banner, modal, sheet, body, subtitle;
+        VisualElement root, hud, buttons, banner, modal, sheet, body, subtitle, goal, fade;
+        Label goalText, goalSub; float fadeFrom, fadeTo, fadeTime, fadeLength;
         Label speed, line1, line2, placeMain, placeSub, hint, fps, bannerTitle, bannerSub, subWho, subText;
         Button langBtn, journalBtn, historyBtn, closeBtn;
         float bannerTimer, subtitleTimer; Action onClose, rebuild; float savedTimeScale = 1f;
@@ -148,7 +149,56 @@ namespace Rihla
             sheet.Add(scroll); sheet.Add(closeBtn); modal.Add(sheet);
             modal.style.display = DisplayStyle.None;
             root.Add(modal);
+
+            // The goal: what to do now, always shown at the top centre while walking.
+            goal = new VisualElement(); goal.style.position = Position.Absolute; goal.style.top = 12;
+            goal.style.left = new Length(50, LengthUnit.Percent); goal.style.translate = new Translate(new Length(-50, LengthUnit.Percent), 0);
+            goal.style.maxWidth = 520; goal.style.alignItems = Align.Center;
+            goal.style.backgroundColor = new Color(0.12f, 0.09f, 0.04f, 0.82f); Pad(goal, 7, 18); Round(goal, 10);
+            goal.style.borderTopWidth = goal.style.borderBottomWidth = goal.style.borderLeftWidth = goal.style.borderRightWidth = 2;
+            goal.style.borderTopColor = goal.style.borderBottomColor = goal.style.borderLeftColor = goal.style.borderRightColor = Gold;
+            goal.pickingMode = PickingMode.Ignore;
+            goalText = Text("", 20, true, Ink); goalSub = Text("", 15, false, Gold);
+            goalText.AddToClassList("center"); goalSub.AddToClassList("center");
+            goalText.style.unityTextAlign = goalSub.style.unityTextAlign = TextAnchor.MiddleCenter;
+            goal.Add(goalText); goal.Add(goalSub); goal.style.display = DisplayStyle.None;
+            root.Insert(root.IndexOf(banner), goal);
+            banner.style.top = 128;
+
+            // Black over everything, for fading between scenes.
+            fade = new VisualElement(); fade.style.position = Position.Absolute;
+            fade.style.left = fade.style.right = fade.style.top = fade.style.bottom = 0;
+            fade.style.backgroundColor = Color.black; fade.style.opacity = 0f; fade.pickingMode = PickingMode.Ignore;
+            root.Add(fade);
         }
+
+        /// <summary>The goal at the top of the screen; null or empty hides it.</summary>
+        public void SetGoal(string text, string sub = null)
+        {
+            bool show = !string.IsNullOrEmpty(text);
+            goal.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
+            if (!show) return;
+            if (goalText.text != text) Debug.Log($"[Rihla] goal ({Lang.Current}): {text}");
+            goalText.text = text; goalSub.text = sub ?? "";
+            goalSub.style.display = string.IsNullOrEmpty(sub) ? DisplayStyle.None : DisplayStyle.Flex;
+        }
+
+        /// <summary>Fades the screen to black (1) or back (0) over unscaled seconds.</summary>
+        public void Fade(float to, float seconds)
+        {
+            fadeFrom = fade.resolvedStyle.opacity; fadeTo = to; fadeTime = 0f; fadeLength = Mathf.Max(0.01f, seconds);
+            if (seconds <= 0f) { fade.style.opacity = to; fadeLength = 0f; }
+        }
+
+        public void SetHudVisible(bool v)
+        {
+            hud.style.display = v ? DisplayStyle.Flex : DisplayStyle.None;
+            buttons.style.display = v ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        /// <summary>Adds a full layer (such as the storybook) above the HUD and below pages and the fade.</summary>
+        public void AddLayer(VisualElement e) => root.Insert(root.IndexOf(modal), e);
+        public void HideSubtitle() { subtitle.style.display = DisplayStyle.None; subtitleTimer = 0f; }
 
         /// <summary>Mirrors the layout for the current language and refreshes fixed labels and any open page.</summary>
         void Relayout()
@@ -345,6 +395,12 @@ namespace Rihla
             Measure();
             if (bannerTimer > 0f && (bannerTimer -= Time.unscaledDeltaTime) <= 0f) banner.style.display = DisplayStyle.None;
             if (subtitleTimer > 0f && (subtitleTimer -= Time.unscaledDeltaTime) <= 0f) subtitle.style.display = DisplayStyle.None;
+            if (fadeLength > 0f)
+            {
+                fadeTime += Time.unscaledDeltaTime;
+                fade.style.opacity = Mathf.Lerp(fadeFrom, fadeTo, Mathf.SmoothStep(0f, 1f, fadeTime / fadeLength));
+                if (fadeTime >= fadeLength) fadeLength = 0f;
+            }
             var kb = Keyboard.current; if (kb == null) return;
             if (ModalOpen)
             {

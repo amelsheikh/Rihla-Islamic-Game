@@ -15,13 +15,7 @@ namespace Rihla
         public float Fps { get; private set; }
         float fpsTimer; int frames;
 
-        void Start()
-        {
-            // -walk starts the game in the Old City (the E2 walk), for testing.
-            if (System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-walk") >= 0 && Time.realtimeSinceStartup < 30f && !walkStarted)
-            { walkStarted = true; UnityEngine.SceneManagement.SceneManager.LoadScene("E2_AlQuds_Walk"); }
-        }
-        static bool walkStarted;
+        // "-walk" and "-drive" (starting a scene directly, for testing) are handled by the opening, StoryOpening.
 
         void Update()
         {

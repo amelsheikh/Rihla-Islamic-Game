@@ -20,6 +20,9 @@ namespace Rihla
         public int seed;
         /// <summary>The player's child: Yusuf or Maryam, as chosen (saved), or -maryam on the command line.</summary>
         public bool hero;
+        /// <summary>Sitting (the opening at home): legs forward, arms raised by <see cref="armHold"/> degrees.</summary>
+        public bool seated;
+        public float armHold;
         /// <summary>Hidden when farther than this from the camera (0 = always shown).</summary>
         public float cullDistance;
 
@@ -500,6 +503,17 @@ namespace Rihla
             }
             if (culled) return;
 
+            if (seated)
+            {
+                if (armL) armL.localRotation = Quaternion.Euler(-armHold, 0f, -6f);
+                if (armR) armR.localRotation = Quaternion.Euler(-armHold, 0f, 6f);
+                if (legL) legL.localRotation = Quaternion.Euler(-88f, 0f, 4f);
+                if (legR) legR.localRotation = Quaternion.Euler(-88f, 0f, -4f);
+                if (footL) footL.gameObject.SetActive(false);
+                if (footR) footR.gameObject.SetActive(false);
+                bodyT.localPosition = bodyBase + new Vector3(0f, Mathf.Sin(Time.time * 1.7f + seed) * 0.004f, 0f);
+                return;
+            }
             float k = Mathf.Clamp01(speed / (1.2f * scale));
             phase += speed * dt / (0.62f * scale) * Mathf.PI;
             float sw = Mathf.Sin(phase);

@@ -12,14 +12,25 @@ HOW TO START
 ------------
 Double-click one of these:
 
-  1 - Walk in Al-Quds.bat     Start at Bab al-Asbat and walk with Jiddo to
+  1 - Start the story.bat     The game from the beginning: an evening at
+                               Jiddo's house, his old book of places, then the
+                               walk to al-Masjid al-Aqsa at dawn.
+  2 - Walk in Al-Quds.bat     Straight to the walk from Bab al-Asbat to
                                al-Masjid al-Aqsa (about 10 minutes).
-  2 - Drive from Al-Quds.bat  Start on the road from Al-Quds down to Ariha.
+  3 - Drive from Al-Quds.bat  Straight to the road from Al-Quds down to Ariha.
 
 The first time, Windows may say "Windows protected your PC". Click
 "More info", then "Run anyway". This appears because the game is not signed.
 
-On the first screen, choose Yusuf or Maryam. Each start begins a fresh game.
+Each start begins a fresh game. At the end of Jiddo's story you choose who
+walks with him: Yusuf or Maryam.
+
+
+THE STORY AT JIDDO'S HOUSE
+--------------------------
+  Space or Enter   turn the page of the book (or the arrow keys, or the button)
+  L                English / Arabic
+  Esc              skip the story
 
 
 WALKING IN AL-QUDS
@@ -35,8 +46,10 @@ WALKING IN AL-QUDS
   L                English / Arabic
   Esc              close a page or the menu
 
-Follow Jiddo. Find the three clues: the lions on Bab al-Asbat, the tiles of the
-Dome of the Rock, and the dome of the Qibli Mosque.
+The box at the top of the screen always says what to do next. Golden arrows on
+the ground show the way, and a golden arrow floats over Jiddo or over the next
+clue. Find the three clues: the lions on Bab al-Asbat, the tiles of the Dome of
+the Rock, and the dome of the Qibli Mosque.
 
 
 DRIVING

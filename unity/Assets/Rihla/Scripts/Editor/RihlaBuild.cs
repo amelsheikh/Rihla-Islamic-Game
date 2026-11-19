@@ -15,7 +15,7 @@ namespace Rihla.EditorTools
         {
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
-                scenes = new[] { RihlaSceneBuilder.ScenePath, RihlaCesiumBuilder.ScenePath, RihlaWalkBuilder.ScenePath }
+                scenes = new[] { RihlaHomeBuilder.ScenePath, RihlaSceneBuilder.ScenePath, RihlaCesiumBuilder.ScenePath, RihlaWalkBuilder.ScenePath }
                     .Where(File.Exists).ToArray(),
                 locationPathName = "../Builds/Windows/Rihla.exe",
                 target = BuildTarget.StandaloneWindows64,

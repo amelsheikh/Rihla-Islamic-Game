@@ -14,10 +14,12 @@ Every piece of work should serve at least one of these, in this order:
 1. **Teach truthfully.** Real places, real history and Islamic history, with every fact and text checked
    (`NEEDS_REVIEW.md`). Teaching comes before spectacle.
 2. **Then and now.** At every place the children see how it was, then how it is today (the Time Lens).
-3. **Feel like visiting.** Walking real streets at true scale, with light, stone, people, sound and emotion.
-4. **A journey with family.** The story of Jiddo, Teta and the child following Zaynab's pages from place to
+3. **Guided, so young children never wander without aim.** A story to begin, then every step says what to do
+   and shows the way (the owner, 19 November 2026).
+4. **Feel like visiting.** Walking real streets at true scale, with light, stone, people, sound and emotion.
+5. **A journey with family.** The story of Jiddo, Teta and the child following Zaynab's pages from place to
    place, on foot, by car and from the air.
-5. **Respect, always.** The religious and cultural rules of the brief (section 5) are never optional.
+6. **Respect, always.** The religious and cultural rules of the brief (section 5) are never optional.
 
 ## 2. Where we are (19 November 2026)
 
@@ -43,8 +45,8 @@ Each step ends with a build the owner can play, screenshots and FPS numbers.
 |---|---|---|---|
 | **R4** | **"As if visiting": realism on the laptop.** A real sky with clouds, weathered and varied stone, life in the lanes (lamps, plants, awnings, arches across lanes), better trees; keep 60 FPS. A prototype the owner can test. | The owner asked for it (19 November) | Done 19 November (63-66 FPS); the owner is testing the prototype |
 | **R4b** | **Realism, next steps on the laptop** (if the owner wants more before C1a): varied building heights and roof lines, the slope of the Old City, market goods in the souq, better lamps and awnings | Most visible weaknesses left after R4 | Proposed |
-| **C1a** | **The prologue complete.** Jiddo's house, the chest and Page 1 with its riddle; the adhan and the prayer moment (waits on the owner's and a scholar's decision on how prayer is shown) | Finishes the first teaching scene end to end | Next |
-| **C1b** | **The road down.** The drive from Al-Quds to Ariha in Unity on the real terrain, Jiddo's remarks on the land, Khan al-Ahmar, the shepherd, the sea-level marker | The land itself is half of the teaching | |
+| **C1a** | **The prologue complete.** The opening at Jiddo's house with his storybook of places, and guidance (goal box, arrows) through the walk; then the chest and Page 1 with its riddle; the adhan and the prayer moment (waits on the owner's and a scholar's decision on how prayer is shown) | Finishes the first teaching scene end to end; the owner found the game confusing for young children without it | In progress: the opening, the storybook, the guidance and the open way into al-Aqsa done 19 November (opening 71-79 FPS, walk 66 FPS); the chest, Page 1 and prayer next |
+| **C1b** | **The road down.** The drive from Al-Quds to Ariha in Unity on the real terrain, with the same goal box and arrows as the walk, Jiddo's remarks on the land, Khan al-Ahmar, the shepherd, the sea-level marker | The land itself is half of the teaching | |
 | **C1c** | **Ariha, Maqam al-Nabi Musa and the Dead Sea.** Each walked on foot with clues, a keeper, a question, a page, then and now; Teta's call; the finale | Completes Chapter 1 (45-60 minutes) | |
 | **T1** | **Ways to travel.** Horse and carriage in "then" scenes, bicycle and car today, glider and plane over the land | The owner's vision; best added once Chapter 1 has places to travel between | |
 | **G1** | **Graphics PC step.** Higher settings, baked light, detailed characters and landmarks | When a graphics PC is available | Waiting |

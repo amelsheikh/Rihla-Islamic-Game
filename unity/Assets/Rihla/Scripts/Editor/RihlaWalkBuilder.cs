@@ -49,6 +49,12 @@ namespace Rihla.EditorTools
             Walls(json, streets);
             var points = json["points"];
             var dome = V2(points["domeOfTheRock"]); var qibli = V2(points["alQibli"]); var gateC = V2(points["babAlAsbat"]);
+            // The raised platform: where the line north-south through the Dome crosses its edge, put stairs. Buildings
+            // standing over a stair (the arcades at its top) are built with an arch the child walks through.
+            float north = Cross(platform, dome.x, true), south = Cross(platform, dome.x, false);
+            stairs.Clear();
+            stairs.Add((new Vector2(dome.x - StairHalf, north - 1f), new Vector2(dome.x + StairHalf, north + 9f)));
+            stairs.Add((new Vector2(dome.x - StairHalf, south - 9f), new Vector2(dome.x + StairHalf, south + 1f)));
             JToken domeB = null, qibliB = null, chainB = null, gateB = null;
             Buildings(json, streets, platform, ref domeB, ref qibliB, ref chainB, ref gateB);
             Trees(json, platform);
@@ -64,8 +70,6 @@ namespace Rihla.EditorTools
             float gateEast = gateRing.Max(p => p.x);
             Lions(gateEast, gateC.y);
 
-            // The raised platform: where the line north-south through the Dome crosses its edge, put stairs.
-            float north = Cross(platform, dome.x, true), south = Cross(platform, dome.x, false);
             Stairs(new Vector3(dome.x, 0f, north + 8f), new Vector3(dome.x, Platform, north - 0.5f));
             Stairs(new Vector3(dome.x, 0f, south - 8f), new Vector3(dome.x, Platform, south + 0.5f));
 
@@ -116,6 +120,12 @@ namespace Rihla.EditorTools
             dir.compound = compound.ToArray();
             dir.domeOfTheRock = new Vector3(dome.x, Platform, dome.y); dir.alQibli = new Vector3(qibli.x, 0f, qibli.y);
             dir.babAlAsbat = new Vector3(gateC.x, 0f, gateC.y);
+            // The guide arrows are unlit, so shade and the 1910 colouring do not dim them, and bright enough to glow.
+            string guidePath = Built + "guide_unlit.mat";
+            var guideMat = AssetDatabase.LoadAssetAtPath<Material>(guidePath);
+            if (!guideMat) { guideMat = new Material(Shader.Find("Universal Render Pipeline/Unlit")); AssetDatabase.CreateAsset(guideMat, guidePath); }
+            guideMat.SetColor("_BaseColor", new Color(1f, 0.62f, 0.12f) * 2.2f); guideMat.SetFloat("_Cull", 0f);
+            EditorUtility.SetDirty(guideMat); dir.guideMaterial = guideMat;
 
             Flush();
             EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(), ScenePath);
@@ -292,8 +302,16 @@ namespace Rihla.EditorTools
                 Vector2 c = new Vector2(ring.Average(p => p.x), ring.Average(p => p.y));
                 float base0 = Inside(platform, c) ? Platform : 0f;
                 float h = b["height"]?.Type == JTokenType.Float || b["height"]?.Type == JTokenType.Integer ? (float)b["height"] : 6.5f + (id % 5);
+                var stair = stairs.FirstOrDefault(r => ring.Any(p => p.x > r.min.x && p.x < r.max.x && p.y > r.min.y && p.y < r.max.y)
+                    || (c.x > r.min.x - 6f && c.x < r.max.x + 6f && c.y > r.min.y && c.y < r.max.y));
                 bool arch = (bool)b["gate"] || streets.Any(s => s.passage && Crosses(ring, s.line));
-                if (arch) ArchedPassage(gates, ring, c, streets, base0, Mathf.Max(h, ArchTop + 3f));
+                if (stair.max != stair.min)
+                    ArchedPassage(gates, ring, new Vector2((stair.min.x + stair.max.x) / 2f, c.y), Vector2.up, 0f, Platform + ArchTop + 2f, Platform);
+                else if (arch)
+                {
+                    PassageLine(ring, c, streets, out var at, out var along);
+                    ArchedPassage(gates, ring, at, along, base0, Mathf.Max(h, ArchTop + 3f), 0f);
+                }
                 else { Prism(tones[id % 3], ring, base0, base0 + h); houses.Add((ring, base0, h, id)); }
             }
         }
@@ -303,25 +321,37 @@ namespace Rihla.EditorTools
         /// A gate (or a building over a street) with a pointed-arch passage along the street: solid piers either
         /// side, solid above the arch, and the arch itself, so the child walks through it.
         /// </summary>
-        static void ArchedPassage(MB mb, List<Vector2> ring, Vector2 centre, List<Street> streets, float base0, float h)
+        static void PassageLine(List<Vector2> ring, Vector2 centre, List<Street> streets, out Vector2 c, out Vector2 dir)
         {
-            // The street that runs through (or nearest to) the building gives the passage's line.
+            // The street that runs through (or nearest to) the building gives the passage's line. A covered
+            // passage counts first, but only one that crosses this building (a passage elsewhere once took the
+            // place of the street into al-Aqsa, and the gate was built solid).
             Vector2 a0 = default, b0 = default; float best = float.MaxValue;
             foreach (var st in streets)
+            {
+                bool through = Crosses(ring, st.line);
                 for (int i = 0; i < st.line.Count - 1; i++)
                 {
                     Vector2 a = st.line[i], b = st.line[i + 1];
-                    float d = DistToSeg(centre, a, b) - (st.passage ? 50f : 0f);
+                    float d = DistToSeg(centre, a, b) - (through ? (st.passage ? 50f : 20f) : 0f);
                     if (d < best) { best = d; a0 = a; b0 = b; }
                 }
-            Vector2 dir = (b0 - a0).normalized, n = new Vector2(-dir.y, dir.x);
-            Vector2 c = ClosestOnSeg(centre, a0, b0);
+            }
+            dir = (b0 - a0).normalized;
+            c = ClosestOnSeg(centre, a0, b0);
+            c += dir * Vector2.Dot(centre - c, dir); // centred on the building along the street
+        }
+
+        /// <summary>The arch is raised by <paramref name="lift"/> (over stairs); the piers still stand on base0.</summary>
+        static void ArchedPassage(MB mb, List<Vector2> ring, Vector2 c, Vector2 dir, float base0, float h, float lift)
+        {
+            Vector2 n = new Vector2(-dir.y, dir.x);
             var left = Clip(ring, c, -n, ArchHalf); var right = Clip(ring, c, n, ArchHalf);
             var mid = Clip(Clip(ring, c, n, -ArchHalf), c, -n, -ArchHalf);
             if (left.Count >= 3) Prism(mb, Ccw(left), base0, base0 + h);
             if (right.Count >= 3) Prism(mb, Ccw(right), base0, base0 + h);
             if (mid.Count < 3) return;
-            Prism(mb, Ccw(mid), base0 + ArchTop, base0 + h);
+            Prism(mb, Ccw(mid), base0 + lift + ArchTop, base0 + h);
             float t0 = mid.Min(p => Vector2.Dot(p - c, dir)), t1 = mid.Max(p => Vector2.Dot(p - c, dir));
             // The arch: the space between a pointed arch and the solid above, extruded along the passage.
             var prof = new List<Vector2> { new Vector2(-ArchHalf, ArchSpring) };
@@ -330,8 +360,11 @@ namespace Rihla.EditorTools
             for (int k = 7; k >= 0; k--) { float x = ArchHalf - ArchHalf * k / 8f; prof.Add(new Vector2(x, ArchSpring + Mathf.Sqrt(Mathf.Max(0f, r * r - (x + off) * (x + off))))); }
             prof.Add(new Vector2(ArchHalf, ArchTop)); prof.Add(new Vector2(-ArchHalf, ArchTop));
             for (int i = 0; i < prof.Count; i++) prof[i] = new Vector2(prof[i].x, Mathf.Min(prof[i].y, ArchTop));
-            Extrude(mb, prof, c, n, dir, t0, t1, base0);
+            Extrude(mb, prof, c, n, dir, t0, t1, base0 + lift);
         }
+
+        const float StairHalf = 5f;
+        static readonly List<(Vector2 min, Vector2 max)> stairs = new List<(Vector2, Vector2)>();
 
         /// <summary>
         /// Trees where OpenStreetMap maps one, and its grass and garden areas. OSM does not say the species, so
@@ -1084,12 +1117,12 @@ namespace Rihla.EditorTools
         }
     }
 
-    /// <summary>Keeps the build's scene list in one place: the road first, then the other scenes that exist.</summary>
+    /// <summary>Keeps the build's scene list in one place: the opening at home first, then the other scenes that exist.</summary>
     public static class RihlaScenes
     {
         public static void UpdateBuildSettings()
         {
-            var list = new[] { RihlaSceneBuilder.ScenePath, RihlaCesiumBuilder.ScenePath, RihlaWalkBuilder.ScenePath }
+            var list = new[] { RihlaHomeBuilder.ScenePath, RihlaSceneBuilder.ScenePath, RihlaCesiumBuilder.ScenePath, RihlaWalkBuilder.ScenePath }
                 .Where(File.Exists).Select(p => new EditorBuildSettingsScene(p, true)).ToArray();
             EditorBuildSettings.scenes = list;
         }

@@ -97,6 +97,8 @@ namespace Rihla
         public bool introSeen;
         public string[] clues = new string[0];
         public bool walkDone;
+        /// <summary>The opening at home (Jiddo and the book) has been seen.</summary>
+        public bool prologueSeen;
         /// <summary>Which child the player chose: "yusuf" or "maryam" (STORY section 1).</summary>
         public string hero = "yusuf";
         public bool heroChosen;

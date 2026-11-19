@@ -127,6 +127,23 @@ one family, and to come home.*
 8. Still to confirm: how present-day places are shown (no checkpoints or walls are drawn), and whether any
    place should be left out for now.
 
+## 8a. The opening and guidance (the owner, 19 November 2026)
+
+After trying the first prototype, the owner found it confusing for younger children and asked for:
+
+- **An opening** in a cozy living room: the grandparent tells the grandchildren a story from a book about the
+  history of the Muslims and of the blessed land of Palestine and Al-Quds. *(Built: an evening at Jiddo's house
+  in the Old City, with Teta, Yusuf and Maryam.)*
+- **The book's pages**, zoomed in, showing the places one after another: Al-Quds, Ariha, al-Khalil, places in
+  Lebanon, Syria and Iraq, Makkah, al-Madinah and others. *(Built: ten pages with a map each; the last page is
+  Al-Quds, where the journey begins.)*
+- **A guided game**, step by step, so the player never wanders without aim: instructions, and arrows showing where
+  to go and what to explore. *(Built in the walk: a goal box and golden arrows; to add to the drive.)*
+
+This fits the prologue in section 5: the evening at home comes first, the walk to al-Masjid al-Aqsa is the next
+morning, and Jiddo's chest with Zaynab's first page comes after the walk. Jiddo's book is his father's book of
+stories, not one of Zaynab's pages.
+
 ## 8b. The owner's vision (16 November 2026)
 
 In the owner's words: a game they can play, or let children play, *as if they are visiting there and walking the

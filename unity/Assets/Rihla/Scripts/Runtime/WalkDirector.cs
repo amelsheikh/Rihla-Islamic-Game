@@ -28,6 +28,9 @@ namespace Rihla
         public Vector3 domeOfTheRock, alQibli, babAlAsbat;
         public string roadScene = "E0_JerichoRoad";
         public float jiddoSpeed = 1.3f;
+        /// <summary>The golden material of the guide arrows (set by the builder, so the build keeps its shader).</summary>
+        public Material guideMaterial;
+        WalkGuide guide;
 
         RihlaUI ui; JObject walk; JArray steps, clues;
         int step, target; bool waiting, lineSaid, revealQueued; float stepTimer;
@@ -46,6 +49,8 @@ namespace Rihla
             ui.Banner(Lang.Pick(walk["title"]), Lang.Pick(ContentLibrary.Instance.Places?["places"]?.FirstOrDefault(p => (string)p["id"] == "al-quds")?["name"]), 6f);
             for (int i = 0; i < clueSpots.Length; i++) if (clueSpots[i]) clueSpots[i].gameObject.SetActive(!Has((string)clues[i]["id"]));
             TeachingPages.HeroChanged += RebuildChild;
+            var g = new GameObject("Guide"); g.SetActive(false);
+            guide = g.AddComponent<WalkGuide>(); guide.material = guideMaterial; g.SetActive(true);
             if (!SaveData.Current.heroChosen && !autoWalk) TeachingPages.ChooseHero();
         }
 
@@ -95,6 +100,7 @@ namespace Rihla
             Vector3 c = child.transform.position;
             Keys(c);
             Guide(c);
+            Guidance(c);
             Clues(c);
             Hud(c);
         }
@@ -168,6 +174,56 @@ namespace Rihla
             // From just above the feet, so arches and roofs overhead are not taken for the ground.
             if (Physics.Raycast(new Vector3(p.x, p.y + 1.5f, p.z), Vector3.down, out var hit, 6f, ~0, QueryTriggerInteraction.Ignore)) p.y = hit.point.y;
             return p;
+        }
+
+        // ------------------------------------------------------------------ guidance (arrows and the goal)
+
+        readonly System.Collections.Generic.List<Vector3> route = new System.Collections.Generic.List<Vector3>();
+        JToken Goal(string key) => walk["goals"]?[key];
+
+        /// <summary>
+        /// Always tells the child what to do now (at the top of the screen) and shows the way there with arrows
+        /// along Jiddo's road: to Jiddo while he walks or waits to speak, to the clue he asked for, and back to the
+        /// road when the child has wandered off.
+        /// </summary>
+        void Guidance(Vector3 c)
+        {
+            string id = step < steps.Count ? (string)steps[step]["id"] : "end";
+            string want = waiting && lineSaid ? id switch { "gate" => "lions", "tiles" => "tiles", "qibli" => "qibli-dome", _ => null } : null;
+            int ci = want == null || Has(want) ? -1 : clues.ToList().FindIndex(x => (string)x["id"] == want);
+
+            JToken text; Vector3 goal; int goalIdx; bool arrows = true;
+            if (ci >= 0) { text = clues[ci]["goal"]; goal = clueSpots[ci].position; goalIdx = stepAt[step]; }
+            else
+            {
+                goal = jiddo.position; goalIdx = waiting ? stepAt[Mathf.Min(step, stepAt.Length - 1)] : Mathf.Max(0, target - 1);
+                if (id == "end" && lineSaid) { text = Goal("end"); arrows = false; }
+                else if (waiting && lineSaid && id == "lens") { text = Goal("lens"); arrows = false; }
+                else if (waiting && lineSaid) { text = Goal("listen"); arrows = false; }
+                else text = Goal("follow");
+            }
+
+            // The road from the child to the goal: onto the nearest part of Jiddo's route, then along it.
+            int si = 0; Vector3 q = path[0]; float best = float.MaxValue;
+            for (int i = 0; i < path.Length - 1; i++)
+            {
+                Vector3 a = path[i], b = path[i + 1], ab = b - a; ab.y = 0f;
+                float t = ab.sqrMagnitude < 1e-4f ? 0f : Mathf.Clamp01(Vector3.Dot(new Vector3(c.x - a.x, 0f, c.z - a.z), ab) / ab.sqrMagnitude);
+                Vector3 pt = Vector3.Lerp(a, b, t); float d = Flat(pt, c);
+                if (d < best) { best = d; si = i; q = pt; }
+            }
+            route.Clear(); route.Add(c); route.Add(q);
+            if (si + 1 <= goalIdx) for (int k = si + 1; k <= goalIdx; k++) route.Add(path[k]);
+            else for (int k = si; k > goalIdx; k--) route.Add(path[k]);
+            route.Add(goal);
+            bool off = best > 14f && Flat(c, goal) > 14f;
+            if (off) { text = Goal("back"); arrows = true; }
+
+            float dist = Flat(c, goal);
+            guide.Show(arrows && dist > 3f ? route : null, arrows || ci >= 0 ? goal : (Vector3?)null);
+            string sub = Time.timeSinceLevelLoad < 30f && !SaveData.Current.walkDone ? Lang.Pick(Goal("start"))
+                : arrows && dist > 3f ? string.Format(Lang.Pick(Goal("metres")) ?? "{0} m", Lang.Num(dist)) : null;
+            ui.SetGoal(Lang.Pick(text), sub);
         }
 
         // ------------------------------------------------------------------ clues

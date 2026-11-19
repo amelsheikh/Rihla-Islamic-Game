@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/C1_Home.unity
+    guid: e766d6d9c5758624396a2e32ad188576
+  - enabled: 1
     path: Assets/Scenes/E0_JerichoRoad.unity
     guid: 899d8ae543173b44eb28ce725eaaa9dc
   - enabled: 1

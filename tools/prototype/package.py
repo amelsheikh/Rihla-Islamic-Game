@@ -7,9 +7,12 @@ here = os.path.dirname(os.path.abspath(__file__))  # tools/prototype: this scrip
 date = sys.argv[1]
 
 starts = {
-    '1 - Walk in Al-Quds.bat': '@echo off\r\ncd /d "%~dp0"\r\nstart "" "Rihla.exe" -walk -newgame\r\n',
-    '2 - Drive from Al-Quds.bat': '@echo off\r\ncd /d "%~dp0"\r\nstart "" "Rihla.exe" -newgame\r\n',
+    '1 - Start the story.bat': '@echo off\r\ncd /d "%~dp0"\r\nstart "" "Rihla.exe" -newgame\r\n',
+    '2 - Walk in Al-Quds.bat': '@echo off\r\ncd /d "%~dp0"\r\nstart "" "Rihla.exe" -walk -newgame\r\n',
+    '3 - Drive from Al-Quds.bat': '@echo off\r\ncd /d "%~dp0"\r\nstart "" "Rihla.exe" -drive -newgame\r\n',
 }
+for old in ('1 - Walk in Al-Quds.bat', '2 - Drive from Al-Quds.bat'):  # the names in the first prototype
+    if os.path.exists(build + old): os.remove(build + old)
 for name, text in starts.items():
     io.open(build + name, 'w', newline='').write(text)
 shutil.copy(os.path.join(here, 'HOW TO PLAY.txt'), build + 'HOW TO PLAY.txt')

@@ -16,6 +16,7 @@
 | E2 — Walking Al-Quds, then and now (owner's PC, block-out) | Done | The walk from Bab al-Asbat to al-Masjid al-Aqsa at true scale with Jiddo, three clues and the first Time Lens reveal; 97-103 FPS. See below |
 | E3 — Realism on the owner's PC | Three passes done | Stone textures, arches, battlements, trees, sky; then doors, shop shutters, windows, roof domes, warm bounce light, ambient occlusion; then sound, and people in modest dress (Jiddo, Yusuf or Maryam, 55 townspeople with children and elders, in 1910 dress in the "then" view); 62-70 FPS. See below |
 | R4 — "As if visiting" on the laptop | Done 19 November 2026 | A photographed sky with clouds, weathered pale limestone, lane life (awnings, plants, shutters, arches across lanes; lamps, cables and water tanks only today), leafy trees, windows in the Dome of the Rock; 63-66 FPS. A prototype on the owner's Desktop. See below. The plan ahead is in `docs/ROADMAP.md` |
+| C1a (first part) — The opening at home, the storybook, guidance | Done 19 November 2026 | The game now starts in Jiddo's house: Jiddo reads Yusuf and Maryam a story from his old book, a page and a map for each place (Makkah to Al-Quds), then the walk at dawn; a goal box and golden arrows guide every step; the gate into al-Aqsa and the stairs to the Dome were blocked and are open. Opening 71-79 FPS, walk 66 FPS. See below |
 
 ## Phase 1a: what works
 
@@ -167,6 +168,69 @@ Palestine comes after Chapter 1, "then and now" is central, and the world should
 walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
+
+## C1a, first part: the opening at home, the storybook, and guidance (done 19 November 2026)
+
+The owner tried the R4 prototype and found it confusing for young children: there was no opening, the player
+did not know where to go, and the lane to al-Aqsa seemed to end in a wall. They asked for an opening in a cozy
+living room where a grandparent tells the grandchildren a story from a book about the history of the Muslims and
+of the blessed land, then the pages of the book showing the places one by one, and a game guided step by step,
+with instructions and arrows.
+
+What changed:
+
+- **The way into al-Aqsa was blocked, and is open.** The gate from the Bab al-Asbat lane into the courtyard of
+  al-Masjid al-Aqsa was built as solid stone: the code that cuts an arch through a gate took its line from a
+  covered passage on another street. A passage now only counts if it runs through that building. The building
+  over the north stairs to the Dome of the Rock (the arcade at their top) also blocked the stairs; it is now built
+  with a raised arch over them. A test sweeps the whole of Jiddo's route for walls in the way: none are left.
+- **The opening at home** (new scene `C1_Home`, built by `RihlaHomeBuilder.cs`, run by `StoryOpening.cs`): an
+  evening in Jiddo's house in the Old City. A vaulted room with patterned cement tiles, floor seating in red woven
+  cloth, a rug, a hanging brass lantern, a low table with tea and dates, a bookshelf, the family chest, a picture
+  of the Dome of the Rock, and a window onto the evening sky with the Dome far off. Jiddo sits with his old book,
+  Teta beside him, Yusuf and Maryam on cushions before them. The camera moves in while Jiddo speaks, then down to
+  the book as he opens it.
+- **The storybook** (`StoryBook.cs`, text in `content/storybook.json`): an open book on the screen. On the left
+  page a hand-drawn map of the lands (coasts, rivers and lakes from Natural Earth, no borders), with the page's
+  place marked in red; on the right its name in Arabic and English, two or three lines, and when the child will
+  visit it. Ten pages: Makkah, al-Madinah, Al-Quds (with the way of al-Isra' drawn from Makkah), Dimashq,
+  Baghdad, al-Qahira, Sayda, al-Khalil, Ariha, and Al-Quds our home. Space, Enter, the arrow keys (right to left in
+  Arabic) or the button turn the page, with the sound of a page. Then Jiddo says they will walk to al-Masjid
+  al-Aqsa at dawn and asks who will walk with him first: the player chooses Yusuf or Maryam. Esc skips the story.
+- **Guidance in the walk** (`WalkGuide.cs`, `WalkDirector.Guidance`): a box at the top of the screen always says
+  what to do now, in words for children ("Follow Jiddo. Walk along the golden arrows.", "Find the carved lions
+  beside the gate. Walk into the golden light.", "Stop and listen to Jiddo."), with the distance or, for the first
+  half-minute, the keys. Golden arrows slide along the ground on Jiddo's road to the goal, and a golden arrow
+  bobs over Jiddo or the clue. A child who wanders off is told to follow the arrows back. The texts are in
+  `content/walk.json` ("goals" and each clue's "goal"), with feminine Arabic for Maryam.
+- **Glow fixed.** Glowing materials lost their glow setting when saved; the window, the lantern and the guide
+  arrows now use an unlit material bright enough to glow. (The walk's clue markers and today's lamps still use
+  the old setting and do not glow; to fix the same way.)
+- The game starts with the opening. Start files in the prototype: *1 - Start the story*, *2 - Walk in Al-Quds*,
+  *3 - Drive from Al-Quds* (`-walk` and `-drive` start those scenes directly).
+
+Checks run:
+
+| Check | Result |
+|---|---|
+| The route of the walk, swept with the child's size for walls in the way | Before: blocked at the gate into al-Aqsa and at the north stairs. After: clear |
+| Windows build, the whole start (`-newgame -autowalk -quitafter 160`): the opening, the book, then the walk | Opening **71-77 FPS**, walk **66.1 FPS** average, no errors; the test walk passes through the gate into al-Aqsa |
+| The walk by itself, 200 s (`-walk -autowalk`) | **66.0 FPS**, no errors |
+| The new prototype copy on the Desktop, 40 s | 78.8 FPS in the opening |
+| Pictures | `docs/screenshots/c1a-*.png`: the room, the book (Arabic and English), the guide, the open gate and stairs |
+
+The prototype: `Builds/Rihla-prototype-2026-11-19b.zip`, unpacked to the owner's Desktop as **Rihla prototype**
+(the earlier copy was replaced). It contains the Cesium token, so it stays in the family.
+
+Known issues and next steps:
+
+- The figures are still simple; seated figures are posed, with rounded legs added under the robes.
+- In the 1910 view the colouring turns the golden arrows cream; they still stand out.
+- The test walk moves the child by itself, so it shows the route works but not how a child at the keys finds it.
+- The rest of C1a: after the walk, back home, Jiddo opens the chest and Page 1 (Zaynab's first page and riddle);
+  the adhan and the prayer moment wait on the owner's and a scholar's decision.
+- The drive (C1b) has no goal box or arrows yet; it should get the same guidance.
+- Every caption of the book, Jiddo's new lines and the room are listed in `NEEDS_REVIEW.md` (H19, L2).
 
 ## R4: "as if visiting", realism on the laptop (done 19 November 2026)
 
