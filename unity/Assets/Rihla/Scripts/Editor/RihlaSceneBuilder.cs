@@ -48,6 +48,10 @@ namespace Rihla.EditorTools
             var teach = new GameObject("Teaching").AddComponent<Teaching>();
             teach.car = car; teach.player = sw; teach.road = road; teach.hud = hud;
             teach.pageMarker = PageMarker(road, json);
+            // C1b: the goal box and golden arrows along the road, as in the walk.
+            var guide = new GameObject("Drive guidance").AddComponent<DriveGuide>();
+            guide.car = car; guide.player = sw; guide.road = road; guide.pageMarker = teach.pageMarker;
+            guide.material = Unlit("guide_unlit_road", new Color(1f, 0.62f, 0.12f) * 2.2f);
 
             EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(), ScenePath);
             RihlaScenes.UpdateBuildSettings();
@@ -78,9 +82,8 @@ namespace Rihla.EditorTools
             plinth.name = "stone"; plinth.transform.SetParent(root, false);
             plinth.transform.localPosition = new Vector3(0f, 0.5f, 0f); plinth.transform.localScale = new Vector3(1.5f, 0.5f, 1.5f);
             plinth.GetComponent<MeshRenderer>().sharedMaterial = Mat("page_stone", new Color(0.81f, 0.76f, 0.64f));
-            var scrollMat = Mat("page_scroll", new Color(0.95f, 0.87f, 0.63f), 0.5f);
-            scrollMat.EnableKeyword("_EMISSION"); scrollMat.SetColor("_EmissionColor", new Color(0.85f, 0.66f, 0.23f) * 2.5f);
-            scrollMat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+            // Unlit, so it glows (URP Lit's emission setting is not kept on materials made by code).
+            var scrollMat = Unlit("page_scroll_unlit", new Color(1f, 0.78f, 0.3f) * 1.8f);
             var scroll = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             scroll.name = "scroll"; scroll.transform.SetParent(root, false);
             Object.DestroyImmediate(scroll.GetComponent<Collider>());
@@ -93,6 +96,16 @@ namespace Rihla.EditorTools
             beam.transform.localPosition = new Vector3(0f, 14f, 0f); beam.transform.localScale = new Vector3(0.25f, 12f, 0.25f);
             beam.GetComponent<MeshRenderer>().sharedMaterial = scrollMat;
             return root;
+        }
+
+        static Material Unlit(string name, Color c)
+        {
+            string p = Built + name + ".mat";
+            var m = AssetDatabase.LoadAssetAtPath<Material>(p);
+            if (!m) { m = new Material(Shader.Find("Universal Render Pipeline/Unlit")); AssetDatabase.CreateAsset(m, p); }
+            m.SetColor("_BaseColor", c); m.SetFloat("_Cull", 0f);
+            EditorUtility.SetDirty(m);
+            return m;
         }
 
         static Material Mat(string name, Color c, float smooth = 0.2f)

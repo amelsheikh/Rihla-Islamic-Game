@@ -18,6 +18,7 @@
 | R4 — "As if visiting" on the laptop | Done 19 November 2026 | A photographed sky with clouds, weathered pale limestone, lane life (awnings, plants, shutters, arches across lanes; lamps, cables and water tanks only today), leafy trees, windows in the Dome of the Rock; 63-66 FPS. A prototype on the owner's Desktop. See below. The plan ahead is in `docs/ROADMAP.md` |
 | C1a (first part) — The opening at home, the storybook, guidance | Done 19 November 2026 | The game now starts in Jiddo's house: Jiddo reads Yusuf and Maryam a story from his old book, a page and a map for each place (Makkah to Al-Quds), then the walk at dawn; a goal box and golden arrows guide every step; the gate into al-Aqsa and the stairs to the Dome were blocked and are open. Opening 71-79 FPS, walk 66 FPS. See below |
 | C1a (second part) — Jiddo's chest, Page 1, clue boxes, truer Qibli Mosque and Dome, breeze | Done 19 November 2026 | After the walk the child goes home: Jiddo opens the family chest, the child reads Zaynab's first page and solves her riddle on a map (Ariha), then the drive. Clues wait in floating boxes embroidered with tatreez; the Qibli Mosque has its seven-arched porch, raised nave and lead dome, the Dome of the Rock its drum and pointed dome; a breeze, rustling and blowing leaves, crickets at home. Same speed as the last prototype on the laptop today. See below |
+| C1b (first part) — Guidance on the drive | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19d.zip` on the Desktop. The road down to Ariha now has the walk's goal box and golden arrows: to the page at Khan al-Hatruri, to where the road goes below the sea, then to Ariha; back to the road, back to the car, Jiddo driving. 108 FPS with Jiddo driving. See below |
 
 ## Phase 1a: what works
 
@@ -169,6 +170,34 @@ Palestine comes after Chapter 1, "then and now" is central, and the world should
 walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
+
+## C1b, first part: guidance on the drive (done 19 November 2026)
+
+The owner chose "guidance for the drive" next, so the road from Al-Quds down to Ariha is guided like the walk
+(`DriveGuide.cs`, texts in `content/i18n`, the "d." strings, with feminine Arabic for Maryam):
+
+- **The goal box** at the top always says what to do now, with the distance in metres or kilometres (for the first
+  half-minute, the keys instead). In order: drive down to Khan al-Hatruri; near it, slow down and stop beside the
+  golden scroll (on foot: walk to it); then drive on down and watch for the place where the road goes below the
+  level of the sea; then drive on to Ariha, the city of palms; and at the end, "You have reached Ariha! Its story
+  comes next."
+- **Golden arrows** along the road ahead, up to 130 m, towards the goal, bigger than the walk's and standing up at
+  an angle so they read from behind the car (flat on the road they looked like thin lines). A big golden arrow
+  floats over the goal when it is within 600 m: the scroll, the sea-level point, Ariha.
+- **Help when lost:** off the road by more than 22 m, the box says to drive back to the arrows or press R to return
+  to the road; out of the car away from the page, to walk back and press E; with Jiddo driving, "look at the land,
+  press P to drive yourself".
+- The golden scroll at the khan and its beam are now unlit, so they glow.
+
+| Check | Result |
+|---|---|
+| Windows build, Jiddo driving from Bab al-Asbat (`-newgame -drive -autopilot -quitafter 200`) | **107.8 FPS** average, no errors |
+| In the editor, the car placed along the road (600 m and 60 m before the khan, the page found, 400 m before and 200 m after sea level, 60 m from the end) | The goal changes at each place as listed above |
+| Pictures | `docs/screenshots/c1b-drive-guide.png` (below the khan, towards sea level), `c1b-drive-khan-ar.png` (in Arabic, for Maryam, towards the khan) |
+
+Still to do in C1b: Jiddo's remarks on the land along the way, Khan al-Ahmar, the shepherd and his flock, and
+Ariha itself. Where the road goes below sea level is taken from the game's terrain heights, which are compressed
+(the same as the sea-level banner).
 
 ## C1a, second part: the chest, Page 1, clue boxes, the two buildings, and sound (done 19 November 2026)
 

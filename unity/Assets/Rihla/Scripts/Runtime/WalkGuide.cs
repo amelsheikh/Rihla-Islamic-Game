@@ -13,6 +13,12 @@ namespace Rihla
         public Material material;
         public int count = 12;
         public float spacing = 1.9f, start = 1.4f;
+        /// <summary>Size of the arrows, how high the goal's arrow floats and its size, and how fast the trail flows
+        /// (the drive uses bigger arrows, spaced out along the road).</summary>
+        public float arrowScale = 1f, beaconHeight = 2.7f, beaconScale = 1.4f, slideSpeed = 1.1f;
+        /// <summary>How far the arrows stand up from the ground (degrees), and their height above it: seen from a car
+        /// a flat arrow is only a thin line.</summary>
+        public float tilt = 0f, lift = 0.07f;
 
         readonly List<Transform> arrows = new List<Transform>();
         Transform beacon;
@@ -39,7 +45,7 @@ namespace Rihla
         {
             float total = 0f;
             if (route != null) for (int i = 0; i < route.Count - 1; i++) total += Flat(route[i], route[i + 1]);
-            float slide = Time.time * 1.1f % spacing;
+            float slide = Time.time * slideSpeed % spacing;
             for (int k = 0; k < arrows.Count; k++)
             {
                 float d = start + slide + k * spacing;
@@ -47,18 +53,18 @@ namespace Rihla
                 var a = arrows[k];
                 if (!on) { if (a.gameObject.activeSelf) a.gameObject.SetActive(false); continue; }
                 At(route, d, out var p, out var dir);
-                a.position = Ground(p) + Vector3.up * 0.07f;
-                a.rotation = Quaternion.LookRotation(dir);
+                a.position = Ground(p) + Vector3.up * lift;
+                a.rotation = Quaternion.LookRotation(dir) * Quaternion.Euler(-tilt, 0f, 0f);
                 // The first and last arrows grow in and fade out, so the trail flows.
                 float s = Mathf.Clamp01((d - start) / spacing) * Mathf.Clamp01((total - 1.2f - d) / spacing) * Mathf.Clamp01((start + count * spacing - d) / (spacing * 2f));
-                a.localScale = Vector3.one * Mathf.Lerp(0.4f, 1.35f, s);
+                a.localScale = Vector3.one * Mathf.Lerp(0.4f, 1.35f, s) * arrowScale;
                 if (!a.gameObject.activeSelf) a.gameObject.SetActive(true);
             }
             if (goal.HasValue)
             {
                 beacon.gameObject.SetActive(true);
-                beacon.position = goal.Value + Vector3.up * (2.7f + Mathf.Sin(Time.time * 3f) * 0.18f);
-                beacon.rotation = Quaternion.Euler(0f, Time.time * 90f, 0f); beacon.localScale = Vector3.one * 1.4f;
+                beacon.position = goal.Value + Vector3.up * (beaconHeight + Mathf.Sin(Time.time * 3f) * 0.18f * beaconScale);
+                beacon.rotation = Quaternion.Euler(0f, Time.time * 90f, 0f); beacon.localScale = Vector3.one * beaconScale;
             }
             else beacon.gameObject.SetActive(false);
         }

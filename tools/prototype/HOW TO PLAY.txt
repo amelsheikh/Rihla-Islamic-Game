@@ -73,6 +73,12 @@ DRIVING
   J                       journal
   L                       English / Arabic
   Esc                     menu
+  R                       back onto the road
+
+The box at the top says where to drive next: first to the golden scroll at Khan
+al-Hatruri (stop beside it to read the page), then down to where the road goes
+below the level of the sea, then on to Ariha. Golden arrows on the road show
+the way.
 
 
 WHAT TO LOOK FOR WHEN YOU TEST

@@ -91,5 +91,15 @@
   "hero.text": "Choose the child you will play. You can change your mind on the walk with C.",
   "hero.yusuf": "Yusuf",
   "hero.maryam": "Maryam",
-  "hero.chosen": "Walking with Jiddo"
+  "hero.chosen": "Walking with Jiddo",
+  "d.toKhan": "Drive down the road to Khan al-Hatruri. Follow the golden arrows.",
+  "d.stopAtPage": "Slow down and stop beside the golden scroll by the road.",
+  "d.walkToPage": "Walk to the golden scroll.",
+  "d.toSea": "Drive on down. Watch for the place where the road goes below the level of the sea.",
+  "d.toAriha": "Drive on to Ariha, the city of palms.",
+  "d.arrived": "You have reached Ariha! Its story comes next.",
+  "d.offRoad": "You are off the road. Drive back to the golden arrows, or press R to return to the road.",
+  "d.backToCar": "Walk back to the car and press E to drive.",
+  "d.jiddo": "Jiddo is driving. Look at the land. Press P to drive yourself.",
+  "d.keys": "Drive with W A S D or the arrow keys. Space is the brake."
 }

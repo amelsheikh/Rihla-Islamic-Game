@@ -45,6 +45,16 @@ namespace Rihla
             return Vector3.Lerp(points[i], points[i + 1], t);
         }
 
+        /// <summary>The point at a distance along the road from its start (clamped to the road).</summary>
+        public Vector3 At(float d)
+        {
+            if (d <= 0f) return points[0];
+            if (d >= Length) return points[points.Length - 1];
+            int lo = 0, hi = distances.Length - 1;
+            while (hi - lo > 1) { int m = (lo + hi) / 2; if (distances[m] <= d) lo = m; else hi = m; }
+            return Vector3.Lerp(points[lo], points[hi], Mathf.InverseLerp(distances[lo], distances[hi], d));
+        }
+
         public Place? NearestPlace(Vector3 p, out float metres)
         {
             metres = float.MaxValue; Place? best = null;
