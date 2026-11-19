@@ -266,7 +266,7 @@ namespace Rihla
 
         static AudioClip pageClip; static AudioSource source;
 
-        static void PageSound()
+        public static void PageSound()
         {
             if (!pageClip)
             {

@@ -3321,5 +3321,174 @@
    "en": "Page",
    "ar": "صفحة"
   }
+ },
+ "chest": {
+  "note": "C1a: back home after the walk, Jiddo opens the family chest and the child reads Page 1 of Zaynab al-Maqdisiyya (fiction, in her voice), then solves her riddle on the map. Every line is listed in NEEDS_REVIEW.md (H21, L3).",
+  "title": {
+   "en": "Jiddo's chest",
+   "ar": "صندوق جدّو"
+  },
+  "when": {
+   "en": "That evening, back at home",
+   "ar": "في المساء، في البيت"
+  },
+  "lines": [
+   {
+    "en": "We had a beautiful walk today, mashallah. Come closer, both of you. This old chest has been in our family for a very long time.",
+    "ar": "كانت مشيتنا اليوم جميلة، ما شاء الله. اقتربا، كلاكما. هذا الصندوق القديم في عائلتنا منذ زمن بعيد جدًّا."
+   },
+   {
+    "en": "Inside are the pages of Zaynab al-Maqdisiyya, our grandmother from long, long ago. She travelled the roads of this land to learn, and she wrote down what she saw.",
+    "ar": "في داخله صفحات زينب المقدسية، جدّتنا منذ زمن بعيد بعيد. سافرت في طرق هذه الأرض لتتعلّم، وكتبت ما رأت."
+   },
+   {
+    "en": "Here is her first page. Read it with me.",
+    "ar": "هذه صفحتها الأولى. اقرآها معي."
+   }
+  ],
+  "riddleLine": {
+   "en": "Zaynab left us a riddle. Where did she go next? Choose the place on the map.",
+   "ar": "تركت لنا زينب لغزًا. إلى أين ذهبت بعد ذلك؟ اختارا المكان على الخريطة."
+  },
+  "solvedLine": {
+   "en": "Ariha! Tomorrow morning we will drive down the old road, as Zaynab did. Sleep well.",
+   "ar": "أريحا! غدًا في الصباح سننزل في الطريق القديم، كما فعلت زينب. تصبحان على خير."
+  },
+  "page": {
+   "id": "zaynab-1",
+   "number": {
+    "en": "The Rihla of Zaynab · Page 1",
+    "ar": "رحلة زينب · الصفحة الأولى"
+   },
+   "title": {
+    "en": "Setting out from Bayt al-Maqdis",
+    "ar": "الخروج من بيت المقدس"
+   },
+   "writes": {
+    "en": "Zaynab writes:",
+    "ar": "تكتب زينب:"
+   },
+   "letter": {
+    "en": "To whoever of my children finds this page: peace be upon you. I am Zaynab, a daughter of Bayt al-Maqdis. I grew up beside al-Masjid al-Aqsa, and there I first learned to read. My teachers told me that knowledge does not live in one city alone. So I took my pen and my pages and set out on the roads of this land. Wherever I learn something, I will leave a page, and each page will tell you where to find the next. Follow me, and you will see that this land and its people are one family.",
+    "ar": "إلى من يجد هذه الصفحة من أبنائي وبناتي: السلام عليكم. أنا زينب، ابنة بيت المقدس. نشأتُ بجوار المسجد الأقصى، وفيه تعلّمتُ القراءة أوّل مرّة. قال لي معلّميّ إنّ العلم لا يسكن مدينة واحدة، فحملتُ قلمي وأوراقي وخرجتُ في طرق هذه الأرض. وحيثما تعلّمتُ شيئًا تركتُ صفحة، وكلّ صفحة تدلّك على التي بعدها. اتبعني، وسترى أنّ هذه الأرض وأهلها عائلة واحدة.",
+    "ar_f": "إلى من يجد هذه الصفحة من أبنائي وبناتي: السلام عليكم. أنا زينب، ابنة بيت المقدس. نشأتُ بجوار المسجد الأقصى، وفيه تعلّمتُ القراءة أوّل مرّة. قال لي معلّميّ إنّ العلم لا يسكن مدينة واحدة، فحملتُ قلمي وأوراقي وخرجتُ في طرق هذه الأرض. وحيثما تعلّمتُ شيئًا تركتُ صفحة، وكلّ صفحة تدلّكِ على التي بعدها. اتبعيني، وسترين أنّ هذه الأرض وأهلها عائلة واحدة."
+   },
+   "riddleTitle": {
+    "en": "Zaynab's riddle",
+    "ar": "لغز زينب"
+   },
+   "riddle": {
+    "en": "Go down where the road falls below the sea, to the city of palms, where the oldest walls stand beside a spring that never sleeps.",
+    "ar": "انزلْ حيث يهبط الطريق تحت البحر، إلى مدينة النخيل، حيث تقوم أقدم الأسوار بجانب نبعٍ لا ينام.",
+    "ar_f": "انزلي حيث يهبط الطريق تحت البحر، إلى مدينة النخيل، حيث تقوم أقدم الأسوار بجانب نبعٍ لا ينام."
+   }
+  },
+  "map": {
+   "bounds": [
+    34.15,
+    31.15,
+    35.95,
+    32.5
+   ],
+   "home": {
+    "name": {
+     "en": "Al-Quds",
+     "ar": "القدس"
+    },
+    "at": [
+     35.235,
+     31.778
+    ]
+   },
+   "seas": [
+    {
+     "name": {
+      "en": "The Mediterranean Sea",
+      "ar": "البحر المتوسط"
+     },
+     "at": [
+      34.42,
+      32.3
+     ]
+    },
+    {
+     "name": {
+      "en": "The Dead Sea",
+      "ar": "البحر الميت"
+     },
+     "at": [
+      35.72,
+      31.3
+     ]
+    }
+   ]
+  },
+  "choices": [
+   {
+    "id": "yafa",
+    "name": {
+     "en": "Yafa",
+     "ar": "يافا"
+    },
+    "at": [
+     34.752,
+     32.054
+    ],
+    "hint": {
+     "en": "Yafa is on the shore of the sea, not below it. Read the riddle again: the road goes down below the sea.",
+     "ar": "يافا على شاطئ البحر، لا تحته. اقرأ اللغز مرّة أخرى: الطريق ينزل تحت البحر.",
+     "ar_f": "يافا على شاطئ البحر، لا تحته. اقرئي اللغز مرّة أخرى: الطريق ينزل تحت البحر."
+    }
+   },
+   {
+    "id": "ariha",
+    "correct": true,
+    "name": {
+     "en": "Ariha",
+     "ar": "أريحا"
+    },
+    "at": [
+     35.444,
+     31.857
+    ],
+    "yes": {
+     "en": "Yes! Ariha, the city of palms. It lies far below the level of the sea, and beside its spring are the remains of one of the oldest towns on Earth.",
+     "ar": "نعم! أريحا، مدينة النخيل. تقع تحت مستوى سطح البحر بكثير، وبجانب نبعها بقايا واحدة من أقدم المدن على الأرض."
+    }
+   },
+   {
+    "id": "al-khalil",
+    "name": {
+     "en": "Al-Khalil",
+     "ar": "الخليل"
+    },
+    "at": [
+     35.099,
+     31.524
+    ],
+    "hint": {
+     "en": "Al-Khalil stands high in the hills, and the road there climbs up. Zaynab's road goes down.",
+     "ar": "الخليل عالية في الجبال، والطريق إليها يصعد. أمّا طريق زينب فينزل.",
+     "ar_f": "الخليل عالية في الجبال، والطريق إليها يصعد. أمّا طريق زينب فينزل."
+    }
+   }
+  ],
+  "ui": {
+   "choose": {
+    "en": "Where did Zaynab go? Choose a place.",
+    "ar": "إلى أين ذهبت زينب؟ اختر مكانًا.",
+    "ar_f": "إلى أين ذهبت زينب؟ اختاري مكانًا."
+   },
+   "toRiddle": {
+    "en": "Solve the riddle",
+    "ar": "حُلّ اللغز",
+    "ar_f": "حُلّي اللغز"
+   },
+   "drive": {
+    "en": "Drive down to Ariha",
+    "ar": "انزل إلى أريحا",
+    "ar_f": "انزلي إلى أريحا"
+   }
+  }
  }
 }

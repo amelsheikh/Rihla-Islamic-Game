@@ -102,8 +102,18 @@ namespace Rihla.EditorTools
             var chest = new GameObject("The family chest").transform; chest.SetParent(room); chest.position = new Vector3(W - 0.45f, 0, 1.3f);
             chest.rotation = Quaternion.Euler(0, -90f, 0);
             Box(chest, "Chest", Mat("chest wood", new Color(0.36f, 0.22f, 0.12f), 0.3f), new Vector3(0, 0.27f, 0), new Vector3(0.95f, 0.5f, 0.55f));
-            Box(chest, "Chest lid", Mat("chest wood", new Color(0.36f, 0.22f, 0.12f), 0.3f), new Vector3(0, 0.56f, 0), new Vector3(0.98f, 0.08f, 0.58f));
-            foreach (float bx in new[] { -0.35f, 0f, 0.35f }) Box(chest, "Chest band", brass, new Vector3(bx, 0.3f, 0), new Vector3(0.05f, 0.62f, 0.6f));
+            // C1a: the lid opens on a hinge along the back; inside lies Zaynab's first page, in a warm light.
+            var lidHinge = new GameObject("Chest lid hinge").transform; lidHinge.SetParent(chest, false); lidHinge.localPosition = new Vector3(0, 0.52f, -0.29f);
+            Box(lidHinge, "Chest lid", Mat("chest wood", new Color(0.36f, 0.22f, 0.12f), 0.3f), new Vector3(0, 0.04f, 0.29f), new Vector3(0.98f, 0.08f, 0.58f));
+            Box(lidHinge, "Lid band", brass, new Vector3(0, 0.081f, 0.29f), new Vector3(0.05f, 0.004f, 0.6f));
+            Box(lidHinge, "Clasp", brass, new Vector3(0, 0.0f, 0.585f), new Vector3(0.08f, 0.1f, 0.02f));
+            foreach (float bx in new[] { -0.35f, 0.35f }) Box(chest, "Chest band", brass, new Vector3(bx, 0.27f, 0), new Vector3(0.05f, 0.52f, 0.57f));
+            var tatreez = Mat("tatreez cloth", Color.white, 0.1f); tatreez.SetTexture("_BaseMap", RihlaWalkBuilder.TatreezTexture()); EditorUtility.SetDirty(tatreez);
+            Box(chest, "Tatreez panel", tatreez, new Vector3(0, 0.27f, 0.277f), new Vector3(0.5f, 0.34f, 0.004f));
+            var inner = Mat("chest light", Color.black, 0f, null, 1f, new Color(1f, 0.7f, 0.35f) * 1.4f);
+            Box(chest, "Inner glow", inner, new Vector3(0, 0.524f, 0), new Vector3(0.86f, 0.006f, 0.46f)).GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
+            var zpage = Box(chest, "Zaynab's page", Mat("old page", new Color(0.88f, 0.78f, 0.56f), 0.1f), new Vector3(0, 0.45f, 0.02f), new Vector3(0.34f, 0.012f, 0.26f));
+            Box(zpage, "Seal", Mat("seal", new Color(0.6f, 0.1f, 0.08f), 0.4f), new Vector3(0.3f, 0.9f, 0.3f), new Vector3(0.15f, 0.6f, 0.2f));
 
             // A picture of the Dome of the Rock on the left wall (a view from this game), in a wooden frame.
             var pic = Mat("dome picture", Color.white, 0.2f); pic.SetTexture("_BaseMap", Picture());
@@ -162,6 +172,7 @@ namespace Rihla.EditorTools
             cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = Color.black;
             camGo.AddComponent<AudioListener>();
             camGo.AddComponent<UniversalAdditionalCameraData>().renderPostProcessing = true;
+            camGo.AddComponent<Soundscape>().evening = true; // crickets outside, a soft breeze at the window
             Transform Shot(string name, Vector3 pos, Vector3 look)
             {
                 var t = new GameObject("Shot: " + name).transform; t.position = pos; t.rotation = Quaternion.LookRotation(look - pos); return t;
@@ -172,6 +183,8 @@ namespace Rihla.EditorTools
             dir.wide = Shot("wide", new Vector3(2.9f, 1.75f, -2.7f), new Vector3(0.1f, 0.75f, 1.6f));
             dir.close = Shot("close", new Vector3(0.25f, 1.15f, -0.25f), new Vector3(0.3f, 0.75f, 2.2f));
             dir.onBook = Shot("on the book", bookWorld + new Vector3(0f, 0.55f, -0.32f), bookWorld);
+            dir.chestShot = Shot("on the chest", chest.position + new Vector3(-1.25f, 1.2f, -0.45f), chest.position + new Vector3(0f, 0.5f, 0f));
+            dir.chestLid = lidHinge; dir.chestPage = zpage;
             camGo.transform.SetPositionAndRotation(dir.wide.position, dir.wide.rotation);
 
             EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(), ScenePath);

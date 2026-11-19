@@ -99,6 +99,8 @@ namespace Rihla
         public bool walkDone;
         /// <summary>The opening at home (Jiddo and the book) has been seen.</summary>
         public bool prologueSeen;
+        /// <summary>Back home after the walk, Jiddo has opened the chest and Page 1 has been read (C1a).</summary>
+        public bool chestSeen;
         /// <summary>Which child the player chose: "yusuf" or "maryam" (STORY section 1).</summary>
         public string hero = "yusuf";
         public bool heroChosen;

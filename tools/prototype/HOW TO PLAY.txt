@@ -13,8 +13,9 @@ HOW TO START
 Double-click one of these:
 
   1 - Start the story.bat     The game from the beginning: an evening at
-                               Jiddo's house, his old book of places, then the
-                               walk to al-Masjid al-Aqsa at dawn.
+                               Jiddo's house, his old book of places, the walk
+                               to al-Masjid al-Aqsa at dawn, Jiddo's chest and
+                               Zaynab's riddle, then the road to Ariha.
   2 - Walk in Al-Quds.bat     Straight to the walk from Bab al-Asbat to
                                al-Masjid al-Aqsa (about 10 minutes).
   3 - Drive from Al-Quds.bat  Straight to the road from Al-Quds down to Ariha.
@@ -48,8 +49,18 @@ WALKING IN AL-QUDS
 
 The box at the top of the screen always says what to do next. Golden arrows on
 the ground show the way, and a golden arrow floats over Jiddo or over the next
-clue. Find the three clues: the lions on Bab al-Asbat, the tiles of the Dome of
-the Rock, and the dome of the Qibli Mosque.
+clue. Each clue waits in a small glowing box with red embroidery (tatreez),
+floating over a golden ring: walk into the ring to open it. Find the three
+clues: the lions on Bab al-Asbat, the tiles of the Dome of the Rock, and the
+dome of the Qibli Mosque. Then Jiddo takes you home.
+
+
+BACK HOME: JIDDO'S CHEST
+------------------------
+Jiddo opens the old family chest and you read the first page of Zaynab, your
+grandmother from long ago. Press Space or the button for her riddle, then
+choose on the map where she went next. If you choose wrong, Jiddo gives a
+hint. Then the drive down to Ariha begins.
 
 
 DRIVING
@@ -69,6 +80,8 @@ WHAT TO LOOK FOR WHEN YOU TEST
 - Does it run smoothly on your laptop?
 - Does it feel like walking in the Old City? What looks wrong or missing?
 - Is anything confusing for the children?
+- Do the Qibli Mosque and the Dome of the Rock look right? What is different?
+- Are the sounds calm enough? Too loud, too quiet?
 - Is any text, Arabic or English, wrong?
 
 Write down what you notice and tell Claude in the next session.

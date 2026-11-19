@@ -140,6 +140,14 @@ After trying the first prototype, the owner found it confusing for younger child
 - **A guided game**, step by step, so the player never wanders without aim: instructions, and arrows showing where
   to go and what to explore. *(Built in the walk: a goal box and golden arrows; to add to the drive.)*
 
+After a second try (19 November 2026) the owner asked that the Qibli Mosque and the Dome of the Rock look as
+they really are, that the clues wait in "a hovering small treasure box with a Palestinian symbol on it", and that
+the game start to have sounds and effects: breeze, leaves moving, calm. *(Built: both buildings reshaped; the
+clues in floating wooden boxes embroidered with tatreez; a breeze that rises and falls, rustling leaves and
+leaves blowing past near trees, crickets in the evening at home. Music stays out by default, as section 5 of the
+brief asks: nature sounds only.)* Jiddo's chest and Page 1 are built: after the walk the child goes home, Jiddo
+opens the chest, the child reads Zaynab's letter and solves her riddle on a map, then the drive to Ariha.
+
 This fits the prologue in section 5: the evening at home comes first, the walk to al-Masjid al-Aqsa is the next
 morning, and Jiddo's chest with Zaynab's first page comes after the walk. Jiddo's book is his father's book of
 stories, not one of Zaynab's pages.

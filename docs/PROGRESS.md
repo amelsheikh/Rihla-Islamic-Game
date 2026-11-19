@@ -17,6 +17,7 @@
 | E3 — Realism on the owner's PC | Three passes done | Stone textures, arches, battlements, trees, sky; then doors, shop shutters, windows, roof domes, warm bounce light, ambient occlusion; then sound, and people in modest dress (Jiddo, Yusuf or Maryam, 55 townspeople with children and elders, in 1910 dress in the "then" view); 62-70 FPS. See below |
 | R4 — "As if visiting" on the laptop | Done 19 November 2026 | A photographed sky with clouds, weathered pale limestone, lane life (awnings, plants, shutters, arches across lanes; lamps, cables and water tanks only today), leafy trees, windows in the Dome of the Rock; 63-66 FPS. A prototype on the owner's Desktop. See below. The plan ahead is in `docs/ROADMAP.md` |
 | C1a (first part) — The opening at home, the storybook, guidance | Done 19 November 2026 | The game now starts in Jiddo's house: Jiddo reads Yusuf and Maryam a story from his old book, a page and a map for each place (Makkah to Al-Quds), then the walk at dawn; a goal box and golden arrows guide every step; the gate into al-Aqsa and the stairs to the Dome were blocked and are open. Opening 71-79 FPS, walk 66 FPS. See below |
+| C1a (second part) — Jiddo's chest, Page 1, clue boxes, truer Qibli Mosque and Dome, breeze | Done 19 November 2026 | After the walk the child goes home: Jiddo opens the family chest, the child reads Zaynab's first page and solves her riddle on a map (Ariha), then the drive. Clues wait in floating boxes embroidered with tatreez; the Qibli Mosque has its seven-arched porch, raised nave and lead dome, the Dome of the Rock its drum and pointed dome; a breeze, rustling and blowing leaves, crickets at home. Same speed as the last prototype on the laptop today. See below |
 
 ## Phase 1a: what works
 
@@ -168,6 +169,63 @@ Palestine comes after Chapter 1, "then and now" is central, and the world should
 walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
+
+## C1a, second part: the chest, Page 1, clue boxes, the two buildings, and sound (done 19 November 2026)
+
+The owner chose "Jiddo's chest and Page 1" next, and after trying the game asked that the Qibli Mosque and the
+Dome of the Rock look as they really are, that clues be kept in "a hovering small treasure box with a Palestinian
+symbol on it", and that sounds and effects begin: breeze, leaves moving, calm.
+
+What changed:
+
+- **Back home: Jiddo's chest** (`StoryOpening.RunChest`, `ZaynabPage.cs`, text in `content/storybook.json`
+  "chest"). When the walk ends Jiddo says "let us go home", the screen fades, and the evening room opens on the
+  family chest. Jiddo tells the children it holds the pages of Zaynab al-Maqdisiyya; the lid creaks open, a warm
+  light and an old sealed page rise out of it. The page opens like Jiddo's book: on the left Zaynab's letter (why
+  she set out, and that each page leads to the next), on the right her riddle with a red seal. Then the riddle on a
+  map of the land around Al-Quds (coast, the Jordan, the Dead Sea): three places to choose, Yafa, Ariha and
+  al-Khalil, by button or on the map. A wrong choice gives Jiddo's kind hint ("Yafa is on the shore of the sea, not
+  below it"); Ariha draws the road on the map, Jiddo says they will drive down in the morning, and the drive
+  begins. The page is saved as found. `-chest` starts this scene directly, for testing.
+- **Clue boxes.** Each clue now waits in a small wooden box floating over a golden ring, embroidered on every side
+  and on the lid with red cross-stitch on cream linen (an invented eight-pointed star in the manner of tatreez),
+  with brass corners and turning sparkles. It bobs and turns; when the child walks into the ring the lid opens, the
+  light comes out, and the box shrinks away (`ClueBox.cs`). The same embroidery is on the front of Jiddo's chest.
+  The goals now say "walk to the glowing box".
+- **The Qibli Mosque** is rebuilt in its real shape from its OSM outline: the long hall running south, side aisles
+  under flat lead roofs, a raised central nave with high windows and a long pitched lead roof, a lead dome on a drum
+  over the bay before the mihrab at the south end, and across the north front the porch of seven pointed arches
+  with battlements. Before, it was one plain block with a ball on it.
+- **The Dome of the Rock** now has a sloping lead roof up to a tall tiled drum with sixteen arched windows, and a
+  slightly pointed dome about 20 m across with a finial and crescent; before, a short drum and a stretched ball.
+  Its lower walls are lighter, like marble. All proportions are estimates (NEEDS_REVIEW.md H20).
+- **Sound and effects.** The breeze now rises and falls in gusts about every half minute. Near trees the leaves
+  rustle when it rises, and a few small leaves tumble past in the air (`LeafDrift.cs`, one particle system that
+  follows the camera). At home in the evening: crickets outside and a softer breeze, no birds; the chest's lid
+  creaks. All made by code, no recordings; no music, as the brief asks (nature sounds by default).
+- **Glow.** Glowing materials in the walk (the clue rings and sparkles, today's street lamps) are now unlit and
+  bright, so they glow; the old glow setting was lost when materials were saved.
+
+Checks run:
+
+| Check | Result |
+|---|---|
+| Windows build, the chest scene by itself (`-newgame -chest -autowalk`) | Letter, riddle, a wrong choice with its hint, the right choice, then the drive loads; 48.8-55.0 FPS; no errors |
+| Windows build, the walk to its end, home to the chest, then the drive (`-newgame -walk -autowalk -quitafter 500`) | The walk with all three clues (the boxes open), Jiddo's last line, home, the chest, the riddle with a wrong then the right choice, then the drive loads (the Bab al-Asbat banner); walk **46.9 FPS** average over the first 500 s; no errors in English. In Arabic it found one error, fixed: the metres line of the goal box failed every frame, because the placeholder's 0 was turned into an Arabic digit (this was also in the last prototype). After the fix, 45 s of the walk in Arabic: no errors, 47.2 FPS |
+| Speed, the new build against the last prototype, the same 40 s of the opening, one after the other | 51.0 FPS and 49.7 FPS: the same. The laptop ran slower today than when the last prototype was measured (it gave 78.8 then, about 50 now), so today's numbers are lower for both |
+| Pictures | `docs/screenshots/c1a2-*.png`: the Qibli Mosque, the Dome of the Rock, a clue box, the chest, Zaynab's page, the riddle (taken before Jiddo's subtitle was hidden on the page) |
+| The prototype | `Builds/Rihla-prototype-2026-11-19c.zip` (75.5 MB), unpacked to the owner's Desktop as **Rihla prototype**, replacing the earlier copy. It contains the Cesium token, so it stays in the family. The game pauses when its window is not in front (seen in testing) |
+
+Known issues and next steps:
+
+- The buildings are closer to the real ones, but still simple shapes; their proportions wait on photographs
+  (the owner offered to send some) and a check (H20). The porch arches are drawn on the wall, not open.
+- The Dome of the Chain is still a plain ring with a ball; it is an open arcade of columns in reality.
+- Trees do not sway yet (that needs a wind shader); only the leaves blowing past move.
+- The adhan and the prayer moment still wait on the owner's and a scholar's decision.
+- The drive (C1b) still has no goal box or arrows.
+- Zaynab's letter, the hints, the tatreez and the new Arabic are on the review list (H20, H21, L3).
+- Jiddo's riddle line and hints are shown on the page, not as subtitles, so they do not cover its button.
 
 ## C1a, first part: the opening at home, the storybook, and guidance (done 19 November 2026)
 

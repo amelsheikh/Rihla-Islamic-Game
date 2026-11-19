@@ -26,7 +26,7 @@ namespace Rihla
         /// <summary>The outline of al-Masjid al-Aqsa (x, z), to name where the child is.</summary>
         public Vector2[] compound;
         public Vector3 domeOfTheRock, alQibli, babAlAsbat;
-        public string roadScene = "E0_JerichoRoad";
+        public string roadScene = "E0_JerichoRoad", homeScene = "C1_Home";
         public float jiddoSpeed = 1.3f;
         /// <summary>The golden material of the guide arrows (set by the builder, so the build keeps its shader).</summary>
         public Material guideMaterial;
@@ -111,7 +111,26 @@ namespace Rihla
             if (kb.vKey.wasPressedThisFrame) { cam.firstPerson = !cam.firstPerson; cam.Snap(); }
             if (kb.tKey.wasPressedThisFrame) lens.Toggle();
             if (kb.cKey.wasPressedThisFrame) TeachingPages.ChooseHero();
-            if (kb.gKey.wasPressedThisFrame && Time.timeSinceLevelLoad > 1f && CanLeave(c)) SceneManager.LoadScene(roadScene);
+            if (kb.gKey.wasPressedThisFrame && Time.timeSinceLevelLoad > 1f && CanLeave(c))
+            {
+                if (SaveData.Current.walkDone && !SaveData.Current.chestSeen) GoHome(); else SceneManager.LoadScene(roadScene);
+            }
+        }
+
+        // C1a: when the walk is done, Jiddo takes the child home, where he opens the chest (StoryOpening).
+        bool goingHome;
+        void GoHome()
+        {
+            if (goingHome) return;
+            goingHome = true; StoryOpening.chestNext = true;
+            StartCoroutine(Home());
+        }
+
+        System.Collections.IEnumerator Home()
+        {
+            ui.Fade(1f, 1.5f);
+            for (float t = 0f; t < 1.6f; t += Time.unscaledDeltaTime) yield return null;
+            SceneManager.LoadScene(homeScene);
         }
 
         bool CanLeave(Vector3 c) => SaveData.Current.walkDone || Flat(c, path[0]) < 25f;
@@ -152,6 +171,7 @@ namespace Rihla
             };
             if (id == "lens" && !revealQueued && stepTimer > 4f) { revealQueued = true; lens.Reveal(); }
             if (id == "end" && !SaveData.Current.walkDone) { SaveData.Current.walkDone = true; SaveData.Save(); }
+            if (id == "end" && stepTimer > 9f && !SaveData.Current.chestSeen) GoHome();
             if (done) { waiting = false; lineSaid = false; step++; target = Mathf.Min(target + 1, path.Length - 1); }
         }
 
@@ -222,8 +242,15 @@ namespace Rihla
             float dist = Flat(c, goal);
             guide.Show(arrows && dist > 3f ? route : null, arrows || ci >= 0 ? goal : (Vector3?)null);
             string sub = Time.timeSinceLevelLoad < 30f && !SaveData.Current.walkDone ? Lang.Pick(Goal("start"))
-                : arrows && dist > 3f ? string.Format(Lang.Pick(Goal("metres")) ?? "{0} m", Lang.Num(dist)) : null;
+                : arrows && dist > 3f ? Metres(dist) : null;
             ui.SetGoal(Lang.Pick(text), sub);
+        }
+
+        /// <summary>"12 m" or "١٢ م". Not string.Format: in Arabic the placeholder's 0 becomes an Arabic digit.</summary>
+        string Metres(float dist)
+        {
+            string f = Lang.Pick(Goal("metres")) ?? "{0} m", n = Lang.Num(dist);
+            return f.Replace("{0}", n).Replace("{٠}", n);
         }
 
         // ------------------------------------------------------------------ clues
@@ -248,7 +275,8 @@ namespace Rihla
         {
             var clue = clues[i]; string id = (string)clue["id"];
             var list = Found.ToList(); list.Add(id); SaveData.Current.clues = list.ToArray(); SaveData.Save();
-            clueSpots[i].gameObject.SetActive(false);
+            var box = clueSpots[i].GetComponent<ClueBox>();
+            if (box) box.Open(); else clueSpots[i].gameObject.SetActive(false);
             Soundscape.Chime();
             var era = ContentLibrary.Instance.History?["sites"]?[(string)clue["site"]]?["eras"]?[(int)clue["era"]];
             ui.OpenModal(() =>

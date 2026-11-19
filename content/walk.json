@@ -61,9 +61,9 @@
       "id": "end",
       "at": "end",
       "jiddo": {
-        "en": "Alhamdulillah. You found all three. Come, the car is waiting, and the road down to Ariha.",
-        "ar": "الحمد لله. وجدتَها كلّها. هيّا، السيارة تنتظرنا، والطريق النازل إلى أريحا.",
-        "ar_f": "الحمد لله. وجدتِها كلّها. هيّا، السيارة تنتظرنا، والطريق النازل إلى أريحا."
+        "en": "Alhamdulillah. You found all three. Come, let us go home. I have something to show you.",
+        "ar": "الحمد لله. وجدتَها كلّها. هيّا نعود إلى البيت، عندي شيء أريد أن أريك إيّاه.",
+        "ar_f": "الحمد لله. وجدتِها كلّها. هيّا نعود إلى البيت، عندي شيء أريد أن أريكِ إيّاه."
       }
     }
   ],
@@ -77,9 +77,9 @@
       "site": "bab-al-asbat",
       "era": 1,
       "goal": {
-        "en": "Find the carved lions beside the gate. Walk into the golden light.",
-        "ar": "ابحث عن الأسود المنحوتة بجانب الباب. ادخل في الضوء الذهبي.",
-        "ar_f": "ابحثي عن الأسود المنحوتة بجانب الباب. ادخلي في الضوء الذهبي."
+        "en": "Find the carved lions beside the gate. Walk to the glowing box.",
+        "ar": "ابحث عن الأسود المنحوتة بجانب الباب. امشِ إلى الصندوق المضيء.",
+        "ar_f": "ابحثي عن الأسود المنحوتة بجانب الباب. امشي إلى الصندوق المضيء."
       }
     },
     {
@@ -91,9 +91,9 @@
       "site": "dome-of-the-rock",
       "era": 3,
       "goal": {
-        "en": "Go close to the Dome of the Rock and find the golden light by its tiles.",
-        "ar": "اقترب من قبة الصخرة وابحث عن الضوء الذهبي عند بلاطها.",
-        "ar_f": "اقتربي من قبة الصخرة وابحثي عن الضوء الذهبي عند بلاطها."
+        "en": "Go close to the Dome of the Rock and find the glowing box by its tiles.",
+        "ar": "اقترب من قبة الصخرة وابحث عن الصندوق المضيء عند بلاطها.",
+        "ar_f": "اقتربي من قبة الصخرة وابحثي عن الصندوق المضيء عند بلاطها."
       }
     },
     {
@@ -105,9 +105,9 @@
       "site": "al-qibli",
       "era": 2,
       "goal": {
-        "en": "Walk to the Qibli Mosque and find the golden light in front of it.",
-        "ar": "امشِ إلى المسجد القبلي وابحث عن الضوء الذهبي أمامه.",
-        "ar_f": "امشي إلى المسجد القبلي وابحثي عن الضوء الذهبي أمامه."
+        "en": "Walk to the Qibli Mosque and find the glowing box in front of it.",
+        "ar": "امشِ إلى المسجد القبلي وابحث عن الصندوق المضيء أمامه.",
+        "ar_f": "امشي إلى المسجد القبلي وابحثي عن الصندوق المضيء أمامه."
       }
     }
   ],
@@ -142,9 +142,9 @@
       "ar_f": "شاهدي قبة الصخرة بعدسة الزمن مع جدّو."
     },
     "end": {
-      "en": "Well done! Press G to go back to the car and drive down to Ariha.",
-      "ar": "أحسنت! اضغط G لتعود إلى السيارة وتنزل إلى أريحا.",
-      "ar_f": "أحسنتِ! اضغطي G لتعودي إلى السيارة وتنزلي إلى أريحا."
+      "en": "Well done! Jiddo is taking you home.",
+      "ar": "أحسنت! جدّو يأخذك إلى البيت.",
+      "ar_f": "أحسنتِ! جدّو يأخذكِ إلى البيت."
     },
     "start": {
       "en": "Walk with W A S D or the arrow keys. Hold the right mouse button to look around.",

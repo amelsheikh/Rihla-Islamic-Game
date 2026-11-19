@@ -112,7 +112,15 @@ namespace Rihla.EditorTools
             lens.onlyThen = new GameObject[0]; lens.onlyNow = new[] { todayOnly };
 
             var sound = cam.gameObject.AddComponent<Soundscape>();
-            sound.child = child; sound.jiddo = jiddo; sound.lens = lens;
+            sound.child = child; sound.jiddo = jiddo; sound.lens = lens; sound.trees = treeSpots.ToArray();
+            // Leaves blowing past in the breeze, near the trees (C1a).
+            string leafPath = Built + "leaf_particle.mat";
+            var leafMat = AssetDatabase.LoadAssetAtPath<Material>(leafPath);
+            if (!leafMat) { leafMat = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit")); AssetDatabase.CreateAsset(leafMat, leafPath); }
+            leafMat.SetColor("_BaseColor", new Color(0.9f, 0.9f, 0.85f)); leafMat.SetFloat("_Cull", 0f); EditorUtility.SetDirty(leafMat);
+            var leaves = new GameObject("Blowing leaves"); leaves.SetActive(false);
+            leaves.AddComponent<ParticleSystem>(); leaves.GetComponent<ParticleSystemRenderer>().sharedMaterial = leafMat;
+            leaves.AddComponent<LeafDrift>().follow = cam.transform; leaves.SetActive(true);
             var dir = new GameObject("Walk").AddComponent<WalkDirector>();
             dir.child = child; dir.cam = cam; dir.jiddo = jiddo; dir.lens = lens;
             dir.path = path.ToArray(); dir.stepAt = stepAt;
@@ -370,8 +378,11 @@ namespace Rihla.EditorTools
         /// Trees where OpenStreetMap maps one, and its grass and garden areas. OSM does not say the species, so
         /// they are drawn as a mix of olive (wide, grey-green) and cypress (tall, dark) shapes (estimate, H17).
         /// </summary>
+        static readonly List<Vector3> treeSpots = new List<Vector3>();
+
         static void Trees(JObject json, List<Vector2> platform)
         {
+            treeSpots.Clear();
             var grass = Mesh("Grass", Mat("grass", new Color(0.42f, 0.46f, 0.28f)), false);
             foreach (var g in json["greens"] ?? new JArray())
             {
@@ -391,7 +402,7 @@ namespace Rihla.EditorTools
                 Vector2 p = V2(t); i++;
                 float y = Inside(platform, p) ? Platform : 0f;
                 float r = Hash(p) ; // 0..1, the same each build
-                var at = new Vector3(p.x, y, p.y);
+                var at = new Vector3(p.x, y, p.y); treeSpots.Add(at);
                 if (r < 0.3f)
                 {
                     float h = 8f + r * 10f;
@@ -649,17 +660,110 @@ namespace Rihla.EditorTools
                     Panel(glass, a, dd, outN, u, 1.25f, Platform + 6.4f, Platform + 9.9f, 0f, 0.07f, true);
                 }
             }
-            float drumR = radius * 0.42f, top = Platform + 11f;
-            var drum = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            drum.name = "Drum"; drum.transform.SetParent(root); drum.transform.position = new Vector3(c.x, top + 3f, c.y);
-            drum.transform.localScale = new Vector3(drumR * 2f, 3f, drumR * 2f);
-            drum.GetComponent<MeshRenderer>().sharedMaterial = TileMat();
-            var d = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            d.name = "Dome"; d.transform.SetParent(root); Object.DestroyImmediate(d.GetComponent<Collider>());
-            d.transform.position = new Vector3(c.x, top + 6f, c.y);
-            d.transform.localScale = new Vector3(drumR * 2.1f, drumR * 2.3f, drumR * 2.1f);
-            var r = d.GetComponent<MeshRenderer>(); r.sharedMaterial = Mat("dome", new Color(0.93f, 0.72f, 0.28f), 0.75f, 0.9f);
-            return r;
+            // C1a: closer to the real building. A low sloping lead roof runs from the top of the walls up to a tall
+            // round drum, tiled like the walls, with sixteen arched windows; on it a slightly pointed dome with a
+            // finial. The dome is about 20 m across, so the drum's radius is about 0.39 of the octagon's (the
+            // proportions are estimates from published photographs and plans, NEEDS_REVIEW.md H20).
+            float drumR = radius * 0.39f, top = Platform + 11f, drumTop = top + 9f;
+            Lathe(Mesh("Roof (Dome of the Rock)", Mat("leadroof", new Color(0.5f, 0.52f, 0.55f), 0.45f, 0.5f), false, root), c,
+                new[] { new Vector2(radius * 0.94f, top), new Vector2(drumR + 0.3f, top + 2.4f) }, 48);
+            var drumRing = new List<Vector2>();
+            for (int k = 0; k < 16; k++) { float a = (k + 0.5f) * Mathf.PI * 2f / 16f; drumRing.Add(c + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * drumR); }
+            drumRing = Ccw(drumRing);
+            Prism(Mesh("Drum", TileMat(), false, root), drumRing, top, drumTop);
+            var dframes = Mesh("Drum window frames", Mat("domeframe", new Color(0.86f, 0.88f, 0.86f), 0.3f), false, root);
+            var dglass = Mesh("Drum windows", Mat("domeglass", new Color(0.05f, 0.07f, 0.1f), 0.8f), false, root);
+            for (int k = 0; k < 16; k++)
+            {
+                Vector2 a = drumRing[k], b = drumRing[(k + 1) % 16]; float len = (b - a).magnitude;
+                Vector2 dd = (b - a) / len, outN = new Vector2(dd.y, -dd.x);
+                if (Vector2.Dot(outN, (a + b) / 2f - c) < 0f) outN = -outN;
+                Panel(dframes, a, dd, outN, len / 2f, 1.9f, top + 3.2f, top + 7.6f, 0f, 0.04f, true);
+                Panel(dglass, a, dd, outN, len / 2f, 1.35f, top + 3.5f, top + 7.2f, 0f, 0.07f, true);
+            }
+            // The dome: round at its base, drawing in to a gentle point at the top.
+            float R = drumR + 0.45f, Hd = R * 1.12f; var prof = new List<Vector2>();
+            for (int k = 0; k <= 20; k++)
+            {
+                float th = k / 20f * Mathf.PI / 2f, s = Mathf.Sin(th);
+                prof.Add(new Vector2(Mathf.Max(0.05f, R * Mathf.Cos(th) * (1f - 0.12f * s * s * s * s)), drumTop + Hd * s));
+            }
+            prof.Insert(0, new Vector2(R, drumTop - 0.4f));
+            Lathe(Mesh("Dome", Mat("dome", new Color(0.93f, 0.72f, 0.28f), 0.75f, 0.9f), false, root), c, prof, 64);
+            // The finial: a rod with two balls and, at the top, a crescent (drawn here as a ring).
+            var gold = Mat("finial", new Color(0.93f, 0.72f, 0.28f), 0.7f, 0.9f);
+            float ft = drumTop + Hd;
+            Lathe(Mesh("Finial", gold, false, root), c, new[]
+            {
+                new Vector2(0.2f, ft - 0.2f), new Vector2(0.12f, ft + 0.4f), new Vector2(0.42f, ft + 0.75f), new Vector2(0.12f, ft + 1.1f),
+                new Vector2(0.1f, ft + 1.8f), new Vector2(0.28f, ft + 2.05f), new Vector2(0.08f, ft + 2.3f), new Vector2(0.05f, ft + 2.6f),
+            }, 12);
+            var cres = Mesh("Finial crescent", gold, false, root);
+            for (int k = 0; k < 14; k++)
+            {
+                float a0 = Mathf.Lerp(-150f, 150f, k / 14f) * Mathf.Deg2Rad, a1 = Mathf.Lerp(-150f, 150f, (k + 1) / 14f) * Mathf.Deg2Rad;
+                Vector3 o = new Vector3(c.x, ft + 3.25f, c.y);
+                Vector3 p0 = o + new Vector3(Mathf.Sin(a0), -Mathf.Cos(a0), 0f) * 0.62f, p1 = o + new Vector3(Mathf.Sin(a1), -Mathf.Cos(a1), 0f) * 0.62f;
+                Vector3 q0 = o + new Vector3(Mathf.Sin(a0) * 0.45f, -Mathf.Cos(a0) * 0.5f + 0.1f, 0f), q1 = o + new Vector3(Mathf.Sin(a1) * 0.45f, -Mathf.Cos(a1) * 0.5f + 0.1f, 0f);
+                TwoSided(cres, p0, p1, q1, q0);
+            }
+            Flush();
+            return root.Find("Dome").GetComponent<MeshRenderer>();
+        }
+
+        /// <summary>
+        /// A surface of revolution about the vertical line through <paramref name="c"/>: the profile is (radius,
+        /// height) pairs from bottom to top. Faces point outward.
+        /// </summary>
+        static void Lathe(MB mb, Vector2 c, IList<Vector2> profile, int segs)
+        {
+            int s0 = mb.v.Count;
+            for (int j = 0; j < profile.Count; j++)
+                for (int k = 0; k <= segs; k++)
+                {
+                    float a = k * Mathf.PI * 2f / segs;
+                    mb.v.Add(new Vector3(c.x + Mathf.Cos(a) * profile[j].x, profile[j].y, c.y + Mathf.Sin(a) * profile[j].x));
+                    mb.uv.Add(new Vector2(k / (float)segs * 8f, j / (float)(profile.Count - 1)));
+                }
+            for (int j = 0; j < profile.Count - 1; j++)
+                for (int k = 0; k < segs; k++)
+                {
+                    int p = s0 + j * (segs + 1) + k, up = p + segs + 1;
+                    mb.t.AddRange(new[] { p, up, p + 1, up, up + 1, p + 1 });
+                }
+        }
+
+        /// <summary>A box in a building's own frame: u along <paramref name="north"/>, v along <paramref name="east"/>.</summary>
+        static void OBox(MB mb, Vector2 o, Vector2 east, Vector2 north, float u0, float u1, float v0, float v1, float y0, float y1)
+        {
+            Vector2 P(float u, float v) => o + north * u + east * v;
+            Prism(mb, Ccw(new List<Vector2> { P(u0, v0), P(u0, v1), P(u1, v1), P(u1, v0) }), y0, y1);
+        }
+
+        /// <summary>A pitched roof along u, from u0 to u1, over v in [-half, half]: the slopes, and the gable ends.</summary>
+        static void Gable(MB slopes, MB ends, Vector2 o, Vector2 east, Vector2 north, float u0, float u1, float half, float y0, float rise)
+        {
+            Vector3 W(float u, float v, float y) { var g = o + north * u + east * v; return new Vector3(g.x, y, g.y); }
+            void Quad(MB mb, Vector3 a, Vector3 b, Vector3 cc, Vector3 d) => TwoSided(mb, a, b, cc, d);
+            Quad(slopes, W(u0, -half - 0.3f, y0 - 0.15f), W(u1, -half - 0.3f, y0 - 0.15f), W(u1, 0f, y0 + rise), W(u0, 0f, y0 + rise));
+            Quad(slopes, W(u0, half + 0.3f, y0 - 0.15f), W(u0, 0f, y0 + rise), W(u1, 0f, y0 + rise), W(u1, half + 0.3f, y0 - 0.15f));
+            foreach (float u in new[] { u0, u1 })
+            {
+                var top = W(u, 0f, y0 + rise - 0.1f);
+                TwoSided(ends, W(u, -half, y0), W(u, half, y0), top, top);
+            }
+        }
+
+        /// <summary>A quad drawn on both sides, each side with its own vertices so the lighting is right on both.</summary>
+        static void TwoSided(MB mb, Vector3 a, Vector3 b, Vector3 c, Vector3 d)
+        {
+            for (int side = 0; side < 2; side++)
+            {
+                int s = mb.v.Count; mb.v.AddRange(new[] { a, b, c, d });
+                mb.uv.AddRange(new[] { new Vector2(0f, 0f), new Vector2((b - a).magnitude, 0f), new Vector2((b - a).magnitude, (d - a).magnitude), new Vector2(0f, (d - a).magnitude) });
+                if (side == 0) mb.t.AddRange(new[] { s, s + 1, s + 2, s, s + 2, s + 3 });
+                else mb.t.AddRange(new[] { s, s + 2, s + 1, s, s + 3, s + 2 });
+            }
         }
 
         /// <summary>
@@ -705,20 +809,109 @@ namespace Rihla.EditorTools
             d.GetComponent<MeshRenderer>().sharedMaterial = Mat("lead", new Color(0.55f, 0.57f, 0.6f), 0.5f, 0.4f);
         }
 
-        /// <summary>The Qibli Mosque: its OSM outline, and a dome over the south part, near the mihrab (estimate, H17).</summary>
+        /// <summary>
+        /// The Qibli Mosque (C1a, closer to the real building; proportions estimated from published photographs and
+        /// plans, NEEDS_REVIEW.md H20). From its OSM outline: the long hall running south towards the qibla, with
+        /// side aisles under flat lead roofs; the taller central nave with clerestory windows and a long pitched lead
+        /// roof; the silver-grey lead dome on a drum over the bay before the mihrab, at the south end; and across the
+        /// north front, facing the courtyard, the porch of seven arches with battlements. The lower annexes keep the
+        /// rest of the outline.
+        /// </summary>
         static void Qibli(List<Vector2> ring, out Vector3 front)
         {
             var root = new GameObject("Al-Qibli Mosque").transform;
-            Prism(Mesh("Hall", Mat("lime3", new Color(0.9f, 0.86f, 0.77f)), true, root), ring, 0f, 11f);
-            float minZ = ring.Min(p => p.y), maxZ = ring.Max(p => p.y), cx = ring.Average(p => p.x);
-            float width = ring.Max(p => p.x) - ring.Min(p => p.x);
-            float r = Mathf.Min(9f, width * 0.22f);
-            var d = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            d.name = "Dome"; d.transform.SetParent(root); Object.DestroyImmediate(d.GetComponent<Collider>());
-            d.transform.position = new Vector3(cx, 11f + r * 0.25f, minZ + (maxZ - minZ) * 0.2f);
-            d.transform.localScale = new Vector3(r * 2f, r * 1.6f, r * 2f);
-            d.GetComponent<MeshRenderer>().sharedMaterial = Mat("lead", new Color(0.55f, 0.57f, 0.6f), 0.5f, 0.4f);
-            front = new Vector3(cx, 0f, maxZ + 7f);
+            // The hall's frame: its north front is the outline's longest edge facing north.
+            int ni = 0; float best = float.MinValue;
+            for (int i = 0; i < ring.Count; i++)
+            {
+                Vector2 a = ring[i], b = ring[(i + 1) % ring.Count]; float len = (b - a).magnitude;
+                float score = (a.y + b.y) / 2f + len * 2f; if (len > 20f && score > best) { best = score; ni = i; }
+            }
+            Vector2 na = ring[ni], nb = ring[(ni + 1) % ring.Count];
+            Vector2 east = (nb - na).normalized; if (east.x < 0f) east = -east;
+            Vector2 north = new Vector2(-east.y, east.x); if (north.y < 0f) north = -north;
+            Vector2 o = (na + nb) / 2f; float half = (nb - na).magnitude / 2f;
+            float L = 0f; foreach (var p in ring) { Vector2 q = p - o; if (Mathf.Abs(Vector2.Dot(q, east)) < half + 2f) L = Mathf.Max(L, -Vector2.Dot(q, north)); }
+            L = Mathf.Clamp(L, 40f, 95f);
+
+            var stone = Mat("lime1", new Color(0.9f, 0.86f, 0.77f));
+            var lead = Mat("qiblilead", new Color(0.6f, 0.62f, 0.65f), 0.5f, 0.6f);
+            var shadow = Mat("archshadow", new Color(0.24f, 0.2f, 0.16f), 0.05f);
+            var frame = Mat("frame", new Color(0.95f, 0.9f, 0.8f));
+            const float Aisle = 10.5f, Nave = 5.6f, NaveTop = 15f, Porch = 5f, PorchTop = 9f;
+
+            // The annexes along the rest of the outline, low, and the hall itself.
+            Prism(Mesh("Annexes (Qibli)", Mat("lime3", new Color(0.9f, 0.86f, 0.77f)), true, root), ring, 0f, 7.5f);
+            var walls = Mesh("Hall (Qibli)", stone, true, root);
+            OBox(walls, o, east, north, -L, -Porch, -half, half, 0f, Aisle);
+            OBox(walls, o, east, north, -Porch, 0f, -half * 0.97f, half * 0.97f, 0f, PorchTop);
+            float domeU = -L + 8f;
+            OBox(walls, o, east, north, domeU - 6.5f, -Porch - 0.5f, -Nave, Nave, Aisle, NaveTop); // the nave, raised
+            OBox(walls, o, east, north, domeU - 6.8f, domeU + 6.8f, -6.8f, 6.8f, Aisle, NaveTop + 1f); // the dome's bay
+            var roofs = Mesh("Roofs (Qibli)", lead, false, root);
+            OBox(roofs, o, east, north, -L, -Porch, -half, half, Aisle, Aisle + 0.15f);
+            var ends = Mesh("Gable ends (Qibli)", stone, false, root);
+            Gable(roofs, ends, o, east, north, domeU + 6.8f, -Porch - 0.5f, Nave, NaveTop, 3.2f);
+
+            // Windows: high along the nave, lower along the side walls.
+            var win = Mesh("Windows (Qibli)", shadow, false, root);
+            var frames = Mesh("Window frames (Qibli)", frame, false, root);
+            foreach (float side in new[] { -1f, 1f })
+            {
+                Vector2 outN = east * side;
+                Vector2 a = o + east * (Nave * side) + north * (domeU + 6.8f);
+                for (float u = 2.5f; u < (-Porch - 0.5f) - (domeU + 6.8f) - 1f; u += 4f)
+                {
+                    Panel(frames, a, north, outN, u, 1.7f, 11.3f, 14.2f, 0f, 0.03f, true);
+                    Panel(win, a, north, outN, u, 1.1f, 11.6f, 13.9f, 0f, 0.06f, true);
+                }
+                Vector2 s0 = o + east * (half * side) + north * -L;
+                for (float u = 5f; u < L - Porch - 2f; u += 6.5f)
+                {
+                    Panel(frames, s0, north, outN, u, 2f, 3.6f, 8.2f, 0f, 0.03f, true);
+                    Panel(win, s0, north, outN, u, 1.3f, 4f, 7.8f, 0f, 0.06f, true);
+                }
+            }
+
+            // The porch: seven pointed arches across the north front, the middle one a little larger, and battlements.
+            float span = half * 0.97f * 2f, bay = span / 7f;
+            Vector2 fa = o - east * (span / 2f) + north * 0.02f;
+            for (int k = 0; k < 7; k++)
+            {
+                float u = bay * (k + 0.5f), w = k == 3 ? bay * 0.7f : bay * 0.62f, top = k == 3 ? 7.4f : 6.8f;
+                Panel(frames, fa, east, north, u, w + 0.8f, 0f, top + 0.5f, 0f, 0.03f, true);
+                Panel(win, fa, east, north, u, w, 0f, top, 0f, 0.06f, true);
+            }
+            var merlons = Mesh("Battlements (Qibli)", stone, false, root);
+            for (float v = -span / 2f + 0.4f; v < span / 2f - 0.6f; v += 1.5f)
+                OBox(merlons, o, east, north, -0.6f, 0f, v, v + 0.7f, PorchTop, PorchTop + 0.8f);
+            // The nave's front rises above the porch, with a window.
+            Panel(frames, o + north * (-Porch - 0.5f) - east * 2f, east, north, 2f, 2.4f, 10.4f, 14.4f, 0f, 0.03f, true);
+            Panel(win, o + north * (-Porch - 0.5f) - east * 2f, east, north, 2f, 1.5f, 10.8f, 14f, 0f, 0.06f, true);
+
+            // The dome over the bay before the mihrab: a drum with small windows, then the lead dome and a finial.
+            Vector2 dc = o + north * domeU;
+            var drumRing = new List<Vector2>();
+            for (int k = 0; k < 16; k++) { float a = (k + 0.5f) * Mathf.PI * 2f / 16f; drumRing.Add(dc + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * 5.4f); }
+            drumRing = Ccw(drumRing);
+            float db = NaveTop + 1f, dt = db + 2.6f;
+            Prism(Mesh("Dome drum (Qibli)", stone, false, root), drumRing, db, dt);
+            for (int k = 0; k < 16; k += 2)
+            {
+                Vector2 a = drumRing[k], b = drumRing[(k + 1) % 16]; float len = (b - a).magnitude; Vector2 dd = (b - a) / len, outN = new Vector2(dd.y, -dd.x);
+                if (Vector2.Dot(outN, (a + b) / 2f - dc) < 0f) outN = -outN;
+                Panel(win, a, dd, outN, len / 2f, 0.8f, db + 0.6f, db + 2.1f, 0f, 0.05f, true);
+            }
+            float R = 5.7f; var prof = new List<Vector2> { new Vector2(R, dt - 0.2f) };
+            for (int k = 0; k <= 16; k++) { float th = k / 16f * Mathf.PI / 2f, s = Mathf.Sin(th); prof.Add(new Vector2(Mathf.Max(0.05f, R * Mathf.Cos(th) * (1f - 0.1f * s * s * s)), dt + R * 0.95f * s)); }
+            Lathe(Mesh("Dome (Qibli)", Mat("qiblidome", new Color(0.56f, 0.58f, 0.61f), 0.38f, 0.35f), false, root), dc, prof, 48);
+            float ft = dt + R * 0.95f;
+            Lathe(Mesh("Finial (Qibli)", Mat("finial", new Color(0.93f, 0.72f, 0.28f), 0.7f, 0.9f), false, root), dc, new[]
+            {
+                new Vector2(0.15f, ft - 0.1f), new Vector2(0.08f, ft + 0.5f), new Vector2(0.3f, ft + 0.8f), new Vector2(0.06f, ft + 1.1f), new Vector2(0.04f, ft + 1.8f),
+            }, 10);
+            var fr = o + north * 7f;
+            front = new Vector3(fr.x, 0f, fr.y);
         }
 
         /// <summary>Two carved lions on each side of Bab al-Asbat's outer face (positions approximate, H17).</summary>
@@ -763,17 +956,94 @@ namespace Rihla.EditorTools
 
         static Transform Marker(string name, Vector3 at)
         {
+            // C1a (the owner's idea): each clue waits in a small wooden box floating over a golden ring, its sides
+            // embroidered with Palestinian tatreez (an invented cross-stitch star, not a copied village pattern, H21).
+            // It bobs and turns; when the child finds the clue its lid opens and it fades away (ClueBox).
             var root = new GameObject(name).transform; root.position = at;
-            var mat = Mat("marker", new Color(0.95f, 0.8f, 0.4f), 0.5f, 0f, new Color(0.9f, 0.65f, 0.2f) * 2f);
-            var ring = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            ring.name = "Glow"; ring.transform.SetParent(root, false); Object.DestroyImmediate(ring.GetComponent<Collider>());
-            ring.transform.localPosition = new Vector3(0f, 0.03f, 0f); ring.transform.localScale = new Vector3(1.6f, 0.02f, 1.6f);
-            ring.GetComponent<MeshRenderer>().sharedMaterial = mat;
-            var beam = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            beam.name = "Beam"; beam.transform.SetParent(root, false); Object.DestroyImmediate(beam.GetComponent<Collider>());
-            beam.transform.localPosition = new Vector3(0f, 1.6f, 0f); beam.transform.localScale = new Vector3(0.12f, 1.6f, 0.12f);
-            beam.GetComponent<MeshRenderer>().sharedMaterial = mat;
+            var glow = Mat("marker", new Color(0.95f, 0.8f, 0.4f), 0.5f, 0f, new Color(0.9f, 0.62f, 0.18f) * 1.4f);
+            GameObject Part(PrimitiveType type, Transform parent, string n, Material m, Vector3 pos, Vector3 scale, Vector3? euler = null)
+            {
+                var g = GameObject.CreatePrimitive(type); g.name = n; Object.DestroyImmediate(g.GetComponent<Collider>());
+                g.transform.SetParent(parent, false); g.transform.localPosition = pos; g.transform.localScale = scale;
+                if (euler.HasValue) g.transform.localRotation = Quaternion.Euler(euler.Value);
+                g.GetComponent<MeshRenderer>().sharedMaterial = m;
+                return g;
+            }
+            Part(PrimitiveType.Cylinder, root, "Glow ring", glow, new Vector3(0f, 0.03f, 0f), new Vector3(1.5f, 0.01f, 1.5f)).GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
+            var box = new GameObject("Box").transform; box.SetParent(root, false); box.localPosition = new Vector3(0f, 1.15f, 0f); box.localScale = Vector3.one * 1.4f;
+            var wood = Mat("cluewood", new Color(0.4f, 0.24f, 0.13f), 0.35f);
+            var brass = Mat("cluebrass", new Color(0.8f, 0.6f, 0.28f), 0.7f, 0.85f);
+            var cloth = Mat("tatreez", Color.white, 0.1f); cloth.SetTexture("_BaseMap", TatreezTexture()); EditorUtility.SetDirty(cloth);
+            const float BW = 0.5f, BH = 0.3f, BD = 0.36f;
+            Part(PrimitiveType.Cube, box, "Box body", wood, new Vector3(0f, BH / 2f, 0f), new Vector3(BW, BH, BD));
+            // Embroidered panels on the four sides.
+            Part(PrimitiveType.Cube, box, "Tatreez front", cloth, new Vector3(0f, BH / 2f, BD / 2f + 0.004f), new Vector3(BW * 0.8f, BH * 0.72f, 0.004f));
+            Part(PrimitiveType.Cube, box, "Tatreez back", cloth, new Vector3(0f, BH / 2f, -BD / 2f - 0.004f), new Vector3(BW * 0.8f, BH * 0.72f, 0.004f));
+            Part(PrimitiveType.Cube, box, "Tatreez side", cloth, new Vector3(BW / 2f + 0.004f, BH / 2f, 0f), new Vector3(0.004f, BH * 0.72f, BD * 0.75f));
+            Part(PrimitiveType.Cube, box, "Tatreez side", cloth, new Vector3(-BW / 2f - 0.004f, BH / 2f, 0f), new Vector3(0.004f, BH * 0.72f, BD * 0.75f));
+            foreach (float x in new[] { -BW / 2f, BW / 2f }) foreach (float z in new[] { -BD / 2f, BD / 2f })
+                Part(PrimitiveType.Cube, box, "Brass corner", brass, new Vector3(x, BH / 2f, z), new Vector3(0.04f, BH + 0.01f, 0.04f));
+            // The lid, on a hinge along the back edge, with its own embroidered top and a brass clasp at the front.
+            var hinge = new GameObject("Lid hinge").transform; hinge.SetParent(box, false); hinge.localPosition = new Vector3(0f, BH, -BD / 2f);
+            Part(PrimitiveType.Cube, hinge, "Lid", wood, new Vector3(0f, 0.04f, BD / 2f), new Vector3(BW + 0.03f, 0.08f, BD + 0.03f));
+            Part(PrimitiveType.Cube, hinge, "Tatreez lid", cloth, new Vector3(0f, 0.082f, BD / 2f), new Vector3(BW * 0.82f, 0.004f, BD * 0.78f));
+            Part(PrimitiveType.Cube, hinge, "Clasp", brass, new Vector3(0f, 0.0f, BD + 0.02f), new Vector3(0.07f, 0.09f, 0.02f));
+            // A warm light inside, seen when the lid opens, and sparkles turning around the box.
+            Part(PrimitiveType.Cube, box, "Inner glow", glow, new Vector3(0f, BH - 0.02f, 0f), new Vector3(BW * 0.9f, 0.01f, BD * 0.88f));
+            var sparkles = new GameObject("Sparkles").transform; sparkles.SetParent(root, false); sparkles.localPosition = new Vector3(0f, 1.25f, 0f);
+            for (int k = 0; k < 6; k++)
+            {
+                float a = k * Mathf.PI / 3f;
+                Part(PrimitiveType.Cube, sparkles, "Sparkle", glow, new Vector3(Mathf.Cos(a) * 0.55f, (k % 2) * 0.25f - 0.1f, Mathf.Sin(a) * 0.55f), Vector3.one * 0.05f, new Vector3(45f, 0f, 45f))
+                    .GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
+            }
+            var cb = root.gameObject.AddComponent<ClueBox>(); cb.box = box; cb.lid = hinge; cb.sparkles = sparkles;
             return root;
+        }
+
+        /// <summary>
+        /// Cross-stitch embroidery in the manner of Palestinian tatreez: red stitches on cream linen, an eight-pointed
+        /// star in the middle with a dark heart, and a border of small triangles. Invented for the game (H21).
+        /// </summary>
+        internal static Texture2D TatreezTexture()
+        {
+            string texPath = Built + "tatreez.png";
+            Directory.CreateDirectory(Built);
+            if (!File.Exists(texPath))
+            {
+                const int Cells = 30, Px = 8, N = Cells * Px; var t = new Texture2D(N, N, TextureFormat.RGB24, true);
+                Color linen = new Color(0.93f, 0.88f, 0.76f), red = new Color(0.66f, 0.08f, 0.1f), dark = new Color(0.12f, 0.1f, 0.12f), green = new Color(0.16f, 0.4f, 0.26f);
+                Color? Stitch(int cx, int cy)
+                {
+                    int x = cx - Cells / 2, y = cy - Cells / 2, ax = Mathf.Abs(x), ay = Mathf.Abs(y);
+                    if (cx == 1 || cy == 1 || cx == Cells - 2 || cy == Cells - 2) return red;            // the border lines
+                    int bx = Mathf.Min(cx, Cells - 1 - cx), by = Mathf.Min(cy, Cells - 1 - cy), bm = Mathf.Min(bx, by);
+                    if (bm == 3 && ((bx == 3 ? cy : cx) % 4 < 2 - 0)) return dark;                         // a dotted inner line
+                    if (bm == 2 && ((bx == 2 ? cy : cx) % 3 == 0)) return red;                            // little teeth
+                    bool square = Mathf.Max(ax, ay) <= 6, diamond = ax + ay <= 9;
+                    if (!(square || diamond)) return ((ax + ay) == 11 && (ax % 2 == 0)) ? green : (Color?)null;
+                    if (ax + ay <= 2) return dark;                                                        // the heart
+                    if (Mathf.Max(ax, ay) == 6 || ax + ay == 9) return red;                               // the outline
+                    if ((ax + ay) % 3 == 0) return red;                                                   // rings inside
+                    return null;
+                }
+                for (int cy = 0; cy < Cells; cy++)
+                    for (int cx = 0; cx < Cells; cx++)
+                    {
+                        var st = Stitch(cx, cy);
+                        for (int py = 0; py < Px; py++)
+                            for (int px = 0; px < Px; px++)
+                            {
+                                // Each stitch is a small cross: two diagonals across its cell.
+                                bool onX = st.HasValue && (Mathf.Abs(px - py) <= 1 || Mathf.Abs(px + py - (Px - 1)) <= 1) && px > 0 && py > 0 && px < Px - 1 && py < Px - 1;
+                                float weave = 0.95f + 0.05f * (((px + py) & 1) == 0 ? 1f : -1f);
+                                t.SetPixel(cx * Px + px, cy * Px + py, onX ? st.Value : linen * weave);
+                            }
+                    }
+                t.Apply(); File.WriteAllBytes(texPath, t.EncodeToPNG()); Object.DestroyImmediate(t);
+                AssetDatabase.ImportAsset(texPath);
+            }
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(texPath);
         }
 
         static (Walker, FollowCamera) Player(Vector3 at)
@@ -1073,7 +1343,7 @@ namespace Rihla.EditorTools
             ["lime1"] = ("PolyHaven/sandstone_blocks_08_diff_1k.jpg", "PolyHaven/sandstone_blocks_08_nor_gl_1k.jpg", 3f, new Color(1f, 0.98f, 0.94f)),
             ["lime2"] = ("PolyHaven/white_sandstone_blocks_02_diff_1k.jpg", "PolyHaven/white_sandstone_blocks_02_nor_gl_1k.jpg", 3f, new Color(1f, 0.96f, 0.88f)),
             ["lime3"] = ("PolyHaven/white_plaster_rough_01_diff_1k.jpg", "PolyHaven/white_plaster_rough_01_nor_gl_1k.jpg", 3f, new Color(0.98f, 0.96f, 0.91f)),
-            ["marble"] = ("PolyHaven/marble_01_diff_1k.jpg", "PolyHaven/marble_01_nor_gl_1k.jpg", 2f, Color.white),
+            ["marble"] = ("PolyHaven/marble_01_diff_1k.jpg", "PolyHaven/marble_01_nor_gl_1k.jpg", 2f, new Color(1.12f, 1.12f, 1.1f)),
         };
 
         /// <summary>Materials drawn with the weathered stone shader (R4): walls and houses, and paving.</summary>
@@ -1094,6 +1364,16 @@ namespace Rihla.EditorTools
             string p = Built + name + ".mat";
             var m = AssetDatabase.LoadAssetAtPath<Material>(p);
             if (!m) { m = new Material(Shader.Find("Universal Render Pipeline/Lit")); AssetDatabase.CreateAsset(m, p); }
+            if (emission.HasValue)
+            {
+                // Glowing things are unlit, bright enough to bloom: URP Lit's emission setting is not kept on
+                // materials made by code (C1a), so they did not glow.
+                var unlit = Shader.Find("Universal Render Pipeline/Unlit");
+                if (m.shader != unlit) m.shader = unlit;
+                m.SetColor("_BaseColor", emission.Value * 1.5f + c * 0.15f);
+                EditorUtility.SetDirty(m);
+                return m;
+            }
             bool ground = WeatheredGround.Contains(name), weathered = ground || WeatheredWall.Contains(name);
             var shader = Shader.Find(weathered ? "Rihla/Weathered Stone" : "Universal Render Pipeline/Lit");
             if (shader && m.shader != shader) m.shader = shader;
