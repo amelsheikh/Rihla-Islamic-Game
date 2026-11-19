@@ -19,6 +19,7 @@
 | C1a (first part) — The opening at home, the storybook, guidance | Done 19 November 2026 | The game now starts in Jiddo's house: Jiddo reads Yusuf and Maryam a story from his old book, a page and a map for each place (Makkah to Al-Quds), then the walk at dawn; a goal box and golden arrows guide every step; the gate into al-Aqsa and the stairs to the Dome were blocked and are open. Opening 71-79 FPS, walk 66 FPS. See below |
 | C1a (second part) — Jiddo's chest, Page 1, clue boxes, truer Qibli Mosque and Dome, breeze | Done 19 November 2026 | After the walk the child goes home: Jiddo opens the family chest, the child reads Zaynab's first page and solves her riddle on a map (Ariha), then the drive. Clues wait in floating boxes embroidered with tatreez; the Qibli Mosque has its seven-arched porch, raised nave and lead dome, the Dome of the Rock its drum and pointed dome; a breeze, rustling and blowing leaves, crickets at home. Same speed as the last prototype on the laptop today. See below |
 | C1b (first part) — Guidance on the drive | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19d.zip` on the Desktop. The road down to Ariha now has the walk's goal box and golden arrows: to the page at Khan al-Hatruri, to where the road goes below the sea, then to Ariha; back to the road, back to the car, Jiddo driving. 108 FPS with Jiddo driving. See below |
+| C1b (second part) — Jiddo's remarks, Khan al-Ahmar, the shepherd, a softer guide | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19e.zip` on the Desktop. The golden arrows on the road are replaced by one soft golden arrow in the air ahead with a pool of light under it; Jiddo talks about the land at nine places; a stop at the ruin of Khan al-Ahmar; a shepherd crosses with his flock and the child waits. 100 FPS with Jiddo driving. See below |
 
 ## Phase 1a: what works
 
@@ -170,6 +171,50 @@ Palestine comes after Chapter 1, "then and now" is central, and the world should
 walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
+
+## C1b, second part: Jiddo's remarks, Khan al-Ahmar, the shepherd, and a softer guide (done 19 November 2026)
+
+The owner asked for Jiddo's remarks, Khan al-Ahmar and the shepherd, and found the golden arrows on the road "not
+looking good": "more subtle, like maybe a light on the road or one light arrow in the air".
+
+- **One soft arrow** (`DriveGuide.cs`): the trail of arrows is gone. One slim golden arrow, see-through and glowing,
+  floats about 2.6 m over the road 16 to 38 m ahead of the car (further when faster), leaning forward and turning
+  with the road, with a soft pool of light on the road under it. It dims while the child drives the right way and
+  fades almost away after a few seconds of good driving; it brightens when the car stops, turns back or leaves the
+  road (then it hangs over the road, pointing back to it). Near a goal it glides over the goal and points down. It
+  hides while Jiddo drives, while he talks at the khan and while the flock crosses. The goal box says "follow the
+  golden light".
+- **Jiddo's remarks** (`DriveStory.cs`, `content/drive.json`): nine short lines at their places on the road, one at a
+  time and never over another line: the way down to Ariha; the hills that catch the winter rain from the sea, so
+  olives grow; the dry land in their shadow, the wilderness; shepherds there for thousands of years; your ears as
+  the road falls more than a thousand metres; Wadi al-Qilt and its springs; the warm air below sea level; Maqam
+  al-Nabi Musa, peace be upon him, in the hills; the green oasis of Ariha ahead.
+- **Khan al-Ahmar**: the ruin of a walled courtyard inn beside the road, partly fallen, with its gateway towards the
+  road and a row of vaulted rooms (an estimate, H22). It is the first goal: "Drive down to Khan al-Ahmar, the old
+  travellers' inn", then "Slow down and stop by the old khan". Stopped beside it (or on foot at it), a banner ("The
+  Red Inn, where travellers rested for centuries") and four lines from Jiddo: what a khan is; that in the Mamluks'
+  time, about seven hundred years ago, it became an inn for travellers and pilgrims, in Zaynab's time; the name and
+  the reddish rocks; Bedouin families near it today with their flocks. A child who drives past is told it can wait
+  for another time. It is remembered in the save (`SaveData.stops`).
+- **The shepherd and his flock** (`Flock.cs`): a shepherd in a dark thobe, brown cloak and kufiya with his staff, and
+  sixteen animals (white sheep with brown faces and broad tails, and black and brown goats), grazing beside the road
+  after Khan al-Hatruri at a straight stretch the builder picks so they are seen from afar. When the car comes
+  near, they cross the road: the shepherd first, the flock trotting after him in a loose bunch, bleating (a voice
+  made by code). Jiddo: "Look, a shepherd with his flock! Slow down and stop. We let them cross." The goal box
+  says to wait. A child who rushes is told "Gently!", and the car is held just before the flock. When they are
+  across: "As-salamu alaykum!", the shepherd's "Wa alaykum as-salam! Thank you for waiting. Go safely.", and Jiddo's
+  "Well done. You waited kindly" (or, after rushing, "The flock was on the road first..."). Adab shown, not taught.
+- **Jiddo driving** stops at the khan to tell about it and slows to a stop for the flock, then drives on.
+- The goal "Drive on to Ariha" now ends at Ariha itself (7.6 km), not at the end of the road by the Dead Sea.
+
+| Check | Result |
+|---|---|
+| Windows build, Jiddo driving from Bab al-Asbat for 10 minutes (`-newgame -drive -autopilot -quitafter 600`) | **100.4 FPS** average (lowest 78.8), no errors. In order: eight of Jiddo's nine remarks, the stop at Khan al-Ahmar with its four lines, the flock crossing with the greeting, thanks and "Well done", sea level; the run ended before the last remark (Ariha ahead) |
+| In the editor, the car placed before the khan, at it, before the flock, and below Khan al-Hatruri in Arabic for Maryam | Goals, Jiddo's lines and the shepherd's in English and Arabic (feminine forms correct); the arrow ahead, over the goal, and hidden while the flock crosses |
+| Pictures | `docs/screenshots/c1b2-khan.png` (stopped at Khan al-Ahmar), `c1b2-flock.png` (the flock crossing), `c1b2-flock-thanks.png` (the shepherd's thanks), `c1b2-arrow-ar.png` (the soft arrow, in Arabic, for Maryam) |
+
+Not yet tried by hand at the keys from start to end. Still to do in C1b: Ariha itself (on foot to the spring and
+Tell al-Sultan, Umm Khalil and Page 2).
 
 ## C1b, first part: guidance on the drive (done 19 November 2026)
 

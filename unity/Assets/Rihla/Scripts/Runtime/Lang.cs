@@ -104,6 +104,8 @@ namespace Rihla
         /// <summary>Which child the player chose: "yusuf" or "maryam" (STORY section 1).</summary>
         public string hero = "yusuf";
         public bool heroChosen;
+        /// <summary>Stops and events on the road already seen (C1b): "khan-al-ahmar", "flock".</summary>
+        public string[] stops = new string[0];
         public bool hasPosition;
         public float x, y, z, yaw;
 
@@ -151,6 +153,15 @@ namespace Rihla
         {
             if (HasPage(id)) return;
             Array.Resize(ref pages, pages.Length + 1); pages[pages.Length - 1] = id; Save();
+        }
+
+        public bool HasStop(string id) => stops != null && Array.IndexOf(stops, id) >= 0;
+
+        public void AddStop(string id)
+        {
+            if (HasStop(id)) return;
+            stops ??= new string[0];
+            Array.Resize(ref stops, stops.Length + 1); stops[stops.Length - 1] = id; Save();
         }
 
         /// <summary>Clears everything (the -newgame command-line flag).</summary>

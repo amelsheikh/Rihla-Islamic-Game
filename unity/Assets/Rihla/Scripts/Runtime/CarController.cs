@@ -18,6 +18,10 @@ namespace Rihla
         public bool autopilot;
         public float autopilotKmh = 60f;
         [HideInInspector] public bool driverPresent = true;
+        /// <summary>The most Jiddo drives at just now (km/h): DriveStory slows him for the khan and the flock.</summary>
+        [HideInInspector] public float holdKmh = float.MaxValue;
+        /// <summary>Brakes whoever drives (a flock on the road just ahead).</summary>
+        [HideInInspector] public bool forceStop;
 
         Rigidbody body;
         int roadHint = -1;
@@ -67,6 +71,8 @@ namespace Rihla
                 }
             }
 
+            if (forceStop && driverPresent) { throttle = Mathf.Min(throttle, 0f); handbrake = true; }
+
             // Less steering at speed; smooth the input so keys do not jerk the wheel.
             float speed = SpeedKmh, steerLimit = Mathf.Lerp(maxSteer, maxSteer * 0.3f, speed / topSpeedKmh);
             steer = Mathf.MoveTowards(steer, Mathf.Clamp(steerInput, -1f, 1f) * steerLimit, 120f * Time.fixedDeltaTime);
@@ -94,7 +100,8 @@ namespace Rihla
             // Slow for bends: look further ahead and compare headings.
             Vector3 a = road.Ahead(roadHint, 10f) - road.Ahead(roadHint, 0f), b = road.Ahead(roadHint, 45f) - road.Ahead(roadHint, 30f);
             float bend = Vector3.Angle(new Vector3(a.x, 0, a.z), new Vector3(b.x, 0, b.z));
-            float want = Mathf.Lerp(autopilotKmh, 25f, bend / 60f);
+            float want = Mathf.Min(Mathf.Lerp(autopilotKmh, 25f, bend / 60f), holdKmh);
+            if (holdKmh < 1f) { throttle = speed > 1f ? -1f : 0f; return; }
             throttle = Mathf.Clamp((want - speed) * 0.15f, -1f, 1f);
             if (roadHint >= road.points.Length - 2) throttle = speed > 1f ? -1f : 0f;
         }

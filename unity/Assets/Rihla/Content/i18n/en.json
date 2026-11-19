@@ -92,14 +92,19 @@
   "hero.yusuf": "Yusuf",
   "hero.maryam": "Maryam",
   "hero.chosen": "Walking with Jiddo",
-  "d.toKhan": "Drive down the road to Khan al-Hatruri. Follow the golden arrows.",
+  "d.toKhan": "Drive down the road to Khan al-Hatruri. Follow the golden light.",
   "d.stopAtPage": "Slow down and stop beside the golden scroll by the road.",
   "d.walkToPage": "Walk to the golden scroll.",
   "d.toSea": "Drive on down. Watch for the place where the road goes below the level of the sea.",
   "d.toAriha": "Drive on to Ariha, the city of palms.",
   "d.arrived": "You have reached Ariha! Its story comes next.",
-  "d.offRoad": "You are off the road. Drive back to the golden arrows, or press R to return to the road.",
+  "d.offRoad": "You are off the road. Drive back to the golden light, or press R to return to the road.",
   "d.backToCar": "Walk back to the car and press E to drive.",
   "d.jiddo": "Jiddo is driving. Look at the land. Press P to drive yourself.",
-  "d.keys": "Drive with W A S D or the arrow keys. Space is the brake."
+  "d.keys": "Drive with W A S D or the arrow keys. Space is the brake.",
+  "d.toAhmar": "Drive down to Khan al-Ahmar, the old travellers' inn.",
+  "d.stopAtAhmar": "Slow down and stop by the old khan.",
+  "d.walkToAhmar": "Walk to the old khan.",
+  "d.atAhmar": "Listen to Jiddo.",
+  "d.waitFlock": "Wait: a shepherd's flock is crossing the road."
 }

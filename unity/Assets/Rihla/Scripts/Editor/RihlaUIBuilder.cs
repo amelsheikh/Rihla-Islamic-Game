@@ -22,6 +22,7 @@ namespace Rihla.EditorTools
             content.arabic = Load(Content + "i18n/ar.json");
             content.walk = Load(Content + "walk.json");
             content.storybook = Load(Content + "storybook.json");
+            content.drive = Load(Content + "drive.json");
             return content;
         }
 

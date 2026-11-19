@@ -75,10 +75,13 @@ DRIVING
   Esc                     menu
   R                       back onto the road
 
-The box at the top says where to drive next: first to the golden scroll at Khan
-al-Hatruri (stop beside it to read the page), then down to where the road goes
-below the level of the sea, then on to Ariha. Golden arrows on the road show
-the way.
+The box at the top says where to drive next: first stop by the old ruin of Khan
+al-Ahmar, where Jiddo tells you what a khan was; then the golden scroll at Khan
+al-Hatruri (stop beside it to read the page); then down to where the road goes
+below the level of the sea, and on to Ariha. One soft golden arrow floats over
+the road ahead and turns with it; it glows brighter when you stop or go the
+wrong way. On the way Jiddo talks about the land, and a shepherd crosses the
+road with his flock: stop and wait for them.
 
 
 WHAT TO LOOK FOR WHEN YOU TEST

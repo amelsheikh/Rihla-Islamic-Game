@@ -11,7 +11,7 @@ namespace Rihla
     /// </summary>
     public class ContentLibrary : MonoBehaviour
     {
-        public TextAsset places, history, journal, religiousTexts, english, arabic, walk, storybook;
+        public TextAsset places, history, journal, religiousTexts, english, arabic, walk, storybook, drive;
 
         public JObject Places { get; private set; }
         public JObject History { get; private set; }
@@ -19,6 +19,7 @@ namespace Rihla
         public JObject ReligiousTexts { get; private set; }
         public JObject Walk { get; private set; }
         public JObject Storybook { get; private set; }
+        public JObject Drive { get; private set; }
         readonly Dictionary<string, JObject> strings = new Dictionary<string, JObject>();
 
         public static ContentLibrary Instance { get; private set; }
@@ -32,6 +33,7 @@ namespace Rihla
             ReligiousTexts = Parse(religiousTexts);
             Walk = Parse(walk);
             Storybook = Parse(storybook);
+            Drive = Parse(drive);
             strings["en"] = Parse(english);
             strings["ar"] = Parse(arabic);
             Debug.Log($"[Rihla] content: {Count(Places, "places")} places, {Count(History, "sites")} history sites, " +

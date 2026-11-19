@@ -13,7 +13,7 @@ namespace Rihla
     /// </summary>
     public class FigureBody : MonoBehaviour
     {
-        public enum Look { Jiddo, Yusuf, Maryam, Man, ManModern, Woman, WomanElder, ElderMan, Boy, Girl }
+        public enum Look { Jiddo, Yusuf, Maryam, Man, ManModern, Woman, WomanElder, ElderMan, Boy, Girl, Shepherd }
 
         public Look look = Look.Man;
         /// <summary>Picks the colours and small differences between people of the same look.</summary>
@@ -211,6 +211,14 @@ namespace Rihla
                 case Look.ElderMan:
                     // An old man with a white or grey beard and a walking stick, in a thobe with a kufiya or a white cap.
                     ElderMan(s, r, Pick(Thobes), r.NextDouble() < 0.6 ? Head.Kufiya : Head.Taqiyah);
+                    break;
+                case Look.Shepherd:
+                    // A Bedouin shepherd on the road down to Ariha (C1b): a dark thobe, a brown cloak, a kufiya and
+                    // his staff.
+                    s.scale = 1f; s.robe = new Color(0.36f, 0.31f, 0.25f); s.skin = new Color(0.6f, 0.43f, 0.31f);
+                    s.head = Head.Kufiya; s.head1 = new Color(0.93f, 0.91f, 0.86f); s.head2 = new Color(0.1f, 0.1f, 0.11f);
+                    s.beard = true; s.trim = new Color(0.16f, 0.12f, 0.1f); s.stick = true;
+                    s.cloak = true; s.cloak1 = new Color(0.32f, 0.22f, 0.14f); s.cloak2 = new Color(0.78f, 0.72f, 0.6f);
                     break;
                 case Look.Boy:
                     s.scale = Range(0.6f, 0.76f); s.headScale = 1.26f; s.skin = Pick(Skins);

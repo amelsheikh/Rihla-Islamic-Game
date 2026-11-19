@@ -48,10 +48,15 @@ namespace Rihla.EditorTools
             var teach = new GameObject("Teaching").AddComponent<Teaching>();
             teach.car = car; teach.player = sw; teach.road = road; teach.hud = hud;
             teach.pageMarker = PageMarker(road, json);
-            // C1b: the goal box and golden arrows along the road, as in the walk.
+            // C1b: Jiddo's remarks, the stop at Khan al-Ahmar and the shepherd's flock.
+            var story = new GameObject("Drive story").AddComponent<DriveStory>();
+            story.car = car; story.player = sw; story.road = road;
+            story.khan = KhanAlAhmar(road);
+            story.flock = FlockCrossing(road);
+            // The goal box and one soft golden arrow in the air over the road ahead.
             var guide = new GameObject("Drive guidance").AddComponent<DriveGuide>();
-            guide.car = car; guide.player = sw; guide.road = road; guide.pageMarker = teach.pageMarker;
-            guide.material = Unlit("guide_unlit_road", new Color(1f, 0.62f, 0.12f) * 2.2f);
+            guide.car = car; guide.player = sw; guide.road = road; guide.pageMarker = teach.pageMarker; guide.story = story;
+            guide.material = Additive("guide_light", Color.white);
 
             EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(), ScenePath);
             RihlaScenes.UpdateBuildSettings();
@@ -106,6 +111,131 @@ namespace Rihla.EditorTools
             m.SetColor("_BaseColor", c); m.SetFloat("_Cull", 0f);
             EditorUtility.SetDirty(m);
             return m;
+        }
+
+        /// <summary>A glowing see-through unlit material: what is drawn adds light to what is behind it.</summary>
+        static Material Additive(string name, Color c)
+        {
+            string p = Built + name + ".mat";
+            var m = AssetDatabase.LoadAssetAtPath<Material>(p);
+            if (!m) { m = new Material(Shader.Find("Universal Render Pipeline/Unlit")); AssetDatabase.CreateAsset(m, p); }
+            m.SetColor("_BaseColor", c);
+            m.SetFloat("_Surface", 1f); m.SetFloat("_Blend", 2f); m.SetFloat("_Cull", 0f);
+            m.SetFloat("_SrcBlend", (float)BlendMode.One); m.SetFloat("_DstBlend", (float)BlendMode.One);
+            m.SetFloat("_SrcBlendAlpha", (float)BlendMode.One); m.SetFloat("_DstBlendAlpha", (float)BlendMode.One);
+            m.SetFloat("_ZWrite", 0f);
+            m.SetOverrideTag("RenderType", "Transparent");
+            m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            m.renderQueue = (int)RenderQueue.Transparent;
+            EditorUtility.SetDirty(m);
+            return m;
+        }
+
+        /// <summary>
+        /// The ruin of Khan al-Ahmar beside the road (C1b): the stone walls of a courtyard inn, partly fallen, with its
+        /// gateway towards the road and a row of vaulted rooms inside. The shape is an estimate, not a survey of the
+        /// real remains (NEEDS_REVIEW H22).
+        /// </summary>
+        static Transform KhanAlAhmar(RoadPath road)
+        {
+            int pi = System.Array.FindIndex(road.places, p => p.id == "khan-al-ahmar");
+            if (pi < 0) return null;
+            var place = road.places[pi];
+            int i = 0; while (i < road.points.Length - 2 && road.distances[i] < place.roadDist) i++;
+            Vector3 r = road.points[i], d = road.points[Mathf.Min(road.points.Length - 1, i + 3)] - road.points[Mathf.Max(0, i - 3)]; d.y = 0f; d.Normalize();
+            Vector3 side = new Vector3(d.z, 0f, -d.x);
+            if (Vector3.Dot(side, place.position - r) < 0f) side = -side;
+            const float half = 14f, wallH = 4.2f, thick = 1.1f;
+            Vector3 c = r + side * (road.width / 2f + 6f + half); c.y = Ground(c.x, c.z);
+            var root = new GameObject("Khan al-Ahmar (ruin)").transform;
+            root.SetPositionAndRotation(c, Quaternion.LookRotation(-side)); // +z faces the road
+            var stone = Mat("khan_stone", new Color(0.86f, 0.7f, 0.56f), 0.12f);
+            var dark = Mat("khan_shadow", new Color(0.2f, 0.16f, 0.13f), 0.05f);
+            var rng = new System.Random(17);
+            void Block(string n, Vector3 local, Vector3 size, Material m, bool collide = true)
+            {
+                Vector3 w = root.TransformPoint(local);
+                float g = Ground(w.x, w.z) - c.y;
+                var b = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                b.name = n; b.transform.SetParent(root, false);
+                b.transform.localPosition = new Vector3(local.x, g + local.y + size.y / 2f - 0.75f, local.z);
+                b.transform.localScale = new Vector3(size.x, size.y + 1.5f, size.z);
+                b.GetComponent<MeshRenderer>().sharedMaterial = m;
+                if (!collide) Object.DestroyImmediate(b.GetComponent<Collider>());
+            }
+            // The four walls in 4 m stretches, some fallen low; a gap for the gate in the front wall.
+            for (int wall = 0; wall < 4; wall++)
+            {
+                for (float t = -half; t < half - 0.1f; t += 4f)
+                {
+                    float mid = t + 2f;
+                    if (wall == 0 && Mathf.Abs(mid) < 2.5f) continue; // the gateway
+                    double roll = rng.NextDouble();
+                    float h = roll < 0.25 ? 1.2f + (float)rng.NextDouble() : roll < 0.4 ? 2.4f : wallH + (float)rng.NextDouble() * 0.5f;
+                    Vector3 at, size;
+                    switch (wall)
+                    {
+                        case 0: at = new Vector3(mid, 0f, half); size = new Vector3(4.02f, h, thick); break;
+                        case 1: at = new Vector3(mid, 0f, -half); size = new Vector3(4.02f, h, thick); break;
+                        case 2: at = new Vector3(half, 0f, mid); size = new Vector3(thick, h, 4.02f); break;
+                        default: at = new Vector3(-half, 0f, mid); size = new Vector3(thick, h, 4.02f); break;
+                    }
+                    Block("wall", at, size, stone);
+                }
+            }
+            // The gateway: two tall piers, a lintel and a raised block over it, and the dark of the passage.
+            Block("gate pier", new Vector3(-2.6f, 0f, half + 0.3f), new Vector3(1.6f, 6f, 1.8f), stone);
+            Block("gate pier", new Vector3(2.6f, 0f, half + 0.3f), new Vector3(1.6f, 6f, 1.8f), stone);
+            Block("gate lintel", new Vector3(0f, 4.3f, half + 0.3f), new Vector3(3.8f, 1.7f, 1.8f), stone);
+            // A row of vaulted rooms along the back wall, their doorways dark.
+            for (int k = 0; k < 5; k++)
+            {
+                float x = -half + 3.4f + k * 5.3f;
+                if (k == 3) { Block("fallen room", new Vector3(x, 0f, -half + 2.6f), new Vector3(4.6f, 1.1f, 4f), stone); continue; }
+                Block("room", new Vector3(x, 0f, -half + 2.6f), new Vector3(4.8f, 3.4f, 4.2f), stone);
+                Block("doorway", new Vector3(x, 0f, -half + 4.72f), new Vector3(1.4f, 2.2f, 0.08f), dark, false);
+            }
+            // Fallen stones in the courtyard.
+            for (int k = 0; k < 14; k++)
+            {
+                float sz = 0.4f + (float)rng.NextDouble() * 0.6f;
+                Block("stone", new Vector3(((float)rng.NextDouble() - 0.5f) * 22f, 0f, ((float)rng.NextDouble() - 0.5f) * 18f), new Vector3(sz * 1.4f, sz * 0.7f, sz), stone, false);
+            }
+            return root;
+        }
+
+        /// <summary>
+        /// Where the shepherd crosses: near the distance down the road given in content/drive.json, where the ground on
+        /// both sides is closest to the height of the road, so the flock does not climb a cliff.
+        /// </summary>
+        static Flock FlockCrossing(RoadPath road)
+        {
+            var drive = JObject.Parse(File.ReadAllText(Content + "drive.json"));
+            float at = (float?)drive["flock"]?["at"] ?? 4900f;
+            float best = float.MaxValue; Vector3 bf = default, bt = default; float bestAt = at;
+            for (float a = at - 250f; a <= at + 250f; a += 10f)
+            {
+                Vector3 c = road.At(a), d = road.At(a + 4f) - road.At(a - 4f); d.y = 0f; d.Normalize();
+                Vector3 across = Vector3.Cross(Vector3.up, d);
+                Vector3 f = c - across * 15f, t = c + across * 17f;
+                f.y = Ground(f.x, f.z); t.y = Ground(t.x, t.z);
+                float mf = Ground((c.x + f.x) / 2f, (c.z + f.z) / 2f), mt = Ground((c.x + t.x) / 2f, (c.z + t.z) / 2f);
+                // The road should come straight and level towards it, so the child sees the flock from afar.
+                Vector3 back = road.At(a - 70f); Vector3 b0 = c - back; b0.y = 0f;
+                float bend = Vector3.Angle(b0, d), dip = Mathf.Max(0f, back.y - c.y - 4f);
+                for (float k = 10f; k < 70f; k += 10f)
+                {
+                    Vector3 q = road.At(a - k), line = Vector3.Lerp(c, back, k / 70f);
+                    bend = Mathf.Max(bend, Vector2.Distance(new Vector2(q.x, q.z), new Vector2(line.x, line.z)) * 3f);
+                }
+                float cost = Mathf.Abs(f.y - c.y) + Mathf.Abs(t.y - c.y) + Mathf.Abs(mf - c.y) + Mathf.Abs(mt - c.y) + Mathf.Abs(a - at) * 0.01f + bend * 0.25f + dip;
+                if (cost < best) { best = cost; bf = f; bt = t; bestAt = a; }
+            }
+            var go = new GameObject("Shepherd and flock");
+            var flock = go.AddComponent<Flock>(); flock.from = bf; flock.to = bt;
+            go.transform.position = bf;
+            Debug.Log($"[Rihla] flock crosses at {bestAt:0} m along the road (ground off the road within {best:0.0} m in all)");
+            return flock;
         }
 
         static Material Mat(string name, Color c, float smooth = 0.2f)
@@ -309,6 +439,7 @@ namespace Rihla.EditorTools
             var mat = Mat("marker", new Color(0.85f, 0.65f, 0.2f), 0.5f);
             foreach (var p in road.places)
             {
+                if (p.id == "khan-al-ahmar") continue; // the ruin of the khan stands there instead
                 var go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 go.name = p.id; go.transform.SetParent(parent);
                 Object.DestroyImmediate(go.GetComponent<Collider>());
