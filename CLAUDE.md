@@ -12,3 +12,4 @@
 - The browser build (`src/`, `index.html`) stays as the prototype for story and teaching content; do not delete it.
 - Free assets come from Poly Haven (CC0); record every asset, free or bought, in `ASSETS.md`.
 - History content lives in `content/history.json`; list every date and claim in `NEEDS_REVIEW.md` until checked.
+- Reference works for checking history and places are listed in `docs/SOURCES.md` (among them the Palestinica the owner named).
