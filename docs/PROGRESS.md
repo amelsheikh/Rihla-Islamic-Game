@@ -15,6 +15,7 @@
 | E1 — Chapter 1 teaching systems in Unity (owner's PC) | Done | Arabic and English UI, banners, journal page with Al-Isra 17:1, history beside "Al-Quds today", saving; 102 FPS. See below |
 | E2 — Walking Al-Quds, then and now (owner's PC, block-out) | Done | The walk from Bab al-Asbat to al-Masjid al-Aqsa at true scale with Jiddo, three clues and the first Time Lens reveal; 97-103 FPS. See below |
 | E3 — Realism on the owner's PC | Three passes done | Stone textures, arches, battlements, trees, sky; then doors, shop shutters, windows, roof domes, warm bounce light, ambient occlusion; then sound, and people in modest dress (Jiddo, Yusuf or Maryam, 55 townspeople with children and elders, in 1910 dress in the "then" view); 62-70 FPS. See below |
+| R4 — "As if visiting" on the laptop | Done 19 November 2026 | A photographed sky with clouds, weathered pale limestone, lane life (awnings, plants, shutters, arches across lanes; lamps, cables and water tanks only today), leafy trees, windows in the Dome of the Rock; 63-66 FPS. A prototype on the owner's Desktop. See below. The plan ahead is in `docs/ROADMAP.md` |
 
 ## Phase 1a: what works
 
@@ -166,6 +167,56 @@ Palestine comes after Chapter 1, "then and now" is central, and the world should
 walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
+
+## R4: "as if visiting", realism on the laptop (done 19 November 2026)
+
+The owner asked to take the graphics further, as if visiting, on this laptop for now (Intel HD Graphics), to
+revisit the plan, and for a prototype to test. The plan is now in `docs/ROADMAP.md`.
+
+What changed in the walk:
+
+- **A real sky.** A photographed morning sky with clouds (Poly Haven, CC0), turned so that its sun is where the
+  scene's sun is; the sun now stands 38 degrees up, as in the photograph.
+- **Light in the shade.** Unity was not using the sky colours set for the shade (its stored ambient light only
+  changes when lighting is baked), so a small script (`SkyFill.cs`) sets it when the scene starts: a cooler,
+  brighter fill from the sky, warm from the ground. Lanes in shade are now pale and cool, not brown.
+- **Weathered stone** (`Shaders/RihlaWeatheredStone.shader`, URP's Lit shader with a changed colour step): walls
+  are paler and creamier, like Jerusalem limestone; large and small patches of lighter and darker stone break up
+  the texture's repeat; hue changes from wall to wall; faint rain streaks run down the walls; grime and damp darken
+  the foot of every wall; paving has worn patches. At most three texture reads per pixel, for integrated graphics.
+- **Life in the lanes** (`RihlaWalkLife.cs`): 203 cloth awnings over shops, 224 potted plants by doors, wooden
+  shutters beside 1,400 windows, and 17 arches across narrow lanes where both sides are built, in both eras.
+  Only in today's view: 257 street lamps on iron brackets, 13 overhead cables, and black water tanks on 313
+  roofs. All of it is set dressing placed by code, not a record of particular houses (`NEEDS_REVIEW.md` H17).
+- **Trees** are now crowns of leaf cards (an alpha-tested leaf texture made by code) around a darker core,
+  instead of smooth balls.
+- **The Dome of the Rock** has tall arched windows in its tiled walls, and its generic tiles vary a little in
+  shade; the real tile patterns are still not copied (`NEEDS_REVIEW.md` R5).
+- Cost savings to stay above 60 FPS: small details flat on walls cast no shadows, leaf cards are drawn once
+  (two-sided material), and the stone shader was cut from five texture reads to three.
+
+Checks run:
+
+| Check | Result |
+|---|---|
+| Windows build, the walk by itself (`-walk -autowalk -newgame -quitafter 95`, the "then" view throughout) | **62.9 and 66.1 FPS** average, no errors (before the savings: 57-59.5) |
+| The prototype copy on the Desktop, 40 s of the walk | 61.0 FPS, no errors |
+| Views in both eras: lane, the Dome of the Rock, roofs from above | `docs/screenshots/r4-*.png` (interface hidden for the pictures) |
+
+The prototype for the owner: `Builds/Rihla-prototype-2026-11-19.zip` (75 MB, made by
+`tools/prototype/package.py`), unpacked to the owner's Desktop as **Rihla prototype**, with *1 - Walk in
+Al-Quds* and *2 - Drive from Al-Quds* start files and a *HOW TO PLAY* note. It contains the Cesium token, so
+it stays in the family.
+
+Known issues and what would help most next:
+
+- Buildings are still plain boxes of one height each, with flat roofs; the ground is flat (the Old City slopes).
+- The lamps' glass is a plain glowing box; the awnings are flat sheets.
+- The Dome of the Rock's tiles and the Qibli Mosque are still generic block-outs (`NEEDS_REVIEW.md` R5).
+- The FPS test runs in the "then" view; today's view adds lamps, cables and tanks (no shadows, small cost),
+  not measured separately.
+- After editing a builder script, wait for the editor's code reload before rebuilding the scene, or the old
+  code runs (it happened once in this pass).
 
 ## Phase E3: realism on the owner's PC, first pass (done 16 November 2026)
 

@@ -15,7 +15,7 @@ namespace Rihla.EditorTools
     /// from Generated/walk.json (OpenStreetMap, made by tools/build-walk.ts). Everything is a block-out: outlines
     /// are real, heights missing from OSM and the shapes of the domes are estimates (NEEDS_REVIEW.md H17).
     /// </summary>
-    public static class RihlaWalkBuilder
+    public static partial class RihlaWalkBuilder
     {
         public const string ScenePath = "Assets/Scenes/E2_AlQuds_Walk.unity";
         const string Built = "Assets/Rihla/Built/Walk/";
@@ -54,6 +54,7 @@ namespace Rihla.EditorTools
             Trees(json, platform);
             Facades(streets);
             Roofs();
+            var todayOnly = LaneLife(streets);
 
             var domeRenderer = DomeOfTheRock(Ring(domeB), out float domeR);
             DomeOfTheChain(Ring(chainB));
@@ -104,7 +105,7 @@ namespace Rihla.EditorTools
             lens.changing = new[] { domeRenderer };
             lens.nowColors = new[] { new Color(0.93f, 0.72f, 0.28f) }; lens.nowMetal = new[] { 0.9f };
             lens.thenColors = new[] { new Color(0.27f, 0.28f, 0.3f) }; lens.thenMetal = new[] { 0.35f };
-            lens.onlyThen = new GameObject[0]; lens.onlyNow = new GameObject[0];
+            lens.onlyThen = new GameObject[0]; lens.onlyNow = new[] { todayOnly };
 
             var sound = cam.gameObject.AddComponent<Soundscape>();
             sound.child = child; sound.jiddo = jiddo; sound.lens = lens;
@@ -137,20 +138,38 @@ namespace Rihla.EditorTools
             // Early morning: the sun low in the east, light travelling west.
             var sun = new GameObject("Sun").AddComponent<Light>();
             sun.type = LightType.Directional; sun.color = new Color(1f, 0.87f, 0.72f); sun.intensity = 1.4f;
-            sun.shadows = LightShadows.Soft; sun.shadowStrength = 0.8f; sun.transform.rotation = Quaternion.Euler(30f, -72f, 0f);
+            // 38 degrees up, to match the sun in the photographed sky below.
+            sun.shadows = LightShadows.Soft; sun.shadowStrength = 0.8f; sun.transform.rotation = Quaternion.Euler(38f, -72f, 0f);
             RenderSettings.sun = sun;
+            // A photographed morning sky with clouds (Poly Haven, CC0), turned so its sun sits where the scene's
+            // sun is: in the file the sun is at u = 0.5996 (35.9 degrees from the panorama's centre), the scene's
+            // sun at -18 degrees, so the sky turns by -17.9 degrees.
+            const string hdr = Tex + "Sky/kloofendal_38d_partly_cloudy_puresky_2k.hdr";
+            var hdrImp = AssetImporter.GetAtPath(hdr) as TextureImporter;
+            if (hdrImp && (hdrImp.mipmapEnabled || hdrImp.wrapModeV != TextureWrapMode.Clamp))
+            {
+                hdrImp.mipmapEnabled = false; hdrImp.wrapModeU = TextureWrapMode.Repeat; hdrImp.wrapModeV = TextureWrapMode.Clamp;
+                hdrImp.maxTextureSize = 2048; hdrImp.textureCompression = TextureImporterCompression.CompressedHQ;
+                hdrImp.SaveAndReimport();
+            }
             string skyPath = Built + "Sky.mat";
             var sky = AssetDatabase.LoadAssetAtPath<Material>(skyPath);
-            if (!sky) { sky = new Material(Shader.Find("Skybox/Procedural")); AssetDatabase.CreateAsset(sky, skyPath); }
-            sky.SetFloat("_SunSize", 0.035f); sky.SetFloat("_AtmosphereThickness", 1.15f); sky.SetFloat("_Exposure", 1.25f);
-            sky.SetColor("_SkyTint", new Color(0.52f, 0.58f, 0.68f)); sky.SetColor("_GroundColor", new Color(0.55f, 0.5f, 0.45f));
+            if (!sky) { sky = new Material(Shader.Find("Skybox/Panoramic")); AssetDatabase.CreateAsset(sky, skyPath); }
+            sky.shader = Shader.Find("Skybox/Panoramic");
+            sky.SetTexture("_MainTex", AssetDatabase.LoadAssetAtPath<Texture2D>(hdr));
+            sky.SetFloat("_Mapping", 1f); sky.SetFloat("_ImageType", 0f); sky.SetFloat("_Rotation", 342.1f);
+            sky.SetFloat("_Exposure", 0.95f); sky.SetColor("_Tint", new Color(0.5f, 0.5f, 0.5f));
             EditorUtility.SetDirty(sky);
             RenderSettings.skybox = sky;
             // Light bouncing off the pale stone fills the shadows of the lanes with warmth: sky above, warm stone around.
             RenderSettings.ambientMode = AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(0.66f, 0.72f, 0.84f);
-            RenderSettings.ambientEquatorColor = new Color(0.78f, 0.69f, 0.57f);
-            RenderSettings.ambientGroundColor = new Color(0.62f, 0.52f, 0.4f);
+            // R4: a cooler, brighter sky fill (shade in the lanes is lit mostly by the blue sky), warm from below.
+            RenderSettings.ambientSkyColor = new Color(0.74f, 0.81f, 0.95f);
+            RenderSettings.ambientEquatorColor = new Color(0.76f, 0.74f, 0.7f);
+            RenderSettings.ambientGroundColor = new Color(0.66f, 0.57f, 0.46f);
+            // The stored ambient probe only changes when lighting is baked, so the game sets it from these colours.
+            var fill = sun.gameObject.AddComponent<SkyFill>();
+            fill.sky = RenderSettings.ambientSkyColor; fill.horizon = RenderSettings.ambientEquatorColor; fill.ground = RenderSettings.ambientGroundColor;
             Look();
             RenderSettings.fog = true; RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogColor = new Color(0.86f, 0.81f, 0.72f); RenderSettings.fogStartDistance = 180f; RenderSettings.fogEndDistance = 1100f;
@@ -329,8 +348,10 @@ namespace Rihla.EditorTools
                 Cap(grass, ring, (Inside(platform, c) ? Platform : 0f) + 0.06f);
             }
             var trunks = Mesh("Tree trunks", Mat("bark", new Color(0.33f, 0.27f, 0.21f)), true);
-            var olive = Mesh("Olive crowns", Mat("olive", new Color(0.47f, 0.52f, 0.38f), 0.1f), false);
-            var cypress = Mesh("Cypress crowns", Mat("cypress", new Color(0.2f, 0.3f, 0.19f), 0.1f), false);
+            var olive = Mesh("Olive crowns (core)", Mat("olive", new Color(0.3f, 0.34f, 0.24f), 0.05f), false);
+            var cypress = Mesh("Cypress crowns (core)", Mat("cypress", new Color(0.12f, 0.19f, 0.11f), 0.05f), false);
+            var oliveLeaves = Mesh("Olive leaves", Foliage("oliveleaf", new Color(0.86f, 0.92f, 0.78f)), false);
+            var cypressLeaves = Mesh("Cypress leaves", Foliage("cypressleaf", new Color(0.36f, 0.5f, 0.33f)), false);
             int i = 0;
             foreach (var t in json["trees"] ?? new JArray())
             {
@@ -342,15 +363,17 @@ namespace Rihla.EditorTools
                 {
                     float h = 8f + r * 10f;
                     Cylinder(trunks, at, 0.18f, 1.2f, 6);
-                    Ellipsoid(cypress, at + Vector3.up * (1f + h / 2f), new Vector3(1.1f, h / 2f, 1.1f), 8, 7);
+                    Ellipsoid(cypress, at + Vector3.up * (1f + h / 2f), new Vector3(0.75f, h / 2f * 0.9f, 0.75f), 8, 7);
+                    LeafCrown(cypressLeaves, at + Vector3.up * (1f + h / 2f), new Vector3(1.15f, h / 2f, 1.15f), Mathf.RoundToInt(h * 9f), 0.8f, r);
                 }
                 else
                 {
                     float s = 0.8f + r * 0.6f;
                     Cylinder(trunks, at, 0.22f * s, 1.7f * s, 6);
-                    Ellipsoid(olive, at + new Vector3(0f, 2.6f * s, 0f), new Vector3(2.4f, 1.3f, 2.4f) * s, 8, 6);
-                    Ellipsoid(olive, at + new Vector3(0.9f, 2.2f * s, 0.5f) * s, new Vector3(1.5f, 1f, 1.5f) * s, 7, 5);
-                    Ellipsoid(olive, at + new Vector3(-0.8f, 2.3f * s, -0.6f) * s, new Vector3(1.4f, 0.9f, 1.4f) * s, 7, 5);
+                    Ellipsoid(olive, at + new Vector3(0f, 2.6f * s, 0f), new Vector3(1.7f, 0.9f, 1.7f) * s, 8, 6);
+                    LeafCrown(oliveLeaves, at + new Vector3(0f, 2.6f * s, 0f), new Vector3(2.5f, 1.35f, 2.5f) * s, 60, 1.1f, r);
+                    LeafCrown(oliveLeaves, at + new Vector3(0.9f, 2.2f * s, 0.5f) * s, new Vector3(1.6f, 1.05f, 1.6f) * s, 22, 0.9f, r + 0.31f);
+                    LeafCrown(oliveLeaves, at + new Vector3(-0.8f, 2.3f * s, -0.6f) * s, new Vector3(1.5f, 0.95f, 1.5f) * s, 20, 0.9f, r + 0.67f);
                 }
             }
         }
@@ -400,6 +423,7 @@ namespace Rihla.EditorTools
             var segs = new List<(Vector2 a, Vector2 b)>();
             foreach (var st in streets) for (int i = 0; i < st.line.Count - 1; i++) segs.Add((st.line[i], st.line[i + 1]));
             int n = 0;
+            openings.Clear(); windowsAt.Clear(); streetWalls.Clear();
             foreach (var (ring, base0, h, id) in houses)
             {
                 for (int i = 0; i < ring.Count; i++)
@@ -416,6 +440,7 @@ namespace Rihla.EditorTools
                     }
                     if (!faces) continue;
                     n++;
+                    streetWalls.Add((a, d, outN, len, base0, h));
                     // Ground floor: a doorway, or a shop with a painted shutter, every 6-9 m.
                     int bays = Mathf.Max(1, Mathf.FloorToInt(len / 7f));
                     for (int k = 0; k < bays; k++)
@@ -426,6 +451,7 @@ namespace Rihla.EditorTools
                         if (u - w / 2f < 0.4f || u + w / 2f > len - 0.4f) continue;
                         Panel(frames, a, d, outN, u, w + 0.5f, 0f, top + 0.35f, base0, 0.03f, true);
                         Panel(shop ? shutters : doors, a, d, outN, u, w, 0f, top, base0, 0.06f, true);
+                        openings.Add(new Opening { a = a, d = d, outN = outN, u = u, w = w, top = top, base0 = base0, shop = shop });
                     }
                     // Upper floors: windows every 3.2 m, from 4 m up, if the house is tall enough.
                     for (float y = 4f; y + 1.3f < h - 0.6f; y += 3.4f)
@@ -433,6 +459,7 @@ namespace Rihla.EditorTools
                         {
                             Panel(frames, a, d, outN, u, 1.1f, y - 0.15f, y + 1.35f, base0, 0.03f, false);
                             Panel(windows, a, d, outN, u, 0.75f, y, y + 1.15f, base0, 0.06f, false);
+                            windowsAt.Add(new WindowAt { a = a, d = d, outN = outN, u = u, y = y, base0 = base0 });
                         }
                 }
             }
@@ -572,6 +599,23 @@ namespace Rihla.EditorTools
             var root = new GameObject("Dome of the Rock").transform;
             Prism(Mesh("Marble", Mat("marble", new Color(0.93f, 0.92f, 0.89f), 0.4f), true, root), ring, Platform, Platform + 5.5f);
             Prism(Mesh("Tiles", TileMat(), true, root), ring, Platform + 5.5f, Platform + 11f);
+            // R4: tall arched windows set into the tiled walls, evenly along each side, in light frames. How many
+            // per side, and their size, are estimates (NEEDS_REVIEW.md H17); the real tile patterns are not copied (R5).
+            var frames = Mesh("Window frames (Dome of the Rock)", Mat("domeframe", new Color(0.86f, 0.88f, 0.86f), 0.3f), false, root);
+            var glass = Mesh("Windows (Dome of the Rock)", Mat("domeglass", new Color(0.05f, 0.07f, 0.1f), 0.8f), false, root);
+            for (int i = 0; i < ring.Count; i++)
+            {
+                Vector2 a = ring[i], b = ring[(i + 1) % ring.Count]; float len = (b - a).magnitude;
+                if (len < 5f) continue;
+                Vector2 dd = (b - a) / len, outN = new Vector2(dd.y, -dd.x);
+                int k = Mathf.Max(3, Mathf.FloorToInt(len / 3.2f));
+                for (int w = 0; w < k; w++)
+                {
+                    float u = len * (w + 0.5f) / k;
+                    Panel(frames, a, dd, outN, u, 1.75f, Platform + 6.1f, Platform + 10.3f, 0f, 0.04f, true);
+                    Panel(glass, a, dd, outN, u, 1.25f, Platform + 6.4f, Platform + 9.9f, 0f, 0.07f, true);
+                }
+            }
             float drumR = radius * 0.42f, top = Platform + 11f;
             var drum = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             drum.name = "Drum"; drum.transform.SetParent(root); drum.transform.position = new Vector3(c.x, top + 3f, c.y);
@@ -591,10 +635,10 @@ namespace Rihla.EditorTools
         /// </summary>
         static Material TileMat()
         {
-            string texPath = Built + "tiles_generic.png";
+            string texPath = Built + "tiles_generic2.png";
             if (!File.Exists(texPath))
             {
-                const int N = 128; var t = new Texture2D(N, N, TextureFormat.RGB24, true);
+                const int N = 256; var t = new Texture2D(N, N, TextureFormat.RGB24, true);
                 Color blue = new Color(0.12f, 0.33f, 0.58f), joint = new Color(0.82f, 0.85f, 0.86f), turq = new Color(0.2f, 0.62f, 0.66f);
                 for (int y = 0; y < N; y++)
                     for (int x = 0; x < N; x++)
@@ -602,14 +646,16 @@ namespace Rihla.EditorTools
                         int u = x % 32, v = y % 32;
                         bool j = u < 2 || v < 2;
                         bool sq = Mathf.Abs(u - 16) + Mathf.Abs(v - 16) < 7;
-                        t.SetPixel(x, y, j ? joint : sq ? turq : blue);
+                        // R4: each tile a little lighter or darker, as glazed tiles are.
+                        float vary = 0.88f + 0.24f * Hash(new Vector2(x / 32, y / 32) * 3.7f);
+                        t.SetPixel(x, y, j ? joint : (sq ? turq : blue) * vary);
                     }
                 t.Apply(); File.WriteAllBytes(texPath, t.EncodeToPNG()); Object.DestroyImmediate(t);
                 AssetDatabase.ImportAsset(texPath);
             }
             var m = Mat("tiles", Color.white, 0.55f);
             m.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(texPath));
-            m.mainTextureScale = new Vector2(1f / 1.2f, 1f / 1.2f); // tiles about 30 cm across
+            m.mainTextureScale = new Vector2(1f / 2.4f, 1f / 2.4f); // tiles about 30 cm across
             EditorUtility.SetDirty(m);
             return m;
         }
@@ -853,6 +899,8 @@ namespace Rihla.EditorTools
         {
             public readonly List<Vector3> v = new List<Vector3>(); public readonly List<int> t = new List<int>();
             public readonly List<Vector2> uv = new List<Vector2>();
+            /// <summary>Optional normals, one per vertex; otherwise they are calculated.</summary>
+            public readonly List<Vector3> n = new List<Vector3>();
             public string name; public Material mat; public bool collider; public Transform parent;
         }
 
@@ -881,12 +929,14 @@ namespace Rihla.EditorTools
         {
             var m = new UnityEngine.Mesh { name = mb.name, indexFormat = IndexFormat.UInt32 };
             m.SetVertices(mb.v); m.SetTriangles(mb.t, 0); m.SetUVs(0, mb.uv);
-            m.RecalculateNormals(); m.RecalculateBounds();
+            if (mb.n.Count == mb.v.Count) m.SetNormals(mb.n); else m.RecalculateNormals();
+            m.RecalculateBounds();
             string p = Built + Safe(mb.name) + ".asset";
             AssetDatabase.DeleteAsset(p); AssetDatabase.CreateAsset(m, p);
             var go = new GameObject(mb.name); if (mb.parent) go.transform.SetParent(mb.parent);
             go.AddComponent<MeshFilter>().sharedMesh = m;
-            go.AddComponent<MeshRenderer>().sharedMaterial = mb.mat;
+            var mr = go.AddComponent<MeshRenderer>(); mr.sharedMaterial = mb.mat;
+            if (NoShadow.Contains(mb.name)) mr.shadowCastingMode = ShadowCastingMode.Off;
             if (mb.collider) go.AddComponent<MeshCollider>().sharedMesh = m;
             go.isStatic = true;
         }
@@ -993,6 +1043,10 @@ namespace Rihla.EditorTools
             ["marble"] = ("PolyHaven/marble_01_diff_1k.jpg", "PolyHaven/marble_01_nor_gl_1k.jpg", 2f, Color.white),
         };
 
+        /// <summary>Materials drawn with the weathered stone shader (R4): walls and houses, and paving.</summary>
+        static readonly HashSet<string> WeatheredWall = new HashSet<string> { "wall", "gate", "lime1", "lime2", "lime3", "frame", "roofdome" };
+        static readonly HashSet<string> WeatheredGround = new HashSet<string> { "ground", "courtyard", "street", "platform" };
+
         static Texture2D LoadTex(string path, bool normal)
         {
             string full = Tex + path;
@@ -1007,6 +1061,15 @@ namespace Rihla.EditorTools
             string p = Built + name + ".mat";
             var m = AssetDatabase.LoadAssetAtPath<Material>(p);
             if (!m) { m = new Material(Shader.Find("Universal Render Pipeline/Lit")); AssetDatabase.CreateAsset(m, p); }
+            bool ground = WeatheredGround.Contains(name), weathered = ground || WeatheredWall.Contains(name);
+            var shader = Shader.Find(weathered ? "Rihla/Weathered Stone" : "Universal Render Pipeline/Lit");
+            if (shader && m.shader != shader) m.shader = shader;
+            if (weathered)
+            {
+                m.SetTexture("_RihlaNoise", NoiseTexture());
+                m.SetFloat("_RihlaGround", ground ? 1f : 0f);
+                if (ground) m.EnableKeyword("_RIHLA_GROUND"); else m.DisableKeyword("_RIHLA_GROUND");
+            }
             if (Textured.TryGetValue(name, out var tx))
             {
                 c = tx.tint;

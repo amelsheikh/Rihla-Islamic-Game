@@ -1,0 +1,61 @@
+Rihla: Roads Without Borders - prototype (19 November 2026)
+===========================================================
+
+This is a test build for the family. It is not finished, and some facts in it are
+still waiting to be checked.
+
+Please do not share this folder or the zip outside the family. It contains the
+project's private key for the 3D map of Al-Quds today.
+
+
+HOW TO START
+------------
+Double-click one of these:
+
+  1 - Walk in Al-Quds.bat     Start at Bab al-Asbat and walk with Jiddo to
+                               al-Masjid al-Aqsa (about 10 minutes).
+  2 - Drive from Al-Quds.bat  Start on the road from Al-Quds down to Ariha.
+
+The first time, Windows may say "Windows protected your PC". Click
+"More info", then "Run anyway". This appears because the game is not signed.
+
+On the first screen, choose Yusuf or Maryam. Each start begins a fresh game.
+
+
+WALKING IN AL-QUDS
+------------------
+  W A S D          walk
+  Shift            run
+  Right mouse      look around
+  V                first person / behind the child
+  E                look closely at a clue
+  T                Time Lens: about 1910 / today (after the first reveal)
+  C                choose Yusuf or Maryam
+  G                back to the car
+  L                English / Arabic
+  Esc              close a page or the menu
+
+Follow Jiddo. Find the three clues: the lions on Bab al-Asbat, the tiles of the
+Dome of the Rock, and the dome of the Qibli Mosque.
+
+
+DRIVING
+-------
+  Arrow keys or W A S D   drive
+  Space                   handbrake
+  E                       get out and walk (when stopped)
+  P                       Jiddo drives
+  C                       fly over Al-Quds today
+  J                       journal
+  L                       English / Arabic
+  Esc                     menu
+
+
+WHAT TO LOOK FOR WHEN YOU TEST
+------------------------------
+- Does it run smoothly on your laptop?
+- Does it feel like walking in the Old City? What looks wrong or missing?
+- Is anything confusing for the children?
+- Is any text, Arabic or English, wrong?
+
+Write down what you notice and tell Claude in the next session.
