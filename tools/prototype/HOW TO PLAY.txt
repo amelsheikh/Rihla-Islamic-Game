@@ -46,6 +46,7 @@ WALKING IN AL-QUDS
   G                back to the car
   L                English / Arabic
   Q                picture: Fast (laptop) or Best (graphics card)
+  I                the box at the top: narrow or full (or its small + / – button)
   Esc              close a page or the menu
 
 The box at the top of the screen always says what to do next. Golden arrows on
@@ -74,6 +75,7 @@ DRIVING
   J                       journal
   L                       English / Arabic
   Q                       picture: Fast (laptop) or Best (graphics card)
+  I                       the box at the top: narrow or full (or its small + / – button)
   Esc                     menu
   R                       back onto the road
 

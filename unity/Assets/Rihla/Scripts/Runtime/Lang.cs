@@ -108,6 +108,8 @@ namespace Rihla
         public string[] stops = new string[0];
         /// <summary>The picture setting: "" (chosen from the graphics chip), "fast" or "best" (see Quality).</summary>
         public string quality = "";
+        /// <summary>The box at the top (speed, height, place) folded to its narrow form.</summary>
+        public bool hudSmall;
         public bool hasPosition;
         public float x, y, z, yaw;
 

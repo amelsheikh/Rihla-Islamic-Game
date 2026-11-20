@@ -21,6 +21,7 @@
 | C1b (first part) — Guidance on the drive | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19d.zip` on the Desktop. The road down to Ariha now has the walk's goal box and golden arrows: to the page at Khan al-Hatruri, to where the road goes below the sea, then to Ariha; back to the road, back to the car, Jiddo driving. 108 FPS with Jiddo driving. See below |
 | C1b (second part) — Jiddo's remarks, Khan al-Ahmar, the shepherd, a softer guide | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19e.zip` on the Desktop. The golden arrows on the road are replaced by one soft golden arrow in the air ahead with a pool of light under it; Jiddo talks about the land at nine places; a stop at the ruin of Khan al-Ahmar; a shepherd crosses with his flock and the child waits. 100 FPS with Jiddo driving. See below |
 | C1c (first part) — Ariha on foot; a more realistic car, road and roadside | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19f.zip` on the Desktop. Textured land and asphalt, edge lines, posts, rails, power lines, shrubs, palm groves and houses, a shaped car with real wheels; in Ariha the spring, Tell al-Sultan and its tower, three clues, Umm Khalil's dates, her question and Page 2. 47.5 FPS with Jiddo driving (was 100): see below |
+| The box at the top can be made narrow | Done 20 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-20b.zip` on the Desktop. A small – / + button in its corner (or I) and saved; see below |
 | Picture setting: Fast or Best | Done 20 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-20.zip` on the Desktop. A button at the top (or Q) and Auto on first start. Fast on the laptop: **73.3 FPS** over the 15-minute drive (was 47.5); Best is for a graphics card: see below |
 
 ## Phase 1a: what works
@@ -173,6 +174,24 @@ Palestine comes after Chapter 1, "then and now" is central, and the world should
 walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
+
+## The box at the top can be made narrow (done 20 November 2026)
+
+The owner noticed that the box with the speed and the height above sea level is big and takes much of the screen,
+and asked for a narrower form with the least information, shown nicely (`RihlaUI.cs`).
+
+- A small **–** button in the box's corner (or the **I** key) folds it to a narrow box (about 170 pixels wide instead
+  of 380): the speed (or, on foot, the walk's title and clues found), the height above or below sea level, and the
+  place's name. The distance, the place in the other language, the keys and the fps are hidden. **+** brings the full
+  box back. The choice is saved; the full box stays the default, so new players see the keys.
+- Mirrored in Arabic (the box and its button on the right). Tooltip: "Make this box smaller (I)" / "صغّر هذا المربّع (I)".
+- Also fixed: in the editor, the picture setting now puts the project's own render settings back when play stops
+  (they had been left pointing at a destroyed copy, which gave an error during the next build).
+
+| Check | Result |
+|---|---|
+| In the editor, near Ariha, English and Arabic | Full and narrow boxes as intended: `docs/screenshots/hud-full.png`, `hud-small.png`, `hud-small-ar.png` |
+| Windows build, Arabic, Jiddo driving, 2 minutes | 79.3 FPS (Fast), no errors |
 
 ## The picture setting: Fast or Best (done 20 November 2026)
 

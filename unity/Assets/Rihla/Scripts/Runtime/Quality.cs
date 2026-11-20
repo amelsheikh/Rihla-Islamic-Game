@@ -70,7 +70,12 @@ namespace Rihla
                 var src = QualitySettings.renderPipeline as UniversalRenderPipelineAsset ?? GraphicsSettings.defaultRenderPipeline as UniversalRenderPipelineAsset;
                 if (!src) return;
                 copy = UnityEngine.Object.Instantiate(src); copy.name = src.name + " (Rihla picture)";
+                copy.hideFlags = HideFlags.DontSave;
                 QualitySettings.renderPipeline = copy;
+                // In the editor, put the project's own asset back when play stops: otherwise the quality level keeps
+                // pointing at the copy, which is destroyed, and the next build fails to list its assets.
+                if (Application.isEditor)
+                    Application.quitting += () => { QualitySettings.renderPipeline = src; copy = null; };
             }
             copy.renderScale = Best ? 1f : 0.6f;
             copy.msaaSampleCount = Best ? 4 : 1;

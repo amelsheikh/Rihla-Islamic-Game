@@ -9,7 +9,7 @@ namespace Rihla
     /// The game's interface in English and Arabic, built with UI Toolkit. Text uses the Advanced text generator,
     /// which joins Arabic letters and lays out right-to-left text properly, and the Amiri typeface. The whole
     /// layout mirrors when the language is Arabic. Controllers (Teaching, AlQudsFlyover) fill it every frame.
-    /// Keys: L language, Q picture (Fast or Best), J journal, H history, Esc or Enter closes a page.
+    /// Keys: L language, Q picture (Fast or Best), I the box at the top narrow or full, J journal, H history, Esc or Enter closes a page.
     /// </summary>
     public class RihlaUI : MonoBehaviour
     {
@@ -27,7 +27,7 @@ namespace Rihla
         VisualElement root, hud, buttons, banner, modal, sheet, body, subtitle, goal, fade;
         Label goalText, goalSub; float fadeFrom, fadeTo, fadeTime, fadeLength;
         Label speed, line1, line2, placeMain, placeSub, hint, fps, bannerTitle, bannerSub, subWho, subText;
-        Button langBtn, qualityBtn, journalBtn, historyBtn, closeBtn;
+        Button hudBtn, langBtn, qualityBtn, journalBtn, historyBtn, closeBtn;
         float bannerTimer, subtitleTimer; Action onClose, rebuild; float savedTimeScale = 1f;
 
         void Awake()
@@ -99,7 +99,18 @@ namespace Rihla
             placeMain = Text("", 22, true); placeSub = Text("", 15, false, new Color(0.85f, 0.82f, 0.75f));
             hint = Text("", 15, false, new Color(0.85f, 0.82f, 0.75f)); fps = Text("", 12, false, new Color(0.7f, 0.68f, 0.62f));
             placeMain.style.marginTop = 6;
-            hud.Add(speed); hud.Add(line1); hud.Add(line2); hud.Add(placeMain); hud.Add(placeSub); hud.Add(hint); hud.Add(fps);
+            // The first row: the speed (or the walk's title) and the small button that folds the box (or I).
+            var top = new VisualElement(); top.style.flexDirection = FlexDirection.Row; top.style.alignItems = Align.Center;
+            top.pickingMode = PickingMode.Ignore; speed.style.flexGrow = 1; speed.style.flexShrink = 1;
+            hudBtn = new Button(ToggleHudSize); hudBtn.style.unityFontDefinition = FontDefinition.FromFont(bold ? bold : regular);
+            hudBtn.style.fontSize = 18; hudBtn.style.color = Gold; hudBtn.style.backgroundColor = new Color(0f, 0f, 0f, 0.25f);
+            hudBtn.style.width = 26; hudBtn.style.height = 24; hudBtn.style.paddingLeft = hudBtn.style.paddingRight = 0;
+            hudBtn.style.paddingTop = hudBtn.style.paddingBottom = 0; hudBtn.style.marginLeft = hudBtn.style.marginRight = 6;
+            hudBtn.style.borderTopWidth = hudBtn.style.borderBottomWidth = hudBtn.style.borderLeftWidth = hudBtn.style.borderRightWidth = 1;
+            hudBtn.style.borderTopColor = hudBtn.style.borderBottomColor = hudBtn.style.borderLeftColor = hudBtn.style.borderRightColor = new Color(0.91f, 0.78f, 0.42f, 0.6f);
+            Round(hudBtn, 6); hudBtn.style.alignSelf = Align.FlexStart;
+            top.Add(speed); top.Add(hudBtn);
+            hud.Add(top); hud.Add(line1); hud.Add(line2); hud.Add(placeMain); hud.Add(placeSub); hud.Add(hint); hud.Add(fps);
             root.Add(hud);
 
             // Buttons (the opposite top corner).
@@ -210,6 +221,8 @@ namespace Rihla
             hud.style.left = ar ? StyleKeyword.Auto : 14; hud.style.right = ar ? 14 : StyleKeyword.Auto;
             buttons.style.right = ar ? StyleKeyword.Auto : 10; buttons.style.left = ar ? 10 : StyleKeyword.Auto;
             buttons.style.flexDirection = ar ? FlexDirection.RowReverse : FlexDirection.Row;
+            hudBtn.parent.style.flexDirection = ar ? FlexDirection.RowReverse : FlexDirection.Row;
+            ApplyHudSize();
             langBtn.text = ar ? "English" : "عربي";
             qualityBtn.text = Lang.T(Quality.Best ? "q.best" : "q.fast");
             journalBtn.text = Lang.T("journal");
@@ -229,12 +242,40 @@ namespace Rihla
 
         // ------------------------------------------------------------------ what controllers call
 
+        /// <summary>
+        /// The box at the top in full (speed, height, trip, place in both languages, the keys, fps) or narrow
+        /// (speed, height and the place only), chosen with the small button in its corner or I, and saved.
+        /// </summary>
+        public void ToggleHudSize() { SaveData.Current.hudSmall = !SaveData.Current.hudSmall; SaveData.Save(); ApplyHudSize(); }
+
+        void ApplyHudSize()
+        {
+            bool small = SaveData.Current.hudSmall;
+            hud.style.width = small ? StyleKeyword.Auto : 380;
+            hud.style.minWidth = small ? 170 : StyleKeyword.Auto; hud.style.maxWidth = small ? 300 : StyleKeyword.None;
+            Pad(hud, small ? 6 : 10, small ? 12 : 14);
+            speed.style.fontSize = small ? 22 : 30;
+            line1.style.fontSize = small ? 15 : 17;
+            placeMain.style.fontSize = small ? 17 : 22; placeMain.style.marginTop = small ? 2 : 6;
+            hudBtn.text = small ? "+" : "–";
+            hudBtn.tooltip = Lang.T(small ? "u.hudBig" : "u.hudSmall");
+            ShowHudLines();
+        }
+
+        void ShowHudLines()
+        {
+            bool small = SaveData.Current.hudSmall;
+            DisplayStyle Show(bool v) => v ? DisplayStyle.Flex : DisplayStyle.None;
+            line2.style.display = Show(!small && !string.IsNullOrEmpty(line2.text));
+            hint.style.display = Show(!small && !string.IsNullOrEmpty(hint.text));
+            placeSub.style.display = fps.style.display = Show(!small);
+        }
+
         public void SetHud(string big, string a, string b, string place, string placeOther, string hintText)
         {
             speed.text = big; line1.text = a; line2.text = b;
             placeMain.text = place; placeSub.text = placeOther; hint.text = hintText;
-            line2.style.display = string.IsNullOrEmpty(b) ? DisplayStyle.None : DisplayStyle.Flex;
-            hint.style.display = string.IsNullOrEmpty(hintText) ? DisplayStyle.None : DisplayStyle.Flex;
+            ShowHudLines();
         }
 
         /// <summary>Shows a line spoken by someone (for example Jiddo) at the bottom of the screen.</summary>
@@ -413,6 +454,7 @@ namespace Rihla
             }
             if (kb.lKey.wasPressedThisFrame) Lang.Toggle();
             if (kb.qKey.wasPressedThisFrame) Quality.Toggle();
+            if (kb.iKey.wasPressedThisFrame) ToggleHudSize();
             if (kb.jKey.wasPressedThisFrame && journalBtn.style.display == DisplayStyle.Flex) OnJournal?.Invoke();
             if (kb.hKey.wasPressedThisFrame && historyBtn.style.display == DisplayStyle.Flex) OnHistory?.Invoke();
         }
