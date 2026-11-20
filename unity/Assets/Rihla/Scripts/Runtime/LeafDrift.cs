@@ -14,6 +14,11 @@ namespace Rihla
         /// <summary>Which way the breeze blows (from the sea in the west, towards the east: an estimate).</summary>
         public Vector3 wind = new Vector3(1f, 0f, 0.3f);
         public float rate = 16f;
+        /// <summary>Fine dust instead of leaves (the open desert road): pale specks that blow past in every gust,
+        /// with no trees needed.</summary>
+        public bool dust;
+        /// <summary>The leaves' colours (olive leaves by default; dry palm bits in Ariha).</summary>
+        public Color colourA = new Color(0.42f, 0.46f, 0.28f), colourB = new Color(0.62f, 0.52f, 0.26f);
         ParticleSystem ps;
 
         void Awake()
@@ -30,14 +35,21 @@ namespace Rihla
             main.gravityModifier = 0.035f;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.maxParticles = 160;
-            main.startColor = new ParticleSystem.MinMaxGradient(new Color(0.42f, 0.46f, 0.28f), new Color(0.62f, 0.52f, 0.26f));
+            main.startColor = new ParticleSystem.MinMaxGradient(colourA, colourB);
+            if (dust)
+            {
+                main.startColor = new ParticleSystem.MinMaxGradient(new Color(0.86f, 0.8f, 0.68f, 0.55f), new Color(0.78f, 0.7f, 0.56f, 0.35f));
+                main.startSize = new ParticleSystem.MinMaxCurve(0.012f, 0.03f); main.gravityModifier = 0.005f; main.maxParticles = 400;
+                main.startLifetime = new ParticleSystem.MinMaxCurve(3f, 6f);
+            }
             var em = ps.emission; em.rateOverTime = 0f;
             var sh = ps.shape; sh.enabled = true; sh.shapeType = ParticleSystemShapeType.Box; sh.scale = new Vector3(24f, 5f, 24f);
             var rot = ps.rotationOverLifetime; rot.enabled = true; rot.separateAxes = true;
             rot.x = new ParticleSystem.MinMaxCurve(-4f, 4f); rot.y = new ParticleSystem.MinMaxCurve(-3f, 3f); rot.z = new ParticleSystem.MinMaxCurve(-4f, 4f);
             var noise = ps.noise; noise.enabled = true; noise.strength = 0.5f; noise.frequency = 0.35f; noise.scrollSpeed = 0.3f;
             var r = GetComponent<ParticleSystemRenderer>();
-            r.renderMode = ParticleSystemRenderMode.Mesh; r.mesh = Leaf();
+            if (dust) r.renderMode = ParticleSystemRenderMode.Billboard;
+            else { r.renderMode = ParticleSystemRenderMode.Mesh; r.mesh = Leaf(); }
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; r.receiveShadows = false;
             ps.Play();
         }
@@ -46,9 +58,10 @@ namespace Rihla
         {
             if (follow) transform.position = follow.position + Vector3.up * 2.5f + Vector3.ProjectOnPlane(follow.forward, Vector3.up).normalized * 5f;
             float g = Soundscape.Gust;
-            var em = ps.emission; em.rateOverTime = rate * Soundscape.Leafiness * Mathf.Clamp01(g * 1.8f - 0.35f);
+            var em = ps.emission;
+            em.rateOverTime = dust ? rate * Mathf.Clamp01(g * 2f - 0.5f) : rate * Soundscape.Leafiness * Mathf.Clamp01(g * 1.8f - 0.35f);
             var v = ps.velocityOverLifetime; v.enabled = true; v.space = ParticleSystemSimulationSpace.World;
-            Vector3 w = wind.normalized * (0.4f + 2.2f * g);
+            Vector3 w = wind.normalized * (0.4f + 2.2f * g) * (dust ? 1.8f : 1f);
             v.x = new ParticleSystem.MinMaxCurve(w.x * 0.6f, w.x * 1.2f);
             v.y = new ParticleSystem.MinMaxCurve(-0.25f, 0.15f);
             v.z = new ParticleSystem.MinMaxCurve(w.z * 0.6f, w.z * 1.2f);

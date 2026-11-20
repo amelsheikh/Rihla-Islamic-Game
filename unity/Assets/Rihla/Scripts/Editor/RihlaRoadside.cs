@@ -74,12 +74,14 @@ namespace Rihla.EditorTools
                 Vector3 right = Vector3.Cross(up, fwd).normalized;
                 Vector3 X = right * size.x / 2f, Y = up * size.y / 2f, Z = fwd * size.z / 2f;
                 Vector3 P(int sx, int sy, int sz) => c + X * sx + Y * sy + Z * sz;
-                Quad(m, P(-1, -1, 1), P(1, -1, 1), P(1, 1, 1), P(-1, 1, 1));    // front
-                Quad(m, P(1, -1, -1), P(-1, -1, -1), P(-1, 1, -1), P(1, 1, -1)); // back
-                Quad(m, P(1, -1, 1), P(1, -1, -1), P(1, 1, -1), P(1, 1, 1));     // right
-                Quad(m, P(-1, -1, -1), P(-1, -1, 1), P(-1, 1, 1), P(-1, 1, -1)); // left
-                Quad(m, P(-1, 1, 1), P(1, 1, 1), P(1, 1, -1), P(-1, 1, -1));     // top
-                Quad(m, P(-1, -1, -1), P(1, -1, -1), P(1, -1, 1), P(-1, -1, 1)); // bottom
+                // Texture coordinates in metres, so a textured material repeats at its own scale on any size of box.
+                Vector2 fb = new Vector2(size.x, size.y), sd = new Vector2(size.z, size.y), tb = new Vector2(size.x, size.z);
+                Quad(m, P(-1, -1, 1), P(1, -1, 1), P(1, 1, 1), P(-1, 1, 1), fb);    // front
+                Quad(m, P(1, -1, -1), P(-1, -1, -1), P(-1, 1, -1), P(1, 1, -1), fb); // back
+                Quad(m, P(1, -1, 1), P(1, -1, -1), P(1, 1, -1), P(1, 1, 1), sd);     // right
+                Quad(m, P(-1, -1, -1), P(-1, -1, 1), P(-1, 1, 1), P(-1, 1, -1), sd); // left
+                Quad(m, P(-1, 1, 1), P(1, 1, 1), P(1, 1, -1), P(-1, 1, -1), tb);     // top
+                Quad(m, P(-1, -1, -1), P(1, -1, -1), P(1, -1, 1), P(-1, -1, 1), tb); // bottom
             }
 
             public void Mesh(Material m, Mesh src, Matrix4x4 at)
@@ -286,65 +288,116 @@ namespace Rihla.EditorTools
 
         // ------------------------------------------------------------------ Ariha's palms and houses
 
-        /// <summary>A date palm: a ringed trunk and a crown of drooping fronds, made once and shared.</summary>
-        static (Mesh mesh, Material[] mats) PalmAsset()
+        /// <summary>
+        /// A date palm, made once and shared: a trunk of bark (Poly Haven, CC0) with the stubs of old leaf bases near
+        /// the top, and a crown of 26 fronds in three tiers, the lowest older and yellowing. The crown is its own mesh,
+        /// so it can sway in the breeze (PalmSway); its pivot is the top of the trunk.
+        /// </summary>
+        static (Mesh trunk, Material[] trunkMats, Mesh crown, Material[] crownMats) PalmAsset()
         {
-            var trunkMat = Mat("palm_trunk", new Color(0.45f, 0.37f, 0.27f), 0.05f);
+            var trunkMat = TexMat("palm_trunk", "bark_brown_02", 1.1f, new Color(0.95f, 0.86f, 0.72f), 0.05f);
             var frondMat = Mat("palm_frond", new Color(0.62f, 0.72f, 0.42f), 0.15f);
-            frondMat.SetTexture("_BaseMap", FrondTexture());
-            frondMat.SetFloat("_AlphaClip", 1f); frondMat.SetFloat("_Cutoff", 0.45f); frondMat.EnableKeyword("_ALPHATEST_ON");
-            frondMat.SetFloat("_Cull", 0f); frondMat.renderQueue = (int)RenderQueue.AlphaTest; frondMat.enableInstancing = true;
+            var oldMat = Mat("palm_frond_old", new Color(0.85f, 0.78f, 0.42f), 0.1f);
+            foreach (var m in new[] { frondMat, oldMat })
+            {
+                m.SetTexture("_BaseMap", FrondTexture());
+                m.SetFloat("_AlphaClip", 1f); m.SetFloat("_Cutoff", 0.45f); m.EnableKeyword("_ALPHATEST_ON");
+                m.SetFloat("_Cull", 0f); m.renderQueue = (int)RenderQueue.AlphaTest; m.enableInstancing = true;
+                EditorUtility.SetDirty(m);
+            }
             trunkMat.enableInstancing = true;
-            EditorUtility.SetDirty(frondMat);
-            var mb = new MB();
-            const float H = 9f; const int sides = 8;
-            // Trunk: rings of old leaf bases, leaning a little.
-            int rings = 30; var ringPts = new List<Vector3[]>();
+            const float H = 9f; const int sides = 10;
+            Vector3 Centre(float t) => new Vector3(0.35f * t * t, t * H, 0f);
+
+            // The trunk, its texture wrapped once around (about 1.4 m) and running up in metres.
+            var tb = new MB();
+            int rings = 36; int b0 = tb.v.Count;
             for (int r = 0; r <= rings; r++)
             {
-                float t = r / (float)rings, y = t * H;
-                float rad = Mathf.Lerp(0.26f, 0.19f, t) * (r % 2 == 0 ? 1.06f : 0.96f);
-                Vector3 c = new Vector3(0.35f * t * t, y, 0f);
-                var ring = new Vector3[sides + 1];
-                for (int s = 0; s <= sides; s++) { float a = s * Mathf.PI * 2f / sides; ring[s] = c + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * rad; }
-                ringPts.Add(ring);
+                float t = r / (float)rings;
+                float rad = Mathf.Lerp(0.27f, 0.2f, t) * (1f + 0.04f * Mathf.Sin(r * 2.1f));
+                for (int k = 0; k <= sides; k++)
+                {
+                    float a = k * Mathf.PI * 2f / sides;
+                    tb.v.Add(Centre(t) + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * rad);
+                    tb.uv.Add(new Vector2(k / (float)sides * 1.4f, t * H));
+                }
             }
-            for (int r = 0; r < rings; r++) for (int s = 0; s < sides; s++)
-                mb.Quad(trunkMat, ringPts[r][s + 1], ringPts[r][s], ringPts[r + 1][s], ringPts[r + 1][s + 1], new Vector2(1f / sides, 1f / rings));
-            // Crown: 18 fronds in two tiers, each a folded strip curving out and down.
-            Vector3 top = new Vector3(0.35f, H, 0f);
+            var tt = tb.T(trunkMat);
+            for (int r = 0; r < rings; r++)
+                for (int k = 0; k < sides; k++)
+                {
+                    int a = b0 + r * (sides + 1) + k, b = a + 1, c = a + sides + 1, d = c + 1;
+                    tt.AddRange(new[] { a, c, b, b, c, d });
+                }
+            // Stubs of old leaf bases just under the crown.
             var rng = new System.Random(9);
-            for (int f = 0; f < 18; f++)
+            for (int k = 0; k < 22; k++)
             {
-                float az = f * 137.5f * Mathf.Deg2Rad, tier = f < 9 ? 1f : 0f;
-                float rise = Mathf.Lerp(-5f, 45f, tier) + (float)rng.NextDouble() * 15f, len = 3.6f + (float)rng.NextDouble() * 0.8f;
+                float t = 0.88f + (float)rng.NextDouble() * 0.1f, az = k * 137.5f * Mathf.Deg2Rad;
+                Vector3 o = new Vector3(Mathf.Cos(az), 0f, Mathf.Sin(az));
+                Vector3 c = Centre(t) + o * 0.24f + Vector3.up * 0.1f;
+                tb.Box(trunkMat, c, o + Vector3.up * 1.4f, new Vector3(0.12f, 0.05f, 0.42f), false);
+            }
+            var trunk = new Mesh { name = "Date palm trunk" }; trunk.SetVertices(tb.v); trunk.SetUVs(0, tb.uv);
+            var tmats = new List<Material>(tb.tris.Keys); trunk.subMeshCount = tmats.Count;
+            for (int k = 0; k < tmats.Count; k++) trunk.SetTriangles(tb.tris[tmats[k]], k);
+            trunk.RecalculateNormals(); trunk.RecalculateBounds();
+            AssetDatabase.CreateAsset(trunk, Built + "date_palm_trunk.asset");
+
+            // The crown, around its own pivot at the top of the trunk.
+            var mb = new MB();
+            Vector3 top = Vector3.zero;
+            for (int f = 0; f < 26; f++)
+            {
+                float az = f * 137.5f * Mathf.Deg2Rad;
+                int tier = f < 9 ? 2 : f < 19 ? 1 : 0;
+                var mat = tier == 0 ? oldMat : frondMat;
+                float rise = (tier == 2 ? 50f : tier == 1 ? 18f : -18f) + (float)rng.NextDouble() * 14f;
+                float len = (tier == 2 ? 3.0f : 3.9f) + (float)rng.NextDouble() * 0.8f;
+                float bend = tier == 0 ? 16f : 11f;
                 Vector3 outDir = new Vector3(Mathf.Cos(az), 0f, Mathf.Sin(az)), side = Vector3.Cross(Vector3.up, outDir);
-                const int segs = 8; Vector3 p = top; float ang = rise;
-                Vector3 prevL = p, prevC = p, prevR = p; float prevW = 0.05f;
+                const int segs = 9; Vector3 p = top; float ang = rise;
+                Vector3 prevL = p, prevC = p, prevR = p;
                 for (int k = 1; k <= segs; k++)
                 {
                     float t = k / (float)segs;
-                    ang -= 11f;
+                    ang -= bend;
                     Vector3 step = (outDir * Mathf.Cos(ang * Mathf.Deg2Rad) + Vector3.up * Mathf.Sin(ang * Mathf.Deg2Rad)) * (len / segs);
                     p += step;
-                    float w = Mathf.Sin(Mathf.Min(1f, t * 1.4f) * Mathf.PI * 0.5f) * 0.55f * (1f - t * 0.6f);
-                    Vector3 L = p - side * w + Vector3.down * w * 0.35f, R = p + side * w + Vector3.down * w * 0.35f;
-                    // Two quads, folded along the rib; UV across 0..1, along 0..1.
+                    float w = Mathf.Sin(Mathf.Min(1f, t * 1.4f) * Mathf.PI * 0.5f) * 0.6f * (1f - t * 0.6f);
+                    // The leaflets fold up in a V along the rib.
+                    Vector3 L = p - side * w + Vector3.up * w * 0.18f, R = p + side * w + Vector3.up * w * 0.18f;
                     int i0 = mb.v.Count;
                     mb.v.AddRange(new[] { prevL, prevC, p, L, prevC, prevR, R, p });
                     float v0 = (k - 1) / (float)segs, v1 = t;
                     mb.uv.AddRange(new[] { new Vector2(0f, v0), new Vector2(0.5f, v0), new Vector2(0.5f, v1), new Vector2(0f, v1), new Vector2(0.5f, v0), new Vector2(1f, v0), new Vector2(1f, v1), new Vector2(0.5f, v1) });
-                    if (!mb.tris.ContainsKey(frondMat)) mb.tris[frondMat] = new List<int>();
-                    mb.tris[frondMat].AddRange(new[] { i0, i0 + 2, i0 + 1, i0, i0 + 3, i0 + 2, i0 + 4, i0 + 6, i0 + 5, i0 + 4, i0 + 7, i0 + 6 });
-                    prevL = L; prevC = p; prevR = R; prevW = w;
+                    mb.T(mat).AddRange(new[] { i0, i0 + 2, i0 + 1, i0, i0 + 3, i0 + 2, i0 + 4, i0 + 6, i0 + 5, i0 + 4, i0 + 7, i0 + 6 });
+                    prevL = L; prevC = p; prevR = R;
                 }
             }
-            var mesh = new Mesh { name = "Date palm" }; mesh.SetVertices(mb.v); mesh.SetUVs(0, mb.uv);
-            var mats = new List<Material>(mb.tris.Keys); mesh.subMeshCount = mats.Count;
-            for (int k = 0; k < mats.Count; k++) mesh.SetTriangles(mb.tris[mats[k]], k);
-            mesh.RecalculateNormals(); mesh.RecalculateBounds();
-            AssetDatabase.CreateAsset(mesh, Built + "date_palm.asset");
-            return (mesh, mats.ToArray());
+            var crown = new Mesh { name = "Date palm crown" }; crown.SetVertices(mb.v); crown.SetUVs(0, mb.uv);
+            var cmats = new List<Material>(mb.tris.Keys); crown.subMeshCount = cmats.Count;
+            for (int k = 0; k < cmats.Count; k++) crown.SetTriangles(mb.tris[cmats[k]], k);
+            crown.RecalculateNormals(); crown.RecalculateBounds();
+            AssetDatabase.CreateAsset(crown, Built + "date_palm_crown.asset");
+            return (trunk, tmats.ToArray(), crown, cmats.ToArray());
+        }
+
+        /// <summary>A whole palm: the trunk, and its crown as a child named "Crown" (which PalmSway moves).</summary>
+        static GameObject MakePalm(Transform parent, Vector3 at, Quaternion rot, float scale, bool shadows)
+        {
+            var (trunk, tmats, crown, cmats) = palmCache ??= PalmAsset();
+            var go = new GameObject("Date palm") { layer = DetailCulling.Palms }; go.transform.SetParent(parent, false);
+            go.transform.SetPositionAndRotation(at, rot); go.transform.localScale = Vector3.one * scale;
+            go.AddComponent<MeshFilter>().sharedMesh = trunk;
+            var r = go.AddComponent<MeshRenderer>(); r.sharedMaterials = tmats;
+            var c = new GameObject("Crown") { layer = DetailCulling.Palms }; c.transform.SetParent(go.transform, false);
+            c.transform.localPosition = new Vector3(0.35f, 9f, 0f);
+            c.AddComponent<MeshFilter>().sharedMesh = crown;
+            var cr = c.AddComponent<MeshRenderer>(); cr.sharedMaterials = cmats;
+            if (!shadows) { r.shadowCastingMode = ShadowCastingMode.Off; cr.shadowCastingMode = ShadowCastingMode.Off; }
+            return go;
         }
 
         /// <summary>A palm frond seen from above: a rib with stiff leaflets on both sides, pale green, see-through between.</summary>
@@ -384,7 +437,6 @@ namespace Rihla.EditorTools
         static void Oasis(RoadPath road, float from, float to, Vector3 keepClear, float clearRadius)
         {
             var parent = new GameObject("Ariha: palms and houses").transform;
-            var (palm, palmMats) = palmCache ??= PalmAsset();
             var plaster = TexMat("ariha_plaster", "white_plaster_rough_01", 3f, new Color(1.7f, 1.62f, 1.48f), 0.1f);
             var dark = Mat("ariha_window", new Color(0.12f, 0.11f, 0.1f), 0.3f);
             var tank = Mat("ariha_tank", new Color(0.1f, 0.1f, 0.11f), 0.4f);
@@ -425,12 +477,8 @@ namespace Rihla.EditorTools
                             placedHouses.Add(p);
                             continue;
                         }
-                        var go = new GameObject("Date palm") { layer = DetailCulling.Palms }; go.transform.SetParent(parent, false);
-                        go.transform.SetPositionAndRotation(p, Quaternion.Euler(0f, R() * 360f, 0f));
-                        go.transform.localScale = Vector3.one * (0.75f + R() * 0.45f);
-                        go.AddComponent<MeshFilter>().sharedMesh = palm;
-                        var r = go.AddComponent<MeshRenderer>(); r.sharedMaterials = palmMats;
-                        r.shadowCastingMode = ShadowCastingMode.Off; // only the palms at the spring cast shadows (cost)
+                        // Only the palms at the spring cast shadows (cost).
+                        MakePalm(parent, p, Quaternion.Euler(0f, R() * 360f, 0f), 0.75f + R() * 0.45f, false);
                         palms++;
                     }
             }
@@ -441,14 +489,9 @@ namespace Rihla.EditorTools
         /// <summary>Puts a palm (the shared mesh) at a place; used by Ariha's spring as well.</summary>
         static GameObject Palm(Transform parent, Vector3 at, float scale, int seed)
         {
-            var (palm, mats) = palmCache ??= PalmAsset();
-            var go = new GameObject("Date palm") { layer = DetailCulling.Palms }; go.transform.SetParent(parent, false);
-            go.transform.SetPositionAndRotation(at, Quaternion.Euler(0f, seed * 97f % 360f, 0f)); go.transform.localScale = Vector3.one * scale;
-            go.AddComponent<MeshFilter>().sharedMesh = palm;
-            go.AddComponent<MeshRenderer>().sharedMaterials = mats;
-            return go;
+            return MakePalm(parent, at, Quaternion.Euler(0f, seed * 97f % 360f, 0f), scale, true);
         }
-        static (Mesh, Material[])? palmCache;
+        static (Mesh, Material[], Mesh, Material[])? palmCache;
 
         /// <summary>True when <paramref name="p"/> is at least <paramref name="min"/> metres from every part of the road
         /// (where the road doubles back, a point beside one stretch can lie on another).</summary>

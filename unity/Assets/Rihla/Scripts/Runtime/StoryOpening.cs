@@ -34,12 +34,21 @@ namespace Rihla
             if (!started && Time.realtimeSinceStartup < 30f)
             {
                 started = true;
+                // "-jump nabi-musa" (or any part of Journey.Parts): start at that part of the journey, for tests.
+                var args = System.Environment.GetCommandLineArgs(); int ji = System.Array.IndexOf(args, "-jump");
+                if (ji >= 0 && ji + 1 < args.Length) { Journey.Jump(args[ji + 1]); return; }
                 if (Arg("-walk")) { SceneManager.LoadScene(walkScene); return; }
                 if (Arg("-drive")) { SceneManager.LoadScene(roadScene); return; }
                 if (Arg("-chest")) chestNext = true;
             }
             ui = RihlaUI.Instance; book = ContentLibrary.Instance.Storybook;
             ui.SetHudVisible(false);
+            ui.AddMenuItem(() => Lang.T("m.skipScene"), () =>
+            {
+                if (skipping) return;
+                skipping = true; ui.HideSubtitle();
+                Debug.Log("[Rihla] opening skipped");
+            });
             ui.Fade(1f, 0f); ui.Fade(0f, 2.5f);
             Place(wide);
             var s = SaveData.Current;
@@ -230,11 +239,7 @@ namespace Rihla
         {
             if (ui == null || leaving) return;
             var kb = Keyboard.current;
-            if (kb != null && kb.escapeKey.wasPressedThisFrame && !ui.ModalOpen && !skipping)
-            {
-                skipping = true; ui.HideSubtitle();
-                Debug.Log("[Rihla] opening skipped");
-            }
+            // Esc now opens the menu everywhere; skipping the opening is its first choice here.
             // A gentle drift so the room never feels frozen while Jiddo speaks.
             if (pages == null || !pages.Open)
                 cam.transform.position += new Vector3(Mathf.Sin(Time.time * 0.21f), Mathf.Sin(Time.time * 0.17f) * 0.4f, 0f) * 0.0006f;

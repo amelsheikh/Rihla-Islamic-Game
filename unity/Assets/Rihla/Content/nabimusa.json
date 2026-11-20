@@ -1,0 +1,98 @@
+{
+  "note": "C1c, second part: Maqam al-Nabi Musa on foot (STORY section 5). The minaret, the small domes, the inscription of Baybars; the keeper Hajj Mahmoud (fictional) and his banners for the spring festival; his question; Page 3 of Zaynab's Rihla (fiction in her voice) and its riddle. Every claim is listed in NEEDS_REVIEW.md (H24). The Prophet Musa, peace be upon him, is never shown; the shrine room is not entered.",
+  "names": {
+    "jiddo": { "en": "Jiddo Ibrahim", "ar": "جدّو إبراهيم" },
+    "keeper": { "en": "Hajj Mahmoud", "ar": "الحاجّ محمود" }
+  },
+  "morning": {
+    "title": { "en": "The next morning", "ar": "في صباح اليوم التالي" },
+    "sub": { "en": "To Maqam al-Nabi Musa", "ar": "إلى مقام النبي موسى" }
+  },
+  "goals": {
+    "drive": { "en": "Drive up the small road to Maqam al-Nabi Musa.", "ar": "قُد السيارة على الطريق الصغير صعودًا إلى مقام النبي موسى.", "ar_f": "قودي السيارة على الطريق الصغير صعودًا إلى مقام النبي موسى." },
+    "park": { "en": "Park by the golden light, outside the gate.", "ar": "اركن السيارة عند الضوء الذهبي، خارج البوّابة.", "ar_f": "اركني السيارة عند الضوء الذهبي، خارج البوّابة." },
+    "getOut": { "en": "Press E to get out of the car. The Maqam is visited on foot.", "ar": "اضغط E لتنزل من السيارة. المقام يُزار مشيًا.", "ar_f": "اضغطي E لتنزلي من السيارة. المقام يُزار مشيًا." },
+    "clues": { "en": "Walk around the outside of the walls and find the three glowing boxes: the old writing over the gate, the minaret, the small domes.", "ar": "امشِ حول الأسوار من الخارج وابحث عن الصناديق المضيئة الثلاثة: الكتابة القديمة فوق البوّابة، والمئذنة، والقباب الصغيرة.", "ar_f": "امشي حول الأسوار من الخارج وابحثي عن الصناديق المضيئة الثلاثة: الكتابة القديمة فوق البوّابة، والمئذنة، والقباب الصغيرة." },
+    "keeper": { "en": "Walk in quietly through the gate to Hajj Mahmoud by the mosque door.", "ar": "ادخل بهدوء من البوّابة وامشِ إلى الحاجّ محمود عند باب المسجد.", "ar_f": "ادخلي بهدوء من البوّابة وامشي إلى الحاجّ محمود عند باب المسجد." },
+    "banners": { "en": "Find Hajj Mahmoud's three banners on the hillside outside the walls.", "ar": "ابحث عن رايات الحاجّ محمود الثلاث على التلّ خارج الأسوار.", "ar_f": "ابحثي عن رايات الحاجّ محمود الثلاث على التلّ خارج الأسوار." },
+    "bringBack": { "en": "Take the banners back to Hajj Mahmoud.", "ar": "أعِد الرايات إلى الحاجّ محمود.", "ar_f": "أعيدي الرايات إلى الحاجّ محمود." },
+    "done": { "en": "Next: the Dead Sea. That journey comes in the next part of the game.", "ar": "التالي: البحر الميت. هذه الرحلة في الجزء القادم من اللعبة." },
+    "back": { "en": "Walk back to the Maqam.", "ar": "امشِ عائدًا إلى المقام.", "ar_f": "امشي عائدةً إلى المقام." }
+  },
+  "arrive": [
+    { "who": "jiddo", "text": { "en": "Sabah al-khayr! Good morning. Zaynab's banners of spring lead us up this hill.", "ar": "صباح الخير! رايات الربيع في لغز زينب تقودنا إلى هذا التلّ." } },
+    { "who": "jiddo", "text": { "en": "Maqam al-Nabi Musa, peace be upon him. Let us park outside the gate and walk in quietly.", "ar": "مقام النبي موسى عليه السلام. لنركن السيارة خارج البوّابة وندخل بهدوء." } }
+  ],
+  "clues": [
+    { "id": "inscription", "title": { "en": "The old writing over the gate", "ar": "الكتابة القديمة فوق البوّابة" },
+      "text": { "en": "Carved in Arabic over the entrance is an old inscription. It says that the Mamluk sultan Baybars ordered this place to be built, in the year 668 after the Hijra: about 1269 or 1270, more than 750 years ago.", "ar": "فوق المدخل كتابة قديمة منقوشة بالعربية. تقول إنّ السلطان المملوكيّ بيبرس أمر ببناء هذا المكان سنة ٦٦٨ للهجرة، أي نحو سنة ١٢٦٩ أو ١٢٧٠ للميلاد، قبل أكثر من ٧٥٠ عامًا." },
+      "jiddo": { "en": "Stone remembers. A builder's words, still here after seven and a half centuries.", "ar": "الحجر يتذكّر. كلمات البنّاء ما زالت هنا بعد سبعة قرون ونصف." } },
+    { "id": "minaret", "title": { "en": "The minaret", "ar": "المئذنة" },
+      "text": { "en": "The minaret rises above the walls, so the call to prayer can be heard far across the wilderness. Travellers on the old road between Al-Quds and Ariha could see it from far away.", "ar": "ترتفع المئذنة فوق الأسوار، ليُسمع الأذان بعيدًا في البرّيّة. وكان المسافرون على الطريق القديم بين القدس وأريحا يرونها من بعيد." },
+      "jiddo": { "en": "From up there, the adhan reaches every tent and every shepherd in these hills.", "ar": "من هناك يصل الأذان إلى كلّ خيمة وكلّ راعٍ في هذه التلال." } },
+    { "id": "domes", "title": { "en": "The small domes", "ar": "القباب الصغيرة" },
+      "text": { "en": "Look up at the roofs: row after row of small white domes. Under each one is a room. Around the big courtyard there are more than a hundred rooms, where pilgrims and travellers stayed and slept.", "ar": "انظر إلى الأسطح: صفوف بعد صفوف من القباب البيضاء الصغيرة. تحت كلّ قبّة غرفة. وحول الساحة الكبيرة أكثر من مئة غرفة، كان الزوّار والمسافرون ينزلون فيها وينامون.", "ar_f": "انظري إلى الأسطح: صفوف بعد صفوف من القباب البيضاء الصغيرة. تحت كلّ قبّة غرفة. وحول الساحة الكبيرة أكثر من مئة غرفة، كان الزوّار والمسافرون ينزلون فيها وينامون." },
+      "jiddo": { "en": "Imagine every room full of families, and the courtyard full of songs.", "ar": "تخيّل كلّ غرفة مليئة بالعائلات، والساحة مليئة بالأناشيد.", "ar_f": "تخيّلي كلّ غرفة مليئة بالعائلات، والساحة مليئة بالأناشيد." } }
+  ],
+  "keeper": {
+    "greet": [
+      { "who": "keeper", "text": { "en": "As-salamu alaykum, and welcome! Jiddo Ibrahim, it has been too long. And this must be your grandchild.", "ar": "السلام عليكم، وأهلًا وسهلًا! جدّو إبراهيم، طالت الغيبة. ولا بدّ أنّ هذا حفيدك.", "ar_f": "السلام عليكم، وأهلًا وسهلًا! جدّو إبراهيم، طالت الغيبة. ولا بدّ أنّ هذه حفيدتك." } },
+      { "who": "jiddo", "text": { "en": "Wa alaykum as-salam, Hajj Mahmoud. His family has looked after visitors here for generations.", "ar": "وعليكم السلام يا حاجّ محمود. عائلته ترعى الزوّار هنا منذ أجيال." } },
+      { "who": "keeper", "text": { "en": "The spring festival is coming, and last night the wind blew my banners off the walls and down the hill! Will you find the three of them for me?", "ar": "موسم الربيع قادم، والريح البارحة أطاحت راياتي عن الأسوار إلى التلّ! هل تجد لي الثلاث؟", "ar_f": "موسم الربيع قادم، والريح البارحة أطاحت راياتي عن الأسوار إلى التلّ! هل تجدين لي الثلاث؟" } }
+    ],
+    "task": {
+      "title": { "en": "Hajj Mahmoud's banners", "ar": "رايات الحاجّ محمود" },
+      "found": { "en": "A banner!", "ar": "راية!" },
+      "done": { "en": "All three! Barakallahu fik, bless you. Now they can fly by the gate.", "ar": "الثلاث كلّها! بارك الله فيك. الآن ترفرف عند البوّابة.", "ar_f": "الثلاث كلّها! بارك الله فيكِ. الآن ترفرف عند البوّابة." }
+    },
+    "question": {
+      "title": { "en": "Hajj Mahmoud's question", "ar": "سؤال الحاجّ محمود" },
+      "ask": { "en": "Now, young traveller: which sultan ordered the first mosque here to be built?", "ar": "والآن أيّها المسافر الصغير: أيّ سلطان أمر ببناء أوّل مسجد هنا؟", "ar_f": "والآن أيّتها المسافرة الصغيرة: أيّ سلطان أمر ببناء أوّل مسجد هنا؟" },
+      "choices": [
+        { "text": { "en": "Salah al-Din", "ar": "صلاح الدين" }, "hint": { "en": "Salah al-Din freed Al-Quds, but this building came after him. Read the old writing over the gate again.", "ar": "صلاح الدين حرّر القدس، لكنّ هذا البناء جاء بعده. اقرأ الكتابة القديمة فوق البوّابة مرّة أخرى.", "ar_f": "صلاح الدين حرّر القدس، لكنّ هذا البناء جاء بعده. اقرئي الكتابة القديمة فوق البوّابة مرّة أخرى." } },
+        { "text": { "en": "Baybars", "ar": "بيبرس" }, "correct": true,
+          "yes": { "en": "Yes! The Mamluk sultan Baybars, about 750 years ago. Later builders added the rooms and the domes around the courtyard.", "ar": "نعم! السلطان المملوكيّ بيبرس، قبل نحو ٧٥٠ عامًا. ثمّ أضاف بنّاؤون بعده الغرف والقباب حول الساحة." } },
+        { "text": { "en": "Suleiman the Magnificent", "ar": "سليمان القانوني" }, "hint": { "en": "Suleiman built the walls of Al-Quds, much later. The old writing over the gate names another sultan.", "ar": "سليمان بنى أسوار القدس بعد ذلك بزمن طويل. الكتابة فوق البوّابة تذكر سلطانًا آخر." } }
+      ]
+    },
+    "givePage": [
+      { "who": "keeper", "text": { "en": "My grandfather's grandfather kept a page in the mosque's old cupboard, for the child who would one day come asking about Zaynab. Here it is.", "ar": "جدّ جدّي حفظ صفحة في خزانة المسجد القديمة، للطفل الذي سيأتي يومًا يسأل عن زينب. ها هي.", "ar_f": "جدّ جدّي حفظ صفحة في خزانة المسجد القديمة، للطفلة التي ستأتي يومًا تسأل عن زينب. ها هي." } }
+    ],
+    "end": [
+      { "who": "jiddo", "text": { "en": "The lowest shore on Earth, where the water holds you up. The Dead Sea! That is our next road, in sha Allah.", "ar": "أخفض شاطئ على الأرض، حيث يحملك الماء. البحر الميت! هذا طريقنا التالي إن شاء الله." } },
+      { "who": "keeper", "text": { "en": "Come back for the festival! Ma'a as-salama.", "ar": "عودوا في الموسم! مع السلامة." } }
+    ]
+  },
+  "page": {
+    "page": {
+      "id": "zaynab-3",
+      "number": { "en": "The Rihla of Zaynab · Page 3", "ar": "رحلة زينب · الصفحة الثالثة" },
+      "title": { "en": "Among the travellers", "ar": "بين المسافرين" },
+      "writes": { "en": "Zaynab writes:", "ar": "تكتب زينب:" },
+      "letter": { "en": "Peace be upon you, my children. On a bare hill above the road I found a mosque and a dome, built by the sultan Baybars, and rooms where travellers rest. People come to remember the Prophet Musa, peace be upon him, who spoke with Allah and who was patient through long years in the wilderness. I slept that night among strangers who shared their bread with me, and in the morning we were strangers no longer. Patience, I wrote, is a road too.",
+                  "ar": "السلام عليكم يا أبنائي وبناتي. على تلٍّ عارٍ فوق الطريق وجدتُ مسجدًا وقبّة بناهما السلطان بيبرس، وغرفًا يستريح فيها المسافرون. يأتي الناس ليذكروا النبيّ موسى عليه السلام، كليم الله، الذي صبر سنين طويلة في البرّيّة. نمتُ تلك الليلة بين غرباء تقاسموا معي خبزهم، وفي الصباح لم نعد غرباء. كتبتُ: الصبر طريقٌ أيضًا." },
+      "riddleTitle": { "en": "Zaynab's riddle", "ar": "لغز زينب" },
+      "riddle": { "en": "Rest at the lowest shore, where the water holds you up.",
+                  "ar": "استرِحْ عند أخفض شاطئ، حيث يحملك الماء.",
+                  "ar_f": "استريحي عند أخفض شاطئ، حيث يحملكِ الماء." }
+    },
+    "map": {
+      "bounds": [34.85, 31.4, 35.8, 32.1],
+      "home": { "name": { "en": "Maqam al-Nabi Musa", "ar": "مقام النبي موسى" }, "at": [35.4317, 31.7866] },
+      "seas": [ { "name": { "en": "The Dead Sea", "ar": "البحر الميت" }, "at": [35.56, 31.55] } ]
+    },
+    "choices": [
+      { "id": "ariha", "name": { "en": "Ariha", "ar": "أريحا" }, "at": [35.444, 31.857],
+        "hint": { "en": "We have just come from Ariha's spring. Zaynab means water that holds you up, low by a shore.", "ar": "جئنا لتوّنا من نبع أريحا. زينب تقصد ماءً يحملك، منخفضًا عند شاطئ." } },
+      { "id": "dead-sea", "correct": true, "name": { "en": "The Dead Sea shore", "ar": "شاطئ البحر الميت" }, "at": [35.53, 31.72],
+        "yes": { "en": "Yes! The Dead Sea, the lowest shore on Earth. Its water is so salty that it holds you up when you float.", "ar": "نعم! البحر الميت، أخفض شاطئ على الأرض. ماؤه مالح جدًّا حتى إنّه يحملك حين تطفو.", "ar_f": "نعم! البحر الميت، أخفض شاطئ على الأرض. ماؤه مالح جدًّا حتى إنّه يحملكِ حين تطفين." } },
+      { "id": "al-khalil", "name": { "en": "Al-Khalil", "ar": "الخليل" }, "at": [35.0998, 31.5326],
+        "hint": { "en": "Al-Khalil is high in the hills, not by a shore. Look for the lowest water.", "ar": "الخليل عالية في الجبال، وليست عند شاطئ. ابحث عن أخفض ماء.", "ar_f": "الخليل عالية في الجبال، وليست عند شاطئ. ابحثي عن أخفض ماء." } }
+    ],
+    "ui": {
+      "choose": { "en": "Where will Zaynab go next? Choose a place.", "ar": "إلى أين ستذهب زينب بعد ذلك؟ اختر مكانًا.", "ar_f": "إلى أين ستذهب زينب بعد ذلك؟ اختاري مكانًا." },
+      "toRiddle": { "en": "Solve the riddle", "ar": "حُلّ اللغز", "ar_f": "حُلّي اللغز" },
+      "drive": { "en": "Close the page", "ar": "أغلق الصفحة", "ar_f": "أغلقي الصفحة" }
+    }
+  }
+}

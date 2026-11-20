@@ -145,7 +145,7 @@ namespace Rihla
             }
 
             // Jiddo's remarks about the land, at their places along the road.
-            if (!(visit && visit.Active) && !KhanTalking && !FlockWaiting && lines.Count == 0 && busy <= 0f && Time.time > gapUntil && Time.timeSinceLevelLoad > 4f)
+            if (!(visit && visit.Active) && !(NabiMusaVisit.Instance && NabiMusaVisit.Instance.Active) && !KhanTalking && !FlockWaiting && lines.Count == 0 && busy <= 0f && Time.time > gapUntil && Time.timeSinceLevelLoad > 4f)
             {
                 foreach (var r in data["remarks"])
                 {
@@ -157,6 +157,7 @@ namespace Rihla
             }
 
             if (visit) hold = Mathf.Min(hold, visit.Hold);
+            if (NabiMusaVisit.Instance) hold = Mathf.Min(hold, NabiMusaVisit.Instance.Hold);
             car.holdKmh = hold;
         }
 

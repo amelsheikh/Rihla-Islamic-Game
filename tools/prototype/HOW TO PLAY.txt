@@ -31,7 +31,7 @@ THE STORY AT JIDDO'S HOUSE
 --------------------------
   Space or Enter   turn the page of the book (or the arrow keys, or the button)
   L                English / Arabic
-  Esc              skip the story
+  Esc or M         the menu ("Skip the opening" is its first choice)
 
 
 WALKING IN AL-QUDS
@@ -47,7 +47,7 @@ WALKING IN AL-QUDS
   L                English / Arabic
   Q                picture: Fast (laptop) or Best (graphics card)
   I                the box at the top: narrow or full (or its small + / – button)
-  Esc              close a page or the menu
+  Esc or M         the menu (or close a page)
 
 The box at the top of the screen always says what to do next. Golden arrows on
 the ground show the way, and a golden arrow floats over Jiddo or over the next
@@ -76,7 +76,7 @@ DRIVING
   L                       English / Arabic
   Q                       picture: Fast (laptop) or Best (graphics card)
   I                       the box at the top: narrow or full (or its small + / – button)
-  Esc                     menu
+  Esc or M                menu
   R                       back onto the road
 
 The box at the top says where to drive next: first stop by the old ruin of Khan
@@ -92,6 +92,16 @@ Jiddo beside you, find three glowing boxes: by the spring, at the old tower in
 Tell al-Sultan, and under the date palms. Then walk to Umm Khalil's fruit stall:
 help her put the ripe brown dates in her basket, answer her question, and she
 gives you Zaynab's second page and its riddle.
+
+The next morning the car waits at the foot of the small road up to Maqam
+al-Nabi Musa. Drive up and park outside the gate. Walk around the outside of the
+walls to find three glowing boxes: the old writing over the gate, the minaret
+and the small domes. Then walk in quietly to Hajj Mahmoud at the mosque door
+(inside the walls you walk slowly). Find his three banners on the hillside
+outside, bring them back, answer his question, and he gives you Page 3.
+
+Esc or M opens the menu at any time: language, picture, the size of the box
+at the top, and "Skip to a part of the journey" to go straight to any part.
 
 
 WHAT TO LOOK FOR WHEN YOU TEST

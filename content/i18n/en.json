@@ -110,5 +110,16 @@
   "d.stopAtAhmar": "Slow down and stop by the old khan.",
   "d.walkToAhmar": "Walk to the old khan.",
   "d.atAhmar": "Listen to Jiddo.",
-  "d.waitFlock": "Wait: a shepherd's flock is crossing the road."
+  "d.waitFlock": "Wait: a shepherd's flock is crossing the road.",
+  "m.menu": "Menu",
+  "m.continue": "Continue",
+  "m.change": "change",
+  "m.journey": "Skip to a part of the journey",
+  "m.journeyHelp": "Choose any part to go there now. Pages and stops before it count as found; the ones after it can be played again.",
+  "m.here": "you are here",
+  "m.keysTitle": "Keys",
+  "m.keys": "Esc or M: this menu · L: English / Arabic · Q: picture Fast or Best · I: the box at the top narrow or full · J: journal · H: history. Driving: arrows or W A S D, Space handbrake, E get out, P Jiddo drives, R back onto the road. On foot: arrows or W A S D, Shift to run, E back into the car.",
+  "m.quit": "Quit the game",
+  "m.skipScene": "Skip the opening",
+  "m.backRoad": "Back to the road"
 }

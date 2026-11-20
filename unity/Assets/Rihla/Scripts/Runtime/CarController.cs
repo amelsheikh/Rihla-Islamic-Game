@@ -37,6 +37,10 @@ namespace Rihla
             foreach (var a in System.Environment.GetCommandLineArgs()) if (a == "-autopilot") autopilot = true;
         }
 
+        /// <summary>Which road Jiddo's autopilot and R (back onto the road) follow: the main road, or the small road up
+        /// to Maqam al-Nabi Musa.</summary>
+        public void SetRoad(RoadPath r) { if (r == road) return; road = r; roadHint = -1; }
+
         void Update()
         {
             var kb = Keyboard.current;

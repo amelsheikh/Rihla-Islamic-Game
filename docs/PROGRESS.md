@@ -21,6 +21,7 @@
 | C1b (first part) — Guidance on the drive | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19d.zip` on the Desktop. The road down to Ariha now has the walk's goal box and golden arrows: to the page at Khan al-Hatruri, to where the road goes below the sea, then to Ariha; back to the road, back to the car, Jiddo driving. 108 FPS with Jiddo driving. See below |
 | C1b (second part) — Jiddo's remarks, Khan al-Ahmar, the shepherd, a softer guide | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19e.zip` on the Desktop. The golden arrows on the road are replaced by one soft golden arrow in the air ahead with a pool of light under it; Jiddo talks about the land at nine places; a stop at the ruin of Khan al-Ahmar; a shepherd crosses with his flock and the child waits. 100 FPS with Jiddo driving. See below |
 | C1c (first part) — Ariha on foot; a more realistic car, road and roadside | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19f.zip` on the Desktop. Textured land and asphalt, edge lines, posts, rails, power lines, shrubs, palm groves and houses, a shaped car with real wheels; in Ariha the spring, Tell al-Sultan and its tower, three clues, Umm Khalil's dates, her question and Page 2. 47.5 FPS with Jiddo driving (was 100): see below |
+| C1c (second part): Maqam al-Nabi Musa; the menu and skipping; passing Jiddo; people, palms and stalls; sound and breeze | Done 20 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-20c.zip` on the Desktop. The whole of Chapter 1 up to the Dead Sea plays through: 72.3 FPS over 28 minutes with Jiddo driving, no errors; see below |
 | The box at the top can be made narrow | Done 20 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-20b.zip` on the Desktop. A small – / + button in its corner (or I) and saved; see below |
 | Picture setting: Fast or Best | Done 20 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-20.zip` on the Desktop. A button at the top (or Q) and Auto on first start. Fast on the laptop: **73.3 FPS** over the 15-minute drive (was 47.5); Best is for a graphics card: see below |
 
@@ -174,6 +175,82 @@ Palestine comes after Chapter 1, "then and now" is central, and the world should
 walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
+
+## C1c, second part: Maqam al-Nabi Musa, the menu, skipping, more life (done 20 November 2026)
+
+The owner asked: "Maqam al-Nabi Musa next, please make the characters more realistic, the trees the shops. Still
+everything is a bit basic. Also, allow changing the language or accessing the menu throughout the game. Also, allow
+skipping parts of the journey (rihla) and allow the child to go past the grandparent. Also, the sounds we need to
+start working a bit about them. Also, effects like a breeze leaves moving etc."
+
+**Maqam al-Nabi Musa** (`RihlaNabiMusa.cs`, `NabiMusaVisit.cs`, `content/nabimusa.json`):
+- At its place in places.json, 340 m south of the road: the hill is levelled and a small road (316 m) climbs to a
+  car park outside the gate. The complex: a walled courtyard (48 by 39 m) ringed by the pilgrims' rooms, each with
+  an arched door and its own small white dome, a two-storey range by the gate, a mosque on the qibla side with a
+  large dome on an eight-sided drum and two smaller domes, a minaret (square base, eight-sided shaft, balcony,
+  pointed cap), the gate with deep stone arches and an inscription panel above it (abstract carving, not real
+  writing), small windows, buttresses and a moulded band on the outer walls. Strings of little flags cross the
+  courtyard for the festival and flutter in the wind. Outside the gate, two stalls: tea and sweets, dried fruit and
+  nuts, each with its seller. Visitors: a family, two men talking, an older woman. Hajj Mahmoud waits by the mosque
+  door, beside a rack of shoes.
+- The visit: after Ariha's page and Jiddo's last words, the screen fades to **"The next morning"** and the car waits
+  at the foot of the small road. Drive up and park by the golden light; get out. Three clues, **all outside the
+  walls** (the brief keeps anything to collect out of sacred places): the inscription of Baybars over the gate, the
+  minaret, the small domes. Then walk in quietly (inside the walls the child walks slowly and cannot run) to Hajj
+  Mahmoud. His banners have blown off the walls onto the hillside: find the three, bring them back (they then fly
+  by the gate), answer his question (which sultan built the first mosque here? Baybars), and he gives **Page 3**,
+  "Among the travellers", whose riddle points to the Dead Sea. The guiding arrows go round the corners of the walls
+  and through the gate. The mosque and the shrine room are not entered; the Prophet Musa, peace be upon him, is
+  never shown.
+- Facts and their sources are in NEEDS_REVIEW H24 (the minaret's date is disputed, so none is given).
+
+**The menu, everywhere** (`RihlaUI.cs`, `Journey.cs`): a **Menu** button at the top in every scene (and Esc or M):
+continue, English / Arabic, the picture (Fast or Best), the size of the box at the top, the journal, the keys, quit,
+and **"Skip to a part of the journey"**: Jiddo's book, the dawn walk to al-Aqsa, the family chest, the road down,
+Khan al-Ahmar, the shepherd, Ariha, Maqam al-Nabi Musa (the Dead Sea is shown as coming soon). The part you are in is
+marked. Jumping counts the earlier pages and stops as found and lets the later ones play again. The language and
+menu buttons now stay on screen during the opening at home too. Esc used to skip the opening; "Skip the opening" is
+now the first choice of the menu there. `-jump <part>` starts at a part, for tests.
+
+**Passing Jiddo** (`WalkDirector.cs`): on the Al-Quds walk, when the child walks ahead of Jiddo, he walks faster to
+catch up (up to a brisk 3.6 m/s) instead of the arrows pulling the child back; the goal says "You are ahead of
+Jiddo! Walk on to the next place; he is coming." In Ariha and at the Maqam Jiddo already follows the child.
+
+**People** (`FigureBody.cs`): each head is now its own piece and **turns to look at the child** nearby (and glances
+about now and then); faces have eyes (white, iris, pupil, a glint, lashes), brows, a nose, lips and warm cheeks,
+ears where they show; hands have a palm, fingers and a thumb; robes, dresses and cloaks fall in soft folds towards
+the hem. The brief forbids showing prophets, the Companions and the Prophet's family; ordinary people may have faces
+(earlier the game had left all faces blank).
+
+**Palms and stalls** (`RihlaRoadside.cs`, `RihlaNabiMusa.cs`): palm trunks have real bark (Poly Haven) and the stubs of
+old leaf bases; crowns have 26 fronds in three tiers, the lowest older and yellowing, and are separate pieces that
+**sway in the breeze** near the camera (`PlantSway`). Umm Khalil's stall and the two at the Maqam are new: a plank
+table on trestles with a cloth skirt, wooden crates and trays of goods (dates, oranges, pomegranates, bananas; a
+brass tea urn, glasses and trays of sweets; open sacks of nuts and dried fruit), a striped awning with a scalloped
+edge, a hanging scale, a back shelf and a stool. Textured boxes everywhere now repeat their texture at its real
+scale (before, a wall showed a few giant stones).
+
+**Sound and breeze**: Jiddo's car has an engine whose note rises with speed through four gears and with the
+accelerator, tyre noise and wind at speed (`CarSound.cs`); the spring at Ariha can be heard running as you come near
+(`WaterSound.cs`); birds sing more among the palms; dry palm bits blow past among the palms, and fine dust on the
+open road, in the gusts (`LeafDrift`); banners and flags wave (`Banner.cs`). Everything is made by code, nothing
+recorded or downloaded. The adhan still needs a real recording (R4).
+
+| Check | Result |
+|---|---|
+| Windows build, Jiddo driving from Bab al-Asbat for 28 minutes (`-newgame -drive -autopilot -quitafter 1700`): the khan, the flock, sea level, the whole Ariha visit, "the next morning", the whole Maqam al-Nabi Musa visit to Page 3 | Everything in order, **no errors** |
+| Frame rate, same run (Fast, the laptop) | **72.3 FPS** average; 44-49 at Umm Khalil's stall among the palms, about 76 at the Maqam |
+| `-jump nabi-musa`, the visit by itself | Drive, park, clues, Hajj Mahmoud, banners, question, page, done; 73 FPS |
+| Pictures | `docs/screenshots/musa-air.png`, `musa-gate.png`, `musa-courtyard.png`, `musa-keeper.png`, `musa-stall.png`, `face-keeper.png`, `face-family.png`, `ariha-stall.png`, `menu-ar.png` |
+| Al-Quds walk (`-walk -autowalk`) to the gate of al-Aqsa and on to the family chest, and the opening at home, after the face and menu changes | No errors; 52.1 FPS on the walk, 63.6 at home and the chest |
+Known issues:
+- The people are better but still simple shapes; truly lifelike people need ready-made character models with
+  skeletons and animation (for example from Mixamo with the owner's Adobe account, or a bought pack). A decision for
+  the owner.
+- Only the palms sway; shrubs and the walk's olive trees do not yet. The engine and other sounds are synthesised and
+  are a first pass; real recordings would sound better.
+- The Maqam's plan is the game's own (H24). Not yet played by hand at the keys.
+- The Dead Sea (the end of Chapter 1) comes next.
 
 ## The box at the top can be made narrow (done 20 November 2026)
 

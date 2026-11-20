@@ -166,6 +166,8 @@ namespace Rihla
 
                 case Step.Done:
                     SetGoal("done");
+                    // After Jiddo's last words, the next morning: the road up to Maqam al-Nabi Musa (C1c, second part).
+                    if (endedHere && !Talking && stepTime > 6f && NabiMusaVisit.Instance) { endedHere = false; NabiMusaVisit.Instance.BeginMorning(); }
                     break;
             }
 
@@ -301,9 +303,11 @@ namespace Rihla
             else ui.Say(Name("keeper"), Lang.Pick(c["hint"]), 6f);
         }
 
+        bool endedHere;
+
         void EndVisit()
         {
-            Go(Step.Done);
+            Go(Step.Done); endedHere = true;
             SaveData.Current.AddStop("ariha");
             ui.SetJournalVisible(true);
             ui.Banner(Lang.T("pageFound"), Lang.Pick(data["page"]["page"]["title"]), 6f);

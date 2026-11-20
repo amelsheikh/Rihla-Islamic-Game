@@ -50,6 +50,7 @@ namespace Rihla
         void Start()
         {
             var ui = RihlaUI.Instance;
+            if (ui) ui.AddMenuItem(() => Lang.T("m.backRoad"), () => SceneManager.LoadScene(backScene));
             if (ui == null) return;
             ui.SetHistoryVisible(true);
             ui.OnHistory = () => TeachingPages.ChooseHistory(historySites, Lang.T("u.historyHere"));
@@ -69,7 +70,7 @@ namespace Rihla
             bool modal = ui && ui.ModalOpen;
             var kb = Keyboard.current;
             // Keys wait a moment after the scene opens, so the press that opened it cannot also close it.
-            if (Time.timeSinceLevelLoad > 1f && !modal && kb != null && (kb.escapeKey.wasPressedThisFrame || kb.cKey.wasPressedThisFrame)) { SceneManager.LoadScene(backScene); return; }
+            if (Time.timeSinceLevelLoad > 1f && !modal && kb != null && kb.cKey.wasPressedThisFrame) { SceneManager.LoadScene(backScene); return; }
             if (!modal && kb != null && kb.leftArrowKey.isPressed) angle -= 20f * Time.deltaTime;
             if (!modal && kb != null && kb.rightArrowKey.isPressed) angle += 20f * Time.deltaTime;
             angle += 360f / secondsPerCircle * Time.deltaTime;

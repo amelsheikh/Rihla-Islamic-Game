@@ -33,6 +33,10 @@ namespace Rihla.EditorTools
             Lighting();
             var terrains = Terrains(json);
             var road = Road(json);
+            // C1c: Maqam al-Nabi Musa's hill is levelled and its small road laid in the terrain before colliders are read.
+            musaRoad = null;
+            int musaPlace = System.Array.FindIndex(road.places, x => x.id == "nabi-musa");
+            if (musaPlace >= 0) ShapeNabiMusa(road, terrains, road.places[musaPlace].position);
             Physics.SyncTransforms(); // so the raycasts below see the new terrain and road colliders
             Water((float)json["waterY"], terrains);
             Walls(json);
@@ -58,6 +62,9 @@ namespace Rihla.EditorTools
             var visit = ArihaSite(road, out var siteCentre);
             visit.car = car; visit.player = sw; visit.road = road; story.visit = visit;
             visit.guideMaterial = Unlit("guide_unlit_walk", new Color(1f, 0.62f, 0.12f) * 2.2f);
+            // C1c, second part: Maqam al-Nabi Musa, the morning after Ariha.
+            var musa = NabiMusaSite(road);
+            if (musa) { musa.car = car; musa.player = sw; musa.guideMaterial = visit.guideMaterial; }
             // Realism along the road (the owner, 19 November 2026).
             float arihaDist = System.Array.Find(road.places, x => x.id == "ariha").roadDist;
             RoadFurniture(road);
@@ -65,6 +72,17 @@ namespace Rihla.EditorTools
             Oasis(road, arihaDist - 700f, arihaDist + 600f, siteCentre, 95f);
             cam.gameObject.AddComponent<DetailCulling>();
             var sound = cam.gameObject.AddComponent<Soundscape>(); sound.child = walker; sound.birdiness = 0.2f;
+            // The breeze (the owner, 20 November 2026): palm crowns sway near the camera, dry palm bits blow past among
+            // the palms, and fine dust on the open road in the gusts; the palms' places tell the soundscape where
+            // leaves rustle and birds sing.
+            cam.gameObject.AddComponent<PlantSway>();
+            var palmSpots = new List<Vector3>();
+            foreach (var t in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None)) if (t.name == "Date palm") palmSpots.Add(t.position);
+            sound.trees = palmSpots.ToArray();
+            Drift("Blowing palm bits", cam.transform, false, new Color(0.55f, 0.5f, 0.3f), new Color(0.72f, 0.6f, 0.36f), 14f);
+            Drift("Blowing dust", cam.transform, true, Color.white, Color.white, 60f);
+            // The car's engine, tyres and wind.
+            car.gameObject.AddComponent<CarSound>();
             // The goal box and one soft golden arrow in the air over the road ahead.
             var guide = new GameObject("Drive guidance").AddComponent<DriveGuide>();
             guide.car = car; guide.player = sw; guide.road = road; guide.pageMarker = teach.pageMarker; guide.story = story; guide.visit = visit;
@@ -113,6 +131,20 @@ namespace Rihla.EditorTools
             beam.transform.localPosition = new Vector3(0f, 14f, 0f); beam.transform.localScale = new Vector3(0.25f, 12f, 0.25f);
             beam.GetComponent<MeshRenderer>().sharedMaterial = scrollMat;
             return root;
+        }
+
+        static void Drift(string name, Transform follow, bool dust, Color a, Color b, float rate)
+        {
+            string path = Built + (dust ? "dust_particle.mat" : "leaf_particle.mat");
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (!mat) { mat = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit")); AssetDatabase.CreateAsset(mat, path); }
+            mat.SetColor("_BaseColor", new Color(0.9f, 0.9f, 0.85f)); mat.SetFloat("_Cull", 0f);
+            if (dust) { mat.SetFloat("_Surface", 1f); mat.SetFloat("_Blend", 0f); mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha); mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha); mat.SetInt("_ZWrite", 0); mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT"); mat.renderQueue = 3000; }
+            EditorUtility.SetDirty(mat);
+            var go = new GameObject(name); go.SetActive(false);
+            go.AddComponent<ParticleSystem>(); go.GetComponent<ParticleSystemRenderer>().sharedMaterial = mat;
+            var d = go.AddComponent<LeafDrift>(); d.follow = follow; d.dust = dust; d.colourA = a; d.colourB = b; d.rate = rate;
+            go.SetActive(true);
         }
 
         static Material Unlit(string name, Color c)

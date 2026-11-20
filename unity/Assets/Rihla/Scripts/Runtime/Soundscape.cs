@@ -82,7 +82,8 @@ namespace Rihla
             }
             Leafiness = Mathf.Clamp01(leaf / 1.6f); leafNow = Leafiness;
             eveningNow = evening ? 1f : 0f;
-            birdAmount = Mathf.Clamp01(birdiness);
+            // More birdsong among trees (Ariha's palms): the breeze in the leaves and the birds go together.
+            birdAmount = Mathf.Clamp01(birdiness + Leafiness * 0.6f);
             bool paused = RihlaUI.Instance && RihlaUI.Instance.ModalOpen;
             AudioListener.volume = volume * (paused ? 0.5f : 1f);
         }

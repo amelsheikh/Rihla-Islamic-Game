@@ -24,6 +24,7 @@ namespace Rihla.EditorTools
             content.storybook = Load(Content + "storybook.json");
             content.drive = Load(Content + "drive.json");
             content.ariha = Load(Content + "ariha.json");
+            content.nabiMusa = Load(Content + "nabimusa.json");
             return content;
         }
 

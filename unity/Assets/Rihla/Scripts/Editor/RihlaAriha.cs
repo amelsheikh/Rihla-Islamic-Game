@@ -76,6 +76,8 @@ namespace Rihla.EditorTools
 
             // The spring: a stone basin with the water just below its rim, and a channel running off to the fields.
             Vector3 S = At(-20f, 42f);
+            var springSound = new GameObject("Spring water (sound)"); springSound.transform.SetParent(root, false);
+            springSound.transform.position = S + Vector3.up * 0.8f; springSound.AddComponent<WaterSound>();
             Vector3 Lp(float x, float f) => S + X * x + F * f;
             foreach (var (c, size) in new[] { (Lp(0f, 3f), new Vector3(9f, 1.6f, 0.6f)), (Lp(0f, -3f), new Vector3(9f, 1.6f, 0.6f)) })
                 mb.Box(stone, c + Vector3.up * 0.2f, X, new Vector3(size.z, size.y, size.x));
@@ -132,31 +134,12 @@ namespace Rihla.EditorTools
                 if (k < 8) { Vector3 q2 = Vector3.Lerp(m0, m1, (k + 1) / 8f); q2.y = Ground(q2.x, q2.z); mb.Box(rail, (q + q2) / 2f + Vector3.up * 1f, q2 - q, new Vector3(0.05f, 0.05f, Vector3.Distance(q, q2)), false); }
             }
 
-            // Umm Khalil's stall beside the path: a table of crates under an awning.
+            // Umm Khalil's stall beside the path (the owner, 20 November 2026: more realistic shops): see Stall().
             Vector3 K = At(5f, 22f);
-            mb.Box(wood, K + Vector3.up * 0.45f, X, new Vector3(1.0f, 0.9f, 3.2f));
-            var tableBlock = new GameObject("Stall table (solid)"); tableBlock.transform.SetParent(root, false);
-            tableBlock.transform.SetPositionAndRotation(K + Vector3.up * 0.6f, Quaternion.LookRotation(X));
-            tableBlock.AddComponent<BoxCollider>().size = new Vector3(1.2f, 1.2f, 3.4f);
-            foreach (float x in new[] { -1.6f, 1.6f }) foreach (float f in new[] { -0.6f, 1.8f })
-                mb.Box(wood, K + X * x + F * f + Vector3.up * 1.2f, X, new Vector3(0.08f, 2.4f, 0.08f));
-            mb.Box(cloth, K + F * 0.6f + Vector3.up * 2.42f, X, new Vector3(2.8f, 0.04f, 3.6f));
             var rng = new System.Random(5);
             var sphere = Resources.GetBuiltinResource<Mesh>("New-Sphere.fbx");
-            var capsule = Resources.GetBuiltinResource<Mesh>("New-Capsule.fbx");
-            for (int c = 0; c < 4; c++)
-            {
-                Vector3 crate = K + X * (-1.2f + c * 0.8f) + Vector3.up * 0.98f;
-                mb.Box(wood, crate, X, new Vector3(0.7f, 0.16f, 0.5f));
-                for (int k = 0; k < 14; k++)
-                {
-                    Vector3 q = crate + X * ((float)rng.NextDouble() - 0.5f) * 0.6f + F * ((float)rng.NextDouble() - 0.5f) * 0.4f + Vector3.up * (0.1f + (float)rng.NextDouble() * 0.06f);
-                    if (c < 2) mb.Mesh(c == 0 ? dateMat : dateYellow, sphere, Matrix4x4.TRS(q, Quaternion.Euler(0f, k * 40f, 90f), new Vector3(0.05f, 0.08f, 0.05f) * 1.3f));
-                    else if (c == 2) mb.Mesh(orange, sphere, Matrix4x4.TRS(q, Quaternion.identity, Vector3.one * 0.09f));
-                    else mb.Mesh(banana, capsule, Matrix4x4.TRS(q, Quaternion.Euler(70f, k * 25f, 0f), new Vector3(0.04f, 0.1f, 0.04f)));
-                }
-            }
             mb.Make("Ariha site", root, true, false, "ariha_site");
+            Stall(root, K, -F, 0, new System.Random(19), out _);
 
             // Palms: around the spring, along the path, and a grove with hanging dates (the third clue).
             int seed = 1;
@@ -194,7 +177,7 @@ namespace Rihla.EditorTools
             // Umm Khalil behind her stall, and Jiddo, who walks beside the child.
             var keeper = new GameObject("Umm Khalil"); keeper.SetActive(false); keeper.transform.SetParent(root, false);
             var kf = keeper.AddComponent<FigureBody>(); kf.look = FigureBody.Look.WomanElder; kf.seed = 3;
-            Vector3 kp = K + F * 1.0f; kp.y = Ground(kp.x, kp.z);
+            Vector3 kp = K + F * 0.8f; kp.y = Ground(kp.x, kp.z);
             keeper.transform.SetPositionAndRotation(kp, Quaternion.LookRotation(-F)); keeper.SetActive(true);
             var jiddo = new GameObject("Jiddo (Ariha)"); jiddo.SetActive(false); jiddo.transform.SetParent(root, false);
             jiddo.AddComponent<FigureBody>().look = FigureBody.Look.Jiddo; jiddo.SetActive(true);

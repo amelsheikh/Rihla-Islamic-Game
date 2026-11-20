@@ -73,6 +73,20 @@ namespace Rihla
             hint = idx;
             float along = road.distances[idx], fromRoad = Flat(road.points[idx], p);
 
+            // At Maqam al-Nabi Musa its visit sets the goal; the light shows the way up the small road and where to park.
+            var musa = NabiMusaVisit.Instance;
+            if (musa && musa.Active)
+            {
+                bool drive = musa.Now == NabiMusaVisit.Step.Drive && !onFoot && !car.autopilot;
+                glow = Mathf.MoveTowards(glow, drive ? 0.7f : 0f, Time.deltaTime * 0.8f);
+                var main = road; road = musa.side;
+                int si = road.Nearest(p);
+                Place(p, si, road.distances[si], musa.parkDist, musa.parking.position, Flat(road.points[si], p), onFoot ? 0f : car.SpeedKmh, false);
+                road = main;
+                ui.SetGoal(musa.Goal, musa.GoalSub);
+                return;
+            }
+
             // In Ariha the visit sets the goal; the arrow shows only where to park.
             if (visit && visit.Active)
             {

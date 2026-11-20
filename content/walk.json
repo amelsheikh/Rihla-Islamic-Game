@@ -121,6 +121,7 @@
     }
   },
   "goals": {
+    "ahead": { "en": "You are ahead of Jiddo! Walk on to the next place; he is coming.", "ar": "سبقتَ جدّو! تابِع إلى المكان التالي، فهو قادم.", "ar_f": "سبقتِ جدّو! تابِعي إلى المكان التالي، فهو قادم." },
     "follow": {
       "en": "Follow Jiddo. Walk along the golden arrows.",
       "ar": "اتبع جدّو. امشِ على الأسهم الذهبية.",

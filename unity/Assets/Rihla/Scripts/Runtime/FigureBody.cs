@@ -5,9 +5,11 @@ using UnityEngine;
 namespace Rihla
 {
     /// <summary>
-    /// A simple, stylised person made from smooth shapes when the scene starts: a robe or shirt and trousers, a head
-    /// with a kufiya, cap, headscarf or hair, arms that swing and feet that step as the person walks. Faces have no
-    /// features. Every look is modest (brief section 5): long robes and dresses, headscarves for women, sleeves to the
+    /// A person made from smooth shapes when the scene starts: a robe or shirt and trousers with soft folds, a head
+    /// with a kufiya, cap, headscarf or hair, a face (eyes, brows, nose, lips, painted when the game starts), hands,
+    /// arms that swing and feet that step as the person walks; the head turns to look at the child nearby (the owner,
+    /// 20 November 2026: "make the characters more realistic"). Prophets, the Companions and the Prophet's family are
+    /// never shown at all (brief section 5); ordinary people have faces. Every look is modest (brief section 5): long robes and dresses, headscarves for women, sleeves to the
     /// wrist. Which dress each person wears is an estimate for today's Old City (NEEDS_REVIEW H18). In the Time Lens's
     /// "then" view the townspeople wear the dress of about 1910 instead (see Period below; also an estimate, H18).
     /// </summary>
@@ -26,7 +28,10 @@ namespace Rihla
         /// <summary>Hidden when farther than this from the camera (0 = always shown).</summary>
         public float cullDistance;
 
-        Transform bodyT, armL, armR, legL, legR, footL, footR;
+        Transform bodyT, headT, armL, armR, legL, legR, footL, footR;
+        float headYaw, lookTimer, lookYaw; bool looking;
+        /// <summary>The player's child, whom people nearby turn their heads to look at.</summary>
+        static FigureBody heroBody;
         Vector3 lastPos, bodyBase, footLBase, footRBase;
         /// <summary>How far the right arm swings: less when it holds a walking stick.</summary>
         float swingR = 1f;
@@ -39,7 +44,7 @@ namespace Rihla
         /// building it again (building all of them takes about 75 ms, a visible stutter).</summary>
         class Built
         {
-            public Transform figure, bodyT, armL, armR, legL, legR, footL, footR;
+            public Transform figure, bodyT, headT, armL, armR, legL, legR, footL, footR;
             public Vector3 bodyBase, footLBase, footRBase;
             public Renderer[] renderers;
             public float scale, swingR;
@@ -78,7 +83,7 @@ namespace Rihla
             if (!figure) { Rebuild(); return; }
             var leaving = new Built
             {
-                figure = figure, bodyT = bodyT, armL = armL, armR = armR, legL = legL, legR = legR, footL = footL, footR = footR,
+                figure = figure, bodyT = bodyT, headT = headT, armL = armL, armR = armR, legL = legL, legR = legR, footL = footL, footR = footR,
                 bodyBase = bodyBase, footLBase = footLBase, footRBase = footRBase, renderers = renderers, scale = scale, swingR = swingR,
             };
             if (Then) nowBody = leaving; else thenBody = leaving;
@@ -86,7 +91,7 @@ namespace Rihla
             var next = Then ? thenBody : nowBody;
             if (next != null && next.figure)
             {
-                figure = next.figure; bodyT = next.bodyT; armL = next.armL; armR = next.armR; legL = next.legL; legR = next.legR;
+                figure = next.figure; bodyT = next.bodyT; headT = next.headT; armL = next.armL; armR = next.armR; legL = next.legL; legR = next.legR;
                 footL = next.footL; footR = next.footR; bodyBase = next.bodyBase; footLBase = next.footLBase; footRBase = next.footRBase;
                 renderers = next.renderers; scale = next.scale; swingR = next.swingR;
                 figure.gameObject.SetActive(true);
@@ -112,6 +117,7 @@ namespace Rihla
 
         void Awake()
         {
+            if (hero) heroBody = this;
             Rebuild();
             lastPos = transform.position;
         }
@@ -348,9 +354,9 @@ namespace Rihla
             var body = new Parts();
             Material skin = Mat(s.skin, 0.3f), robe = s.stripe.a > 0f ? Mat(Color.white, 0.08f, Stripes(s.robe, s.stripe, 3)) : Mat(s.robe, 0.08f), shoes = Mat(s.shoes, 0.35f);
             if (s.trousers)
-                Lathe(body.Of(robe), Shirt, 0.66f, 0f, 360f);
+                Lathe(body.Of(robe), Shirt, 0.66f, 0f, 360f, folds: 0.02f);
             else
-                Lathe(body.Of(robe), s.wideHem ? Dress : Thobe, 0.68f, 0f, 360f);
+                Lathe(body.Of(robe), s.wideHem ? Dress : Thobe, 0.68f, 0f, 360f, folds: s.wideHem ? 0.06f : 0.045f);
             if (s.tatreez)
             {
                 var trim = body.Of(Mat(s.trim, 0.15f));
@@ -364,7 +370,7 @@ namespace Rihla
                 // The abaya: a wide cloak with broad stripes, open at the front.
                 var cloak = new[] { new Vector2(0.2f, 0.29f), new Vector2(0.7f, 0.265f), new Vector2(1.1f, 0.25f), new Vector2(1.34f, 0.255f),
                                     new Vector2(1.42f, 0.215f), new Vector2(1.47f, 0.13f), new Vector2(1.5f, 0.09f) };
-                Lathe(body.Of(Mat(Color.white, 0.05f, Stripes(s.cloak1, s.cloak2, 1))), cloak, 0.72f, 32f, 328f, 1f, true);
+                Lathe(body.Of(Mat(Color.white, 0.05f, Stripes(s.cloak1, s.cloak2, 1))), cloak, 0.72f, 32f, 328f, 1f, true, folds: 0.05f);
             }
             if (s.longWrap)
             {
@@ -374,11 +380,22 @@ namespace Rihla
                 Lathe(body.Of(Mat(s.head1, 0.06f)), wrap, 0.74f, 0f, 360f, 1f, true);
             }
             Lathe(body.Of(skin), new[] { new Vector2(1.44f, 0f), new Vector2(1.44f, 0.05f), new Vector2(1.58f, 0.045f), new Vector2(1.58f, 0f) }, 1f, 0f, 360f);
-            Ellipsoid(body.Of(skin), new Vector3(0f, hy, 0f), new Vector3(0.09f, 0.11f, 0.1f) * hs);
-            HeadWear(body, s, hy, hs);
-            if (s.beard) Ellipsoid(body.Of(Mat(s.trim, 0.1f)), new Vector3(0f, hy - 0.075f * hs, 0.055f * hs), new Vector3(0.072f, 0.055f, 0.055f) * hs);
             bodyT = body.Make("Body", root, Vector3.zero);
             bodyBase = bodyT.localPosition;
+
+            // The head, on its own so it can turn: a face painted on it, a nose, ears where they show, then what is
+            // worn on the head, and a beard.
+            var head = new Parts();
+            HeadSphere(head.Of(Mat(Color.white, 0.3f, FaceTex(s))), new Vector3(0f, hy, 0f), new Vector3(0.09f, 0.11f, 0.1f) * hs);
+            Ellipsoid(head.Of(skin), new Vector3(0f, hy - 0.008f * hs, 0.094f * hs), new Vector3(0.015f, 0.026f, 0.02f) * hs, 8, 6);
+            if (s.head == Head.Hair || s.head == Head.Taqiyah || s.head == Head.Tarboush)
+                for (int e = -1; e <= 1; e += 2)
+                    Ellipsoid(head.Of(skin), new Vector3(0.088f * e * hs, hy + 0.002f * hs, -0.004f * hs), new Vector3(0.014f, 0.027f, 0.02f) * hs, 8, 6);
+            HeadWear(head, s, hy, hs);
+            if (s.beard) Ellipsoid(head.Of(Mat(s.trim, 0.1f)), new Vector3(0f, hy - 0.072f * hs, 0.058f * hs), new Vector3(0.07f, 0.05f, 0.05f) * hs);
+            float neck = 1.49f;
+            head.Shift(new Vector3(0f, -neck, 0f));
+            headT = head.Make("Head", bodyT, new Vector3(0f, neck, 0f));
 
             // Arms: a sleeve to the wrist and a hand, swinging from the shoulder.
             var sleeve = new[] { new Vector2(-0.56f, 0f), new Vector2(-0.56f, 0.058f), new Vector2(-0.28f, 0.056f), new Vector2(0f, 0.066f), new Vector2(0.035f, 0f) };
@@ -386,7 +403,10 @@ namespace Rihla
             {
                 var arm = new Parts();
                 Lathe(arm.Of(robe), sleeve, 1f, 0f, 360f);
-                Ellipsoid(arm.Of(skin), new Vector3(0f, -0.6f, 0.01f), new Vector3(0.038f, 0.055f, 0.034f));
+                // A hand: the palm, the fingers together and a thumb towards the front.
+                Ellipsoid(arm.Of(skin), new Vector3(0f, -0.6f, 0.008f), new Vector3(0.034f, 0.045f, 0.021f), 10, 7);
+                Ellipsoid(arm.Of(skin), new Vector3(0f, -0.652f, 0.006f), new Vector3(0.03f, 0.04f, 0.016f), 10, 7);
+                Ellipsoid(arm.Of(skin), new Vector3(-0.012f * side, -0.6f, 0.03f), new Vector3(0.012f, 0.03f, 0.012f), 8, 5);
                 if (s.stick && side > 0)
                 {
                     // A plain wooden walking stick from the hand to the ground, a little forward, with a rounded top.
@@ -522,6 +542,7 @@ namespace Rihla
                 bodyT.localPosition = bodyBase + new Vector3(0f, Mathf.Sin(Time.time * 1.7f + seed) * 0.004f, 0f);
                 return;
             }
+            TurnHead(dt);
             float k = Mathf.Clamp01(speed / (1.2f * scale));
             phase += speed * dt / (0.62f * scale) * Mathf.PI;
             float sw = Mathf.Sin(phase);
@@ -533,6 +554,31 @@ namespace Rihla
             if (footR) footR.localPosition = footRBase + new Vector3(0f, Mathf.Max(0f, Mathf.Cos(phase)) * 0.03f * k, -sw * 0.14f * k);
             float breathe = Mathf.Sin(Time.time * 1.7f + seed) * 0.004f;
             bodyT.localPosition = bodyBase + new Vector3(0f, Mathf.Abs(Mathf.Cos(phase)) * 0.022f * k + breathe, 0f);
+        }
+
+        /// <summary>People turn their heads to look at the child when the child comes close (not while walking fast),
+        /// and glance about a little now and then.</summary>
+        void TurnHead(float dt)
+        {
+            if (!headT) return;
+            float want = 0f;
+            var h = heroBody;
+            if (!hero && h && h.isActiveAndEnabled && speed < 0.8f)
+            {
+                Vector3 d = h.transform.position - transform.position; d.y = 0f;
+                if (d.sqrMagnitude < 49f && d.sqrMagnitude > 0.04f)
+                {
+                    float a = Vector3.SignedAngle(transform.forward, d, Vector3.up);
+                    if (Mathf.Abs(a) < 110f) want = Mathf.Clamp(a, -55f, 55f);
+                }
+            }
+            if (want == 0f)
+            {
+                if ((lookTimer -= dt) <= 0f) { lookTimer = 3f + UnityEngine.Random.value * 5f; looking = UnityEngine.Random.value < 0.5f; lookYaw = UnityEngine.Random.Range(-30f, 30f); }
+                if (looking && !hero && speed < 0.5f) want = lookYaw;
+            }
+            headYaw = Mathf.Lerp(headYaw, want, 1f - Mathf.Exp(-3f * dt));
+            headT.localRotation = Quaternion.Euler(Mathf.Sin(Time.time * 0.6f + seed) * 1.5f, headYaw, 0f);
         }
 
         // ------------------------------------------------------------------ meshes
@@ -547,6 +593,8 @@ namespace Rihla
                 if (i < 0) { mats.Add(m); tris.Add(new List<int>()); i = mats.Count - 1; }
                 return (this, tris[i]);
             }
+            public void Shift(Vector3 d) { for (int i = 0; i < v.Count; i++) v[i] += d; }
+
             public Transform Make(string name, Transform parent, Vector3 at)
             {
                 var go = new GameObject(name); go.transform.SetParent(parent, false); go.transform.localPosition = at;
@@ -565,7 +613,7 @@ namespace Rihla
         /// degrees (0 = in front), depth squashes it front to back. Two-sided for open cloth such as a drape.
         /// </summary>
         static void Lathe((Parts p, List<int> t) at, Vector2[] profile, float depth, float a0, float a1,
-                          float grow = 1f, bool twoSided = false, Vector3 offset = default)
+                          float grow = 1f, bool twoSided = false, Vector3 offset = default, float folds = 0f)
         {
             // Split the profile at sharp corners (a hem, a cuff) so each piece gets its own normals and the edge stays
             // crisp instead of shading dark.
@@ -575,18 +623,18 @@ namespace Rihla
                 piece.Add(profile[i]);
                 if (i < profile.Length - 1 && Vector2.Angle(profile[i] - profile[i - 1], profile[i + 1] - profile[i]) > 50f)
                 {
-                    LatheStrip(at, piece.ToArray(), depth, a0, a1, grow, twoSided, offset);
+                    LatheStrip(at, piece.ToArray(), depth, a0, a1, grow, twoSided, offset, folds);
                     piece = new List<Vector2> { profile[i] };
                 }
             }
-            LatheStrip(at, piece.ToArray(), depth, a0, a1, grow, twoSided, offset);
+            LatheStrip(at, piece.ToArray(), depth, a0, a1, grow, twoSided, offset, folds);
         }
 
         static void LatheStrip((Parts p, List<int> t) at, Vector2[] profile, float depth, float a0, float a1,
-                               float grow, bool twoSided, Vector3 offset)
+                               float grow, bool twoSided, Vector3 offset, float folds = 0f)
         {
             var (p, t) = at;
-            int segs = Mathf.Max(4, Mathf.RoundToInt(Mathf.Abs(a1 - a0) / 22.5f));
+            int segs = Mathf.Max(4, Mathf.RoundToInt(Mathf.Abs(a1 - a0) / (folds > 0f ? 7.5f : 22.5f)));
             bool full = Mathf.Abs(a1 - a0) >= 359.9f;
             for (int pass = 0; pass < (twoSided ? 2 : 1); pass++)
             {
@@ -595,6 +643,8 @@ namespace Rihla
                     for (int k = 0; k <= segs; k++)
                     {
                         float a = Mathf.Deg2Rad * Mathf.Lerp(a0, a1, k / (float)segs), r = profile[j].y * grow;
+                        // Cloth falls in soft folds, deepest at the hem and gone by the chest.
+                        if (folds > 0f) r *= 1f + folds * Mathf.Clamp01((1.15f - profile[j].x) / 1.15f) * (Mathf.Sin(a * 9f) * 0.7f + Mathf.Sin(a * 5f + 1.3f) * 0.3f);
                         p.v.Add(offset + new Vector3(Mathf.Sin(a) * r, profile[j].x, Mathf.Cos(a) * r * depth));
                         p.uv.Add(new Vector2(k / (float)segs * (full ? 4f : 2f), profile[j].x * 3f));
                     }
@@ -630,6 +680,112 @@ namespace Rihla
                     int a = s0 + j * (segs + 1) + k, b = a + segs + 1;
                     t.AddRange(new[] { a, b, a + 1, a + 1, b, b + 1 });
                 }
+        }
+
+        /// <summary>The head: an ellipsoid whose texture wraps once around it, the face's centre (u = 0.5) in front.</summary>
+        static void HeadSphere((Parts p, List<int> t) at, Vector3 c, Vector3 radii, int segs = 28, int rings = 18)
+        {
+            var (p, t) = at;
+            int s0 = p.v.Count;
+            for (int j = 0; j <= rings; j++)
+            {
+                float v = Mathf.PI * j / rings, y = Mathf.Cos(v), rr = Mathf.Sin(v);
+                for (int k = 0; k <= segs; k++)
+                {
+                    float u = 2f * Mathf.PI * (k / (float)segs - 0.5f);
+                    p.v.Add(c + Vector3.Scale(new Vector3(Mathf.Sin(u) * rr, y, Mathf.Cos(u) * rr), radii));
+                    p.uv.Add(new Vector2(k / (float)segs, 1f - j / (float)rings));
+                }
+            }
+            for (int j = 0; j < rings; j++)
+                for (int k = 0; k < segs; k++)
+                {
+                    int a = s0 + j * (segs + 1) + k, b = a + segs + 1;
+                    t.AddRange(new[] { a, b, a + 1, a + 1, b, b + 1 });
+                }
+        }
+
+        static readonly Dictionary<string, Texture2D> faces = new Dictionary<string, Texture2D>();
+
+        /// <summary>
+        /// A face painted on the head's texture: the skin, two eyes (white, a brown iris, a dark pupil and a glint, a
+        /// line of lashes above), brows, lips and a little warmth in the cheeks; children's eyes a little larger, the
+        /// old with faint lines. The face spans the front of the texture (u 0.35 to 0.65).
+        /// </summary>
+        static Texture2D FaceTex(Spec s)
+        {
+            bool child = s.headScale > 1.1f, old = (s.trim.r > 0.55f && s.beard) || s.stick;
+            bool woman = s.head == Head.Hijab;
+            Color brow = s.head == Head.Hair ? s.head1 * 0.9f : old ? new Color(0.62f, 0.6f, 0.57f) : new Color(0.14f, 0.1f, 0.08f);
+            brow.a = 1f;
+            string key = ColorUtility.ToHtmlStringRGB(s.skin) + ColorUtility.ToHtmlStringRGB(brow) + (child ? "c" : "") + (old ? "o" : "") + (woman ? "w" : "");
+            if (faces.TryGetValue(key, out var tex) && tex) return tex;
+            const int W = 512, H = 256;
+            tex = new Texture2D(W, H, TextureFormat.RGBA32, true) { name = "face" + key, wrapMode = TextureWrapMode.Clamp };
+            var px = new Color[W * H];
+            Color skin = s.skin, lip = Color.Lerp(skin, new Color(0.6f, 0.28f, 0.26f), woman ? 0.45f : 0.32f) * 0.92f, iris = new Color(0.24f, 0.15f, 0.08f);
+            lip.a = 1f;
+            float eyeScale = child ? 1.18f : 1f;
+            for (int y = 0; y < H; y++)
+                for (int x = 0; x < W; x++)
+                {
+                    float u = (x + 0.5f) / W, v = (y + 0.5f) / H;
+                    Color c = skin;
+                    // Cheeks: a touch of warmth.
+                    for (int e = -1; e <= 1; e += 2)
+                    {
+                        float d = new Vector2((u - 0.5f - e * 0.07f) / 0.04f, (v - 0.44f) / 0.05f).magnitude;
+                        if (d < 1f) c = Color.Lerp(c, new Color(skin.r * 1.04f, skin.g * 0.9f, skin.b * 0.86f), (1f - d) * 0.35f);
+                    }
+                    // A slight shadow down the sides of the nose.
+                    float sideNose = Mathf.Abs(u - 0.5f);
+                    if (sideNose > 0.008f && sideNose < 0.02f && v > 0.43f && v < 0.52f) c *= 0.95f;
+                    if (old)
+                    {
+                        // Faint lines under the eyes and on the forehead.
+                        for (int e = -1; e <= 1; e += 2)
+                        {
+                            float ex0 = (u - 0.5f - e * 0.053f) / 0.03f;
+                            if (Mathf.Abs(ex0) < 0.9f && Mathf.Abs(v - (0.505f - ex0 * ex0 * 0.006f)) < 0.003f) c *= 0.9f;
+                        }
+                        if (Mathf.Abs(v - 0.62f) < 0.002f && Mathf.Abs(u - 0.5f) < 0.05f) c *= 0.93f;
+                    }
+                    // The eyes.
+                    for (int e = -1; e <= 1; e += 2)
+                    {
+                        float cx = 0.5f + e * 0.053f, cy = 0.535f;
+                        float ex = (u - cx) / (0.019f * eyeScale), ey = (v - cy) / (0.0125f * eyeScale);
+                        // An almond: the upper lid arches more than the lower.
+                        float shape = ex * ex + (ey > 0f ? ey * ey * 1.1f : ey * ey * 1.6f);
+                        if (shape < 1f)
+                        {
+                            c = new Color(0.93f, 0.91f, 0.87f);
+                            float ir = new Vector2((u - cx) / 0.0105f, (v - cy) / 0.019f).magnitude / eyeScale;
+                            if (ir < 1f) c = Color.Lerp(iris, iris * 0.6f, ir * ir);
+                            if (ir < 0.45f) c = new Color(0.04f, 0.03f, 0.03f);
+                            if (new Vector2((u - cx - 0.003f) / 0.003f, (v - cy - 0.004f) / 0.0055f).magnitude < 1f) c = new Color(0.96f, 0.96f, 0.95f);
+                        }
+                        // The line of lashes along the upper lid.
+                        if (shape >= 0.85f && shape < 1.35f && ey > -0.1f) c = Color.Lerp(c, new Color(0.08f, 0.06f, 0.05f), woman ? 0.95f : 0.8f);
+                        // Brows: a soft arch above.
+                        float bx = (u - cx) / 0.024f, byc = cy + 0.042f + (1f - bx * bx) * 0.006f;
+                        if (Mathf.Abs(bx) < 1f && Mathf.Abs(v - byc) < (woman ? 0.0035f : 0.0055f) * (1f - Mathf.Abs(bx) * 0.4f)) c = Color.Lerp(c, brow, 0.85f);
+                    }
+                    // The lips: upper and lower, with a darker line between.
+                    float lx = (u - 0.5f) / 0.028f;
+                    if (Mathf.Abs(lx) < 1f)
+                    {
+                        float mid = 0.37f, up = 0.009f * (1f - lx * lx) + 0.002f, down = 0.011f * (1f - lx * lx);
+                        if (v > mid && v < mid + up) c = lip;
+                        else if (v < mid && v > mid - down) c = lip * 1.06f;
+                        if (Mathf.Abs(v - mid) < 0.0016f) c = lip * 0.6f;
+                    }
+                    c.a = 1f;
+                    px[y * W + x] = c;
+                }
+            tex.SetPixels(px); tex.Apply(true);
+            faces[key] = tex;
+            return tex;
         }
 
         // ------------------------------------------------------------------ materials

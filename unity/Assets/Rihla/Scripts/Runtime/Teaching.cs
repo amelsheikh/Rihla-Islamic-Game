@@ -131,8 +131,31 @@ namespace Rihla
             SaveData.Save();
         }
 
+        /// <summary>After "skip to" in the menu: put the car on the road at that part of the journey.</summary>
+        bool JumpPosition()
+        {
+            float d = Journey.PendingDist; Journey.PendingDist = -1f;
+            if (d == -1f) return false;
+            float Place(string id) => road.places.FirstOrDefault(x => x.id == id).roadDist;
+            if (d == -2f) d = Place("khan-al-ahmar") - 380f;
+            else if (d == -3f) { var f = FindAnyObjectByType<Flock>(); d = f ? road.distances[road.Nearest(f.from)] - 380f : Place("wadi-al-qilt") - 1300f; }
+            else if (d == -4f) { var v = FindAnyObjectByType<ArihaVisit>(); d = v ? v.startDist - 250f : Place("ariha") - 900f; }
+            PlaceCar(Mathf.Max(0f, d));
+            return true;
+        }
+
+        public void PlaceCar(float d)
+        {
+            Vector3 p = road.At(d), q = road.At(d + 6f); Vector3 dir = q - p; dir.y = 0f;
+            car.transform.SetPositionAndRotation(p + Vector3.up * 0.8f, Quaternion.LookRotation(dir));
+            var rb = car.GetComponent<Rigidbody>(); rb.linearVelocity = Vector3.zero; rb.angularVelocity = Vector3.zero;
+            Physics.SyncTransforms();
+            var cam = player ? player.cam : null; if (cam) cam.Snap();
+        }
+
         void RestorePosition()
         {
+            if (JumpPosition()) return;
             var s = SaveData.Current;
             if (!s.hasPosition || car.autopilot) return;
             var pos = new Vector3(s.x, s.y + 0.6f, s.z);

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -9,7 +10,7 @@ namespace Rihla
     /// The game's interface in English and Arabic, built with UI Toolkit. Text uses the Advanced text generator,
     /// which joins Arabic letters and lays out right-to-left text properly, and the Amiri typeface. The whole
     /// layout mirrors when the language is Arabic. Controllers (Teaching, AlQudsFlyover) fill it every frame.
-    /// Keys: L language, Q picture (Fast or Best), I the box at the top narrow or full, J journal, H history, Esc or Enter closes a page.
+    /// Keys: Esc or M the menu, L language, Q picture (Fast or Best), I the box at the top narrow or full, J journal, H history, Esc or Enter closes a page.
     /// </summary>
     public class RihlaUI : MonoBehaviour
     {
@@ -27,7 +28,7 @@ namespace Rihla
         VisualElement root, hud, buttons, banner, modal, sheet, body, subtitle, goal, fade;
         Label goalText, goalSub; float fadeFrom, fadeTo, fadeTime, fadeLength;
         Label speed, line1, line2, placeMain, placeSub, hint, fps, bannerTitle, bannerSub, subWho, subText;
-        Button hudBtn, langBtn, qualityBtn, journalBtn, historyBtn, closeBtn;
+        Button menuBtn, hudBtn, langBtn, qualityBtn, journalBtn, historyBtn, closeBtn;
         float bannerTimer, subtitleTimer; Action onClose, rebuild; float savedTimeScale = 1f;
 
         void Awake()
@@ -116,12 +117,13 @@ namespace Rihla
             // Buttons (the opposite top corner).
             buttons = new VisualElement(); buttons.style.position = Position.Absolute; buttons.style.top = 10;
             buttons.style.flexDirection = FlexDirection.Row;
+            menuBtn = MakeButton("", OpenMenu);
             langBtn = MakeButton("", Lang.Toggle);
             qualityBtn = MakeButton("", Quality.Toggle);
             Quality.Changed += Relayout;
             journalBtn = MakeButton("", () => OnJournal?.Invoke());
             historyBtn = MakeButton("", () => OnHistory?.Invoke());
-            buttons.Add(historyBtn); buttons.Add(journalBtn); buttons.Add(qualityBtn); buttons.Add(langBtn);
+            buttons.Add(historyBtn); buttons.Add(journalBtn); buttons.Add(qualityBtn); buttons.Add(langBtn); buttons.Add(menuBtn);
             root.Add(buttons);
             SetJournalVisible(false); SetHistoryVisible(false);
 
@@ -203,10 +205,62 @@ namespace Rihla
             if (seconds <= 0f) { fade.style.opacity = to; fadeLength = 0f; }
         }
 
+        /// <summary>Hides the box at the top and the other buttons (the opening at home); the menu and the language
+        /// button always stay, so both can be reached anywhere in the game.</summary>
         public void SetHudVisible(bool v)
         {
+            hudShown = v;
             hud.style.display = v ? DisplayStyle.Flex : DisplayStyle.None;
-            buttons.style.display = v ? DisplayStyle.Flex : DisplayStyle.None;
+            qualityBtn.style.display = v ? DisplayStyle.Flex : DisplayStyle.None;
+            if (!v) { journalBtn.style.display = DisplayStyle.None; historyBtn.style.display = DisplayStyle.None; }
+        }
+        bool hudShown = true;
+
+        // ------------------------------------------------------------------ the menu (Esc, M or the button)
+
+        readonly List<(Func<string> label, Action act)> extra = new List<(Func<string>, Action)>();
+        /// <summary>A choice of this scene at the top of the menu (for example "Skip the opening").</summary>
+        public void AddMenuItem(Func<string> label, Action act) => extra.Add((label, act));
+        public bool MenuOpen { get; private set; }
+
+        public void OpenMenu()
+        {
+            if (MenuOpen) { CloseModal(); return; }
+            if (ModalOpen) CloseModal();
+            MenuOpen = true;
+            Debug.Log("[Rihla] menu opened");
+            OpenModal(BuildMenu, "m.continue", () => MenuOpen = false);
+        }
+
+        void RefreshModal() { if (ModalOpen && rebuild != null) { body.Clear(); rebuild(); AlignBody(); } }
+
+        void BuildMenu()
+        {
+            H1(Lang.T("m.menu"));
+            foreach (var (label, act) in extra) { var a = act; Choice(label(), () => { CloseModal(); a(); }); }
+            Choice(Lang.T("m.continue"), CloseModal);
+            Choice(Lang.Arabic ? "English" : "العربية", Lang.Toggle);
+            Choice(Lang.T(Quality.Best ? "q.best" : "q.fast") + "   (" + Lang.T("m.change") + ")", () => { Quality.Toggle(); RefreshModal(); });
+            Choice(Lang.T(SaveData.Current.hudSmall ? "u.hudBig" : "u.hudSmall"), () => { ToggleHudSize(); RefreshModal(); });
+            if (journalBtn.style.display == DisplayStyle.Flex) Choice(Lang.T("journal"), () => { CloseModal(); OnJournal?.Invoke(); });
+
+            H2(Lang.T("m.journey"));
+            P(Lang.T("m.journeyHelp"));
+            string here = Journey.Current();
+            foreach (var part in Journey.Parts)
+            {
+                var pp = part;
+                string label = (Lang.Arabic ? pp.ar : pp.en) + (pp.id == here ? "   ← " + Lang.T("m.here") : "");
+                if (Lang.Arabic && pp.id == here) label = pp.ar + "   → " + Lang.T("m.here");
+                var b = MakeButton(label, () => { CloseModal(); Journey.Jump(pp.id); });
+                b.style.alignSelf = Align.Stretch; b.style.marginTop = 4; b.SetEnabled(pp.ready);
+                if (pp.id == here) { b.style.borderLeftWidth = b.style.borderRightWidth = 3; }
+                body.Add(b);
+            }
+
+            H2(Lang.T("m.keysTitle"));
+            P(Lang.T("m.keys"));
+            Choice(Lang.T("m.quit"), () => { SaveData.Save(); Application.Quit(); });
         }
 
         /// <summary>Adds a full layer (such as the storybook) above the HUD and below pages and the fade.</summary>
@@ -225,6 +279,7 @@ namespace Rihla
             ApplyHudSize();
             langBtn.text = ar ? "English" : "عربي";
             qualityBtn.text = Lang.T(Quality.Best ? "q.best" : "q.fast");
+            menuBtn.text = Lang.T("m.menu");
             journalBtn.text = Lang.T("journal");
             historyBtn.text = Lang.T("history");
             root.Query<Label>().ForEach(l =>
@@ -448,10 +503,12 @@ namespace Rihla
             var kb = Keyboard.current; if (kb == null) return;
             if (ModalOpen)
             {
-                if (kb.escapeKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame) CloseModal();
+                if (kb.escapeKey.wasPressedThisFrame || (kb.enterKey.wasPressedThisFrame && !MenuOpen)) CloseModal();
+                else if (kb.mKey.wasPressedThisFrame && MenuOpen) CloseModal();
                 if (kb.lKey.wasPressedThisFrame) Lang.Toggle();
                 return;
             }
+            if (kb.escapeKey.wasPressedThisFrame || kb.mKey.wasPressedThisFrame) { OpenMenu(); return; }
             if (kb.lKey.wasPressedThisFrame) Lang.Toggle();
             if (kb.qKey.wasPressedThisFrame) Quality.Toggle();
             if (kb.iKey.wasPressedThisFrame) ToggleHudSize();

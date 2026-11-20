@@ -9,7 +9,7 @@
     "getOut": { "en": "Press E to get out of the car. Ariha is seen on foot.", "ar": "اضغط E لتنزل من السيارة. أريحا تُرى مشيًا.", "ar_f": "اضغطي E لتنزلي من السيارة. أريحا تُرى مشيًا." },
     "clues": { "en": "Find the three glowing boxes: by the spring, at the old tower, under the palms.", "ar": "ابحث عن الصناديق المضيئة الثلاثة: عند النبع، وعند البرج القديم، وتحت النخيل.", "ar_f": "ابحثي عن الصناديق المضيئة الثلاثة: عند النبع، وعند البرج القديم، وتحت النخيل." },
     "keeper": { "en": "Walk to Umm Khalil's fruit stall by the path.", "ar": "امشِ إلى بسطة فواكه أم خليل عند الممرّ.", "ar_f": "امشي إلى بسطة فواكه أم خليل عند الممرّ." },
-    "done": { "en": "Next: Maqam al-Nabi Musa. That journey comes in the next part of the game.", "ar": "التالي: مقام النبي موسى. هذه الرحلة في الجزء القادم من اللعبة." },
+    "done": { "en": "Next: Maqam al-Nabi Musa, tomorrow morning. Its small road leaves the main road on the way back up.", "ar": "التالي: مقام النبي موسى، صباح الغد. طريقه الصغير يتفرّع من الطريق الرئيسي في طريق العودة صعودًا." },
     "back": { "en": "Walk back to Ariha's spring.", "ar": "امشِ عائدًا إلى نبع أريحا.", "ar_f": "امشي عائدةً إلى نبع أريحا." }
   },
   "arrive": [

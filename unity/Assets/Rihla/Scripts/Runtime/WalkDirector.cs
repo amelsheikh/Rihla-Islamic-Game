@@ -144,11 +144,14 @@ namespace Rihla
             float toChild = Flat(j, c);
             if (!waiting)
             {
-                // Walk on while the child keeps up; turn to look back when they fall behind.
-                if (toChild < 9f)
+                // Walk on while the child keeps up; turn to look back when they fall behind. When the child has gone
+                // ahead (the owner: "allow the child to go past the grandparent"), Jiddo walks faster to catch up.
+                bool ahead = ChildAhead(c);
+                if (toChild < 9f || ahead)
                 {
                     Vector3 d = goal - j; d.y = 0f;
-                    float move = jiddoSpeed * Time.deltaTime;
+                    float pace = ahead ? Mathf.Clamp(1.2f + toChild * 0.25f, jiddoSpeed, 3.6f) : jiddoSpeed;
+                    float move = pace * Time.deltaTime;
                     if (d.magnitude <= move) { jiddo.position = Ground(goal); Arrive(); }
                     else { jiddo.position = Ground(j + d.normalized * move); jiddo.rotation = Quaternion.Slerp(jiddo.rotation, Quaternion.LookRotation(d), 6f * Time.deltaTime); }
                 }
@@ -173,6 +176,22 @@ namespace Rihla
             if (id == "end" && !SaveData.Current.walkDone) { SaveData.Current.walkDone = true; SaveData.Save(); }
             if (id == "end" && stepTimer > 9f && !SaveData.Current.chestSeen) GoHome();
             if (done) { waiting = false; lineSaid = false; step++; target = Mathf.Min(target + 1, path.Length - 1); }
+        }
+
+        /// <summary>The child is level with or beyond the point Jiddo is walking to.</summary>
+        bool ChildAhead(Vector3 c) => !waiting && PathIndex(c) >= target - 1 && Flat(c, path[Mathf.Max(0, target - 1)]) > 2f;
+
+        int PathIndex(Vector3 c)
+        {
+            int si = 0; float best = float.MaxValue;
+            for (int i = 0; i < path.Length - 1; i++)
+            {
+                Vector3 a = path[i], b = path[i + 1], ab = b - a; ab.y = 0f;
+                float t = ab.sqrMagnitude < 1e-4f ? 0f : Mathf.Clamp01(Vector3.Dot(new Vector3(c.x - a.x, 0f, c.z - a.z), ab) / ab.sqrMagnitude);
+                float d = Flat(Vector3.Lerp(a, b, t), c);
+                if (d < best) { best = d; si = i; }
+            }
+            return si;
         }
 
         void Arrive()
@@ -220,6 +239,7 @@ namespace Rihla
                 if (id == "end" && lineSaid) { text = Goal("end"); arrows = false; }
                 else if (waiting && lineSaid && id == "lens") { text = Goal("lens"); arrows = false; }
                 else if (waiting && lineSaid) { text = Goal("listen"); arrows = false; }
+                else if (ChildAhead(c)) { text = Goal("ahead") ?? Goal("follow"); arrows = false; }
                 else text = Goal("follow");
             }
 

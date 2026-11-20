@@ -81,8 +81,10 @@ seller called **Umm Khalil**, asks for help sorting dates for the market. Her qu
 **Page 2**: Zaynab at the oasis. Riddle: *"Follow the banners of spring to the hill where people remember the
 one who spoke with Allah."*
 
-**Maqam al-Nabi Musa.** The keeper, **Hajj Mahmoud**, is preparing for the spring festival and has lost a
-helper's banners in the courtyard. Clues: the minaret, the many small domes, the Mamluk inscription.
+**Maqam al-Nabi Musa.** The keeper, **Hajj Mahmoud**, is preparing for the spring festival; the wind has blown
+his banners off the walls onto the hillside (outside the walls, so nothing is collected inside the sacred
+precinct, brief section 5). Clues, all seen from outside the walls: the minaret, the many small domes, the Mamluk
+inscription over the gate. Inside, the child walks slowly and stops at the mosque door *(built 20 November 2026)*.
 **Page 3**: Zaynab among the pilgrims. Riddle: *"Rest at the lowest shore, where the water holds you up."*
 
 **Finale: the Dead Sea at sunset.** The child floats (modestly dressed, as the brief requires), Jiddo prays

@@ -13,6 +13,8 @@ namespace Rihla
         public float Speed { get; private set; }
         /// <summary>For tests (-autopilot in Ariha): walk to this point by itself.</summary>
         [System.NonSerialized] public Vector3? autoTarget;
+        /// <summary>Inside a sacred place the child walks slowly and cannot run (brief section 5: "a slow walk").</summary>
+        [System.NonSerialized] public bool slow;
 
         void Awake() => cc = GetComponent<CharacterController>();
 
@@ -38,7 +40,8 @@ namespace Rihla
                 if (d.magnitude > 0.6f) { fwd = 1f; turn = Mathf.Clamp(Vector3.SignedAngle(transform.forward, d, Vector3.up) / 30f, -3f, 3f); run = d.magnitude > 8f; }
             }
             transform.Rotate(0f, Mathf.Clamp(turn, -3f, 3f) * turnSpeed * Time.deltaTime, 0f);
-            Speed = Mathf.Clamp(fwd, -0.5f, 1f) * (run ? runSpeed : walkSpeed);
+            if (slow) run = false;
+            Speed = Mathf.Clamp(fwd, -0.5f, 1f) * (run ? runSpeed : walkSpeed) * (slow ? 0.8f : 1f);
             fall = cc.isGrounded ? -1f : fall - 9.81f * Time.deltaTime;
             cc.Move((transform.forward * Speed + Vector3.up * fall) * Time.deltaTime);
         }
