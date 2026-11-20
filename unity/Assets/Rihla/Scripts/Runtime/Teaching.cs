@@ -61,7 +61,8 @@ namespace Rihla
             if (!Found) trip = toPage < 14f ? Lang.T("pageNear") : Lang.T("objective") + Lang.Sep + Lang.Num(Mathf.Abs(pagePl.roadDist - along) / 1000f, 1) + " " + Lang.T("u.km");
             else
             {
-                float left = road.Length - along;
+                var ar = road.places.FirstOrDefault(x => x.id == "ariha");
+                float left = (ar.id != null ? ar.roadDist : road.Length) - along;
                 trip = left > 30f ? Lang.Num(left / 1000f, 1) + " " + Lang.T("u.km") + " " + Lang.T("toAriha") : "";
             }
 

@@ -11,6 +11,8 @@ namespace Rihla
         CharacterController cc;
         float fall;
         public float Speed { get; private set; }
+        /// <summary>For tests (-autopilot in Ariha): walk to this point by itself.</summary>
+        [System.NonSerialized] public Vector3? autoTarget;
 
         void Awake() => cc = GetComponent<CharacterController>();
 
@@ -30,6 +32,11 @@ namespace Rihla
             var mouse = Mouse.current;
             if (mouse != null && mouse.rightButton.isPressed) turn += mouse.delta.x.ReadValue() * 0.15f;
 
+            if (autoTarget.HasValue)
+            {
+                Vector3 d = autoTarget.Value - transform.position; d.y = 0f;
+                if (d.magnitude > 0.6f) { fwd = 1f; turn = Mathf.Clamp(Vector3.SignedAngle(transform.forward, d, Vector3.up) / 30f, -3f, 3f); run = d.magnitude > 8f; }
+            }
             transform.Rotate(0f, Mathf.Clamp(turn, -3f, 3f) * turnSpeed * Time.deltaTime, 0f);
             Speed = Mathf.Clamp(fwd, -0.5f, 1f) * (run ? runSpeed : walkSpeed);
             fall = cc.isGrounded ? -1f : fall - 9.81f * Time.deltaTime;

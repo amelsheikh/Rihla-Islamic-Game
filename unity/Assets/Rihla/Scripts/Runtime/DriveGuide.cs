@@ -19,6 +19,7 @@ namespace Rihla
         public RoadPath road;
         public Transform pageMarker;
         public DriveStory story;
+        public ArihaVisit visit;
         /// <summary>An additive (glowing, see-through) unlit material for the arrow and the light on the road.</summary>
         public Material material;
         /// <summary>Game heights are compressed; as in Teaching.</summary>
@@ -71,6 +72,17 @@ namespace Rihla
             if (hint < 0 || Flat(road.points[idx], p) > 60f) idx = road.Nearest(p);
             hint = idx;
             float along = road.distances[idx], fromRoad = Flat(road.points[idx], p);
+
+            // In Ariha the visit sets the goal; the arrow shows only where to park.
+            if (visit && visit.Active)
+            {
+                bool park = visit.Now == ArihaVisit.Step.Park && !onFoot && !car.autopilot;
+                float kmhV = onFoot ? 0f : car.SpeedKmh;
+                glow = Mathf.MoveTowards(glow, park ? 0.8f : 0f, Time.deltaTime * 0.8f);
+                Place(p, idx, along, visit.ParkDist, visit.parking.position, fromRoad, kmhV, false);
+                ui.SetGoal(visit.Goal, visit.GoalSub);
+                return;
+            }
 
             // The goal now, along the road.
             string key; float goalDist; Vector3 goal;

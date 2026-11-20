@@ -1,0 +1,94 @@
+{
+  "note": "C1c, first part: Ariha on foot (STORY section 5). The spring, Tell al-Sultan and the palms; the keeper Umm Khalil (fictional) and her dates; her question; Page 2 of Zaynab's Rihla (fiction in her voice) and its riddle. Every claim is listed in NEEDS_REVIEW.md (H23).",
+  "names": {
+    "jiddo": { "en": "Jiddo Ibrahim", "ar": "جدّو إبراهيم" },
+    "keeper": { "en": "Umm Khalil", "ar": "أم خليل" }
+  },
+  "goals": {
+    "park": { "en": "Park beside the palms, by the golden light at the spring.", "ar": "اركن السيارة بجانب النخيل، عند الضوء الذهبي قرب النبع.", "ar_f": "اركني السيارة بجانب النخيل، عند الضوء الذهبي قرب النبع." },
+    "getOut": { "en": "Press E to get out of the car. Ariha is seen on foot.", "ar": "اضغط E لتنزل من السيارة. أريحا تُرى مشيًا.", "ar_f": "اضغطي E لتنزلي من السيارة. أريحا تُرى مشيًا." },
+    "clues": { "en": "Find the three glowing boxes: by the spring, at the old tower, under the palms.", "ar": "ابحث عن الصناديق المضيئة الثلاثة: عند النبع، وعند البرج القديم، وتحت النخيل.", "ar_f": "ابحثي عن الصناديق المضيئة الثلاثة: عند النبع، وعند البرج القديم، وتحت النخيل." },
+    "keeper": { "en": "Walk to Umm Khalil's fruit stall by the path.", "ar": "امشِ إلى بسطة فواكه أم خليل عند الممرّ.", "ar_f": "امشي إلى بسطة فواكه أم خليل عند الممرّ." },
+    "done": { "en": "Next: Maqam al-Nabi Musa. That journey comes in the next part of the game.", "ar": "التالي: مقام النبي موسى. هذه الرحلة في الجزء القادم من اللعبة." },
+    "back": { "en": "Walk back to Ariha's spring.", "ar": "امشِ عائدًا إلى نبع أريحا.", "ar_f": "امشي عائدةً إلى نبع أريحا." }
+  },
+  "arrive": [
+    { "who": "jiddo", "text": { "en": "Here we are: Ariha, the city of palms! Old towns are best seen on foot. Let us park and walk.", "ar": "ها قد وصلنا: أريحا، مدينة النخيل! البلدات القديمة تُرى مشيًا. لنركن السيارة ونمشِ." } },
+    { "who": "jiddo", "text": { "en": "Zaynab wrote of the oldest walls beside a spring that never sleeps. Let us look for them.", "ar": "كتبت زينب عن أقدم الأسوار بجانب نبعٍ لا ينام. هيّا نبحث عنها." } }
+  ],
+  "clues": [
+    { "id": "spring", "title": { "en": "The spring of Ein al-Sultan", "ar": "عين السلطان" },
+      "text": { "en": "This spring flows all year round, in summer and in winter. Its water has made Ariha an oasis of palms and gardens for thousands of years, and farmers still water their fields from it today.", "ar": "يجري هذا النبع طوال العام، صيفًا وشتاءً. جعل ماؤه أريحا واحةً من النخيل والبساتين منذ آلاف السنين، وما زال المزارعون يسقون حقولهم منه اليوم." },
+      "jiddo": { "en": "A spring that never sleeps: just as Zaynab wrote!", "ar": "نبعٌ لا ينام، كما كتبت زينب تمامًا!" } },
+    { "id": "tower", "title": { "en": "The tower of Tell al-Sultan", "ar": "برج تلّ السلطان" },
+      "text": { "en": "This hill, Tell al-Sultan, is made of the remains of one of the oldest towns on Earth. Diggers found a round stone tower inside it, more than eight metres tall, built about ten thousand years ago, long before people made pots of clay.", "ar": "هذا التلّ، تلّ السلطان، مكوَّن من بقايا واحدة من أقدم البلدات على الأرض. وجد المنقّبون في داخله برجًا مستديرًا من الحجر، أعلى من ثمانية أمتار، بُني قبل نحو عشرة آلاف عام، قبل أن يصنع الناس أواني الفخّار بزمن طويل." },
+      "jiddo": { "en": "Ten thousand years! The oldest walls, beside the spring.", "ar": "عشرة آلاف عام! أقدم الأسوار، بجانب النبع." } },
+    { "id": "palms", "title": { "en": "The date palms", "ar": "نخيل التمر" },
+      "text": { "en": "Ariha has long been called the city of palms. Date palms love hot sun on their leaves and plenty of water at their roots, and Ariha has both. Its dates are sold in markets all over the land.", "ar": "تُسمّى أريحا منذ زمن طويل مدينة النخيل. يحبّ النخيل الشمس الحارّة على سعفه والماء الوفير عند جذوره، وفي أريحا الاثنان معًا. وتُباع تمورها في أسواق البلاد كلّها." },
+      "jiddo": { "en": "Look how heavy the dates hang. Someone must be picking them today.", "ar": "انظر كم هي ثقيلة عناقيد التمر. لا بدّ أن أحدًا يقطفها اليوم.", "ar_f": "انظري كم هي ثقيلة عناقيد التمر. لا بدّ أن أحدًا يقطفها اليوم." } }
+  ],
+  "keeper": {
+    "greet": [
+      { "who": "keeper", "text": { "en": "Ahlan wa sahlan, welcome to Ariha! You must be Jiddo Ibrahim's grandchild. I am Umm Khalil.", "ar": "أهلًا وسهلًا، أهلًا بك في أريحا! لا بدّ أنك حفيد جدّو إبراهيم. أنا أم خليل.", "ar_f": "أهلًا وسهلًا، أهلًا بكِ في أريحا! لا بدّ أنكِ حفيدة جدّو إبراهيم. أنا أم خليل." } },
+      { "who": "jiddo", "text": { "en": "Umm Khalil's family has sold fruit by this spring for many generations.", "ar": "عائلة أم خليل تبيع الفاكهة عند هذا النبع منذ أجيال كثيرة." } },
+      { "who": "keeper", "text": { "en": "The market opens soon, and my dates are all mixed up. Will you help me?", "ar": "السوق سيفتح قريبًا، وتمري كلّه مختلط. هل تساعدني؟", "ar_f": "السوق سيفتح قريبًا، وتمري كلّه مختلط. هل تساعدينني؟" } }
+    ],
+    "task": {
+      "title": { "en": "Help Umm Khalil", "ar": "ساعد أم خليل", "ar_f": "ساعدي أم خليل" },
+      "text": { "en": "Put the ripe dates in her basket: the soft brown ones. Leave the yellow ones: they need more days in the sun.", "ar": "ضع التمر الناضج في سلّتها: الحبّات البنّية الطريّة. واترك الصفراء: فهي تحتاج أيّامًا أخرى في الشمس.", "ar_f": "ضعي التمر الناضج في سلّتها: الحبّات البنّية الطريّة. واتركي الصفراء: فهي تحتاج أيّامًا أخرى في الشمس." },
+      "basket": { "en": "In the basket", "ar": "في السلّة" },
+      "notYet": { "en": "Not yet! That one is still yellow and hard. It needs more sun.", "ar": "ليس بعد! هذه ما زالت صفراء وقاسية. تحتاج شمسًا أكثر." },
+      "done": { "en": "Shukran, thank you! Now my basket is ready for the market.", "ar": "شكرًا جزيلًا! الآن سلّتي جاهزة للسوق." },
+      "next": { "en": "Continue", "ar": "متابعة" }
+    },
+    "question": {
+      "title": { "en": "Umm Khalil's question", "ar": "سؤال أم خليل" },
+      "ask": { "en": "Now tell me, little traveller: how old is Ariha?", "ar": "والآن قل لي أيّها المسافر الصغير: كم عمر أريحا؟", "ar_f": "والآن قولي لي أيّتها المسافرة الصغيرة: كم عمر أريحا؟" },
+      "choices": [
+        { "text": { "en": "About 100 years", "ar": "نحو مئة عام" }, "hint": { "en": "Older, much older! Think of the tower you found.", "ar": "أقدم، أقدم بكثير! تذكّر البرج الذي وجدته.", "ar_f": "أقدم، أقدم بكثير! تذكّري البرج الذي وجدتِه." } },
+        { "text": { "en": "About 1,000 years", "ar": "نحو ألف عام" }, "hint": { "en": "Older still! The tower was built long before that.", "ar": "أقدم من ذلك! بُني البرج قبل ذلك بزمن طويل." } },
+        { "text": { "en": "About 10,000 years", "ar": "نحو عشرة آلاف عام" }, "correct": true,
+          "yes": { "en": "Yes! People have lived by this spring for about ten thousand years. That is why Ariha is called one of the oldest towns on Earth.", "ar": "نعم! يعيش الناس عند هذا النبع منذ نحو عشرة آلاف عام. ولهذا تُسمّى أريحا من أقدم البلدات على الأرض." } }
+      ]
+    },
+    "givePage": [
+      { "who": "keeper", "text": { "en": "My family has kept an old page for a very long time. We were told: give it to the one who comes asking about Zaynab. It is yours now.", "ar": "عائلتي تحفظ صفحة قديمة منذ زمن طويل جدًّا. قيل لنا: أعطوها لمن يأتي يسأل عن زينب. هي لك الآن.", "ar_f": "عائلتي تحفظ صفحة قديمة منذ زمن طويل جدًّا. قيل لنا: أعطوها لمن تأتي تسأل عن زينب. هي لكِ الآن." } }
+    ],
+    "end": [
+      { "who": "jiddo", "text": { "en": "Maqam al-Nabi Musa, peace be upon him. Tomorrow, in sha Allah, we follow Zaynab there.", "ar": "مقام النبي موسى عليه السلام. غدًا إن شاء الله نتبع زينب إلى هناك." } },
+      { "who": "keeper", "text": { "en": "Take some dates for the road! Ma'a as-salama.", "ar": "خذوا بعض التمر للطريق! مع السلامة." } }
+    ]
+  },
+  "page": {
+    "page": {
+      "id": "zaynab-2",
+      "number": { "en": "The Rihla of Zaynab · Page 2", "ar": "رحلة زينب · الصفحة الثانية" },
+      "title": { "en": "At the oasis of Ariha", "ar": "في واحة أريحا" },
+      "writes": { "en": "Zaynab writes:", "ar": "تكتب زينب:" },
+      "letter": { "en": "Peace be upon you, my children. I came down from Bayt al-Maqdis to Ariha in the cool of winter, and found the air warm, as if the hills had kept the summer for this valley. A spring that never sleeps waters a forest of palms. The farmers gave me dates and cool water and asked nothing in return. Sitting by the spring, I wrote that a little water, given freely, can turn a desert into a garden. They tell me that in spring people walk from here into the wilderness, with banners, to a hill where a prophet is remembered. I will walk with them.",
+                  "ar": "السلام عليكم يا أبنائي وبناتي. نزلتُ من بيت المقدس إلى أريحا في برد الشتاء، فوجدتُ الهواء دافئًا، كأنّ التلال حفظت الصيف لهذا الوادي. نبعٌ لا ينام يسقي غابةً من النخيل. أعطاني المزارعون تمرًا وماءً باردًا ولم يطلبوا شيئًا. جلستُ عند النبع وكتبتُ أنّ قليلًا من الماء يُعطى بسخاء قد يجعل الصحراء بستانًا. يقولون لي إنّ الناس في الربيع يمشون من هنا إلى البرّيّة، يحملون الرايات، إلى تلٍّ يُذكَر فيه نبيّ. سأمشي معهم." },
+      "riddleTitle": { "en": "Zaynab's riddle", "ar": "لغز زينب" },
+      "riddle": { "en": "Follow the banners of spring to the hill where people remember the one who spoke with Allah.",
+                  "ar": "اتبعْ رايات الربيع إلى التلّ الذي يُذكَر فيه من كلّمه الله.",
+                  "ar_f": "اتبعي رايات الربيع إلى التلّ الذي يُذكَر فيه من كلّمه الله." }
+    },
+    "map": {
+      "bounds": [34.85, 31.4, 35.8, 32.1],
+      "home": { "name": { "en": "Ariha", "ar": "أريحا" }, "at": [35.444, 31.857] },
+      "seas": [ { "name": { "en": "The Dead Sea", "ar": "البحر الميت" }, "at": [35.56, 31.55] } ]
+    },
+    "choices": [
+      { "id": "al-khalil", "name": { "en": "Al-Khalil", "ar": "الخليل" }, "at": [35.0998, 31.5326],
+        "hint": { "en": "Al-Khalil is the city of Ibrahim, peace be upon him, high in the hills and far away. Zaynab's hill is close, in the wilderness.", "ar": "الخليل مدينة إبراهيم عليه السلام، عالية في الجبال وبعيدة. تلّ زينب قريب، في البرّيّة." } },
+      { "id": "nabi-musa", "correct": true, "name": { "en": "Maqam al-Nabi Musa", "ar": "مقام النبي موسى" }, "at": [35.4317, 31.7866],
+        "yes": { "en": "Yes! Maqam al-Nabi Musa, on a hill in the wilderness south of Ariha, where people remember the Prophet Musa, peace be upon him, who spoke with Allah.", "ar": "نعم! مقام النبي موسى، على تلّ في البرّيّة جنوب أريحا، حيث يذكر الناس النبيّ موسى عليه السلام، كليم الله." } },
+      { "id": "dead-sea", "name": { "en": "The Dead Sea shore", "ar": "شاطئ البحر الميت" }, "at": [35.53, 31.72],
+        "hint": { "en": "The Dead Sea is low and flat, not a hill. Look for a hill in the wilderness near Ariha.", "ar": "البحر الميت منخفض ومنبسط، وليس تلًّا. ابحث عن تلّ في البرّيّة قرب أريحا.", "ar_f": "البحر الميت منخفض ومنبسط، وليس تلًّا. ابحثي عن تلّ في البرّيّة قرب أريحا." } }
+    ],
+    "ui": {
+      "choose": { "en": "Where will Zaynab go next? Choose a place.", "ar": "إلى أين ستذهب زينب بعد ذلك؟ اختر مكانًا.", "ar_f": "إلى أين ستذهب زينب بعد ذلك؟ اختاري مكانًا." },
+      "toRiddle": { "en": "Solve the riddle", "ar": "حُلّ اللغز", "ar_f": "حُلّي اللغز" },
+      "drive": { "en": "Close the page", "ar": "أغلق الصفحة", "ar_f": "أغلقي الصفحة" }
+    }
+  }
+}

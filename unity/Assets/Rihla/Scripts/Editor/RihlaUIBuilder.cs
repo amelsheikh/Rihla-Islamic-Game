@@ -23,6 +23,7 @@ namespace Rihla.EditorTools
             content.walk = Load(Content + "walk.json");
             content.storybook = Load(Content + "storybook.json");
             content.drive = Load(Content + "drive.json");
+            content.ariha = Load(Content + "ariha.json");
             return content;
         }
 

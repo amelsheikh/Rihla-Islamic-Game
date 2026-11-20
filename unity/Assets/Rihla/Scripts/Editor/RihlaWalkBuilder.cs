@@ -954,7 +954,7 @@ namespace Rihla.EditorTools
             }
         }
 
-        static Transform Marker(string name, Vector3 at)
+        internal static Transform Marker(string name, Vector3 at)
         {
             // C1a (the owner's idea): each clue waits in a small wooden box floating over a golden ring, its sides
             // embroidered with Palestinian tatreez (an invented cross-stitch star, not a copied village pattern, H21).

@@ -14,7 +14,7 @@ namespace Rihla.EditorTools
     /// car, the walking child, a chase camera and the HUD. Menu: Rihla > Build E0 scene, or in batch mode
     /// -executeMethod Rihla.EditorTools.RihlaSceneBuilder.Build
     /// </summary>
-    public static class RihlaSceneBuilder
+    public static partial class RihlaSceneBuilder
     {
         const string Gen = "Assets/Rihla/Generated/";
         const string Built = "Assets/Rihla/Built/";
@@ -24,6 +24,7 @@ namespace Rihla.EditorTools
         [MenuItem("Rihla/Build E0 scene")]
         public static void Build()
         {
+            palmCache = null;
             var json = JObject.Parse(File.ReadAllText(Gen + "scene.json"));
             Directory.CreateDirectory(Built);
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
@@ -35,8 +36,8 @@ namespace Rihla.EditorTools
             Physics.SyncTransforms(); // so the raycasts below see the new terrain and road colliders
             Water((float)json["waterY"], terrains);
             Walls(json);
-            Markers(road);
             var (car, walker, cam) = Player(road);
+            CarBody(car.transform);
 
             RihlaUIBuilder.AddContent();
             RihlaUIBuilder.AddUI();
@@ -53,9 +54,20 @@ namespace Rihla.EditorTools
             story.car = car; story.player = sw; story.road = road;
             story.khan = KhanAlAhmar(road);
             story.flock = FlockCrossing(road);
+            // C1c: Ariha's spring and Tell al-Sultan, and the visit on foot.
+            var visit = ArihaSite(road, out var siteCentre);
+            visit.car = car; visit.player = sw; visit.road = road; story.visit = visit;
+            visit.guideMaterial = Unlit("guide_unlit_walk", new Color(1f, 0.62f, 0.12f) * 2.2f);
+            // Realism along the road (the owner, 19 November 2026).
+            float arihaDist = System.Array.Find(road.places, x => x.id == "ariha").roadDist;
+            RoadFurniture(road);
+            Scatter(road, arihaDist - 700f, arihaDist + 600f);
+            Oasis(road, arihaDist - 700f, arihaDist + 600f, siteCentre, 95f);
+            cam.gameObject.AddComponent<DetailCulling>();
+            var sound = cam.gameObject.AddComponent<Soundscape>(); sound.child = walker; sound.birdiness = 0.2f;
             // The goal box and one soft golden arrow in the air over the road ahead.
             var guide = new GameObject("Drive guidance").AddComponent<DriveGuide>();
-            guide.car = car; guide.player = sw; guide.road = road; guide.pageMarker = teach.pageMarker; guide.story = story;
+            guide.car = car; guide.player = sw; guide.road = road; guide.pageMarker = teach.pageMarker; guide.story = story; guide.visit = visit;
             guide.material = Additive("guide_light", Color.white);
 
             EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(), ScenePath);
@@ -281,8 +293,13 @@ namespace Rihla.EditorTools
         static List<Terrain> Terrains(JObject json)
         {
             var parent = new GameObject("Terrain").transform;
-            var soil = Layer("layer_soil", new Color(0.72f, 0.62f, 0.47f));
-            var rock = Layer("layer_rock", new Color(0.56f, 0.52f, 0.47f));
+            // Poly Haven ground and rock (CC0), recoloured to the pale stone and soil of the wilderness.
+            var soil = TexLayer("layer_soil", "rihla_desert_soil", 9f);
+            var rock = TexLayer("layer_rock", "rihla_desert_rock", 16f);
+            // Watered ground in Ariha's oasis, darker and greener, under the palms.
+            var oasis = TexLayer("layer_oasis", "rihla_oasis_ground", 7f);
+            Vector2 ariha = Vector2.zero;
+            foreach (var p in json["places"]) if ((string)p["id"] == "ariha") ariha = new Vector2((float)p["position"][0], (float)p["position"][2]);
             var mat = new Material(Shader.Find("Universal Render Pipeline/Terrain/Lit"));
             AssetDatabase.CreateAsset(mat, Built + "terrain.mat");
             var list = new List<Terrain>();
@@ -305,14 +322,17 @@ namespace Rihla.EditorTools
                     td.SetHoles(0, 0, holes);
                 }
                 // Rock on steep ground, soil elsewhere.
-                td.terrainLayers = new[] { soil, rock };
+                td.terrainLayers = new[] { soil, rock, oasis };
                 td.alphamapResolution = 256;
-                var alpha = new float[256, 256, 2];
+                var alpha = new float[256, 256, 3];
                 for (int r = 0; r < 256; r++) for (int c = 0; c < 256; c++)
                 {
                     float steep = td.GetSteepness((c + 0.5f) / 256f, (r + 0.5f) / 256f);
                     float k = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(18f, 32f, steep));
-                    alpha[r, c, 0] = 1f - k; alpha[r, c, 1] = k;
+                    float wx = pos[0] + (c + 0.5f) / 256f * size[0], wz = pos[2] + (r + 0.5f) / 256f * size[2];
+                    float d = Vector2.Distance(new Vector2(wx, wz), ariha) + (Mathf.PerlinNoise(wx * 0.01f, wz * 0.01f) - 0.5f) * 260f;
+                    float o = (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(560f, 900f, d))) * (1f - k);
+                    alpha[r, c, 0] = (1f - k) * (1f - o); alpha[r, c, 1] = k; alpha[r, c, 2] = o;
                 }
                 td.SetAlphamaps(0, 0, alpha);
                 AssetDatabase.CreateAsset(td, Built + (string)t["name"] + ".asset");
@@ -326,7 +346,7 @@ namespace Rihla.EditorTools
                 terrain.materialTemplate = mat;
                 bool isFar = (string)t["kind"] == "far";
                 terrain.heightmapPixelError = isFar ? 24f : 10f; // low settings for integrated graphics
-                terrain.basemapDistance = 600f;
+                terrain.basemapDistance = 250f; // beyond this the terrain is drawn from one baked colour map (cheaper)
                 terrain.drawInstanced = true;
                 if (isFar) terrain.groupingID = 1;
                 list.Add(terrain);
@@ -368,6 +388,18 @@ namespace Rihla.EditorTools
                     int a = (i - 1) * 4, b = i * 4;
                     for (int s = 0; s < 3; s++) { tri.AddRange(new[] { a + s, b + s, a + s + 1, a + s + 1, b + s, b + s + 1 }); }
                 }
+                // Solid white lines along both edges.
+                if (i > 0)
+                {
+                    Vector3 q = road.points[i - 1]; int k = lv.Count;
+                    foreach (float e in new[] { -(hw - 0.3f), hw - 0.3f })
+                    {
+                        k = lv.Count;
+                        lv.Add(q + side * (e - 0.07f) + Vector3.up * 0.04f); lv.Add(q + side * (e + 0.07f) + Vector3.up * 0.04f);
+                        lv.Add(p + side * (e - 0.07f) + Vector3.up * 0.04f); lv.Add(p + side * (e + 0.07f) + Vector3.up * 0.04f);
+                        lt.AddRange(new[] { k, k + 2, k + 1, k + 1, k + 2, k + 3 });
+                    }
+                }
                 // Dashes: 3 m paint, 6 m gap.
                 if (i > 0 && (road.distances[i] % 9f) < 3f)
                 {
@@ -381,7 +413,7 @@ namespace Rihla.EditorTools
             mesh.SetVertices(v); mesh.SetUVs(0, uv); mesh.SetTriangles(tri, 0); mesh.RecalculateNormals(); mesh.RecalculateBounds();
             AssetDatabase.CreateAsset(mesh, Built + "road.asset");
             go.AddComponent<MeshFilter>().sharedMesh = mesh;
-            go.AddComponent<MeshRenderer>().sharedMaterial = Mat("asphalt", new Color(0.22f, 0.22f, 0.23f), 0.15f);
+            go.AddComponent<MeshRenderer>().sharedMaterial = TexMat("asphalt", "asphalt_02", 0.5f, new Color(0.95f, 0.95f, 0.97f), 0.12f);
             go.AddComponent<MeshCollider>().sharedMesh = mesh;
 
             var lines = new Mesh { name = "road_lines", indexFormat = IndexFormat.UInt32 };
@@ -490,11 +522,7 @@ namespace Rihla.EditorTools
 
             var child = new GameObject("Child (walking)");
             var ch = child.AddComponent<CharacterController>(); ch.height = 1.35f; ch.radius = 0.25f; ch.center = new Vector3(0f, 0.7f, 0f);
-            var bodyMesh = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            Object.DestroyImmediate(bodyMesh.GetComponent<Collider>());
-            bodyMesh.transform.SetParent(child.transform, false);
-            bodyMesh.transform.localPosition = new Vector3(0f, 0.68f, 0f); bodyMesh.transform.localScale = new Vector3(0.45f, 0.68f, 0.45f);
-            bodyMesh.GetComponent<MeshRenderer>().sharedMaterial = Mat("child", new Color(0.2f, 0.42f, 0.7f));
+            child.AddComponent<FigureBody>().hero = true; // Yusuf or Maryam, as in the walk
             var walker = child.AddComponent<Walker>();
             child.SetActive(false);
 

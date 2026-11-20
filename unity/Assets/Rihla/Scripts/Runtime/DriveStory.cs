@@ -20,6 +20,7 @@ namespace Rihla
         /// <summary>The ruin of the khan, made by the scene builder (the arrow points to the road beside it).</summary>
         public Transform khan;
         public Flock flock;
+        public ArihaVisit visit;
 
         RihlaUI ui; JObject data; int hint = -1;
         readonly HashSet<string> said = new HashSet<string>();
@@ -144,7 +145,7 @@ namespace Rihla
             }
 
             // Jiddo's remarks about the land, at their places along the road.
-            if (!KhanTalking && !FlockWaiting && lines.Count == 0 && busy <= 0f && Time.time > gapUntil && Time.timeSinceLevelLoad > 4f)
+            if (!(visit && visit.Active) && !KhanTalking && !FlockWaiting && lines.Count == 0 && busy <= 0f && Time.time > gapUntil && Time.timeSinceLevelLoad > 4f)
             {
                 foreach (var r in data["remarks"])
                 {
@@ -155,6 +156,7 @@ namespace Rihla
                 }
             }
 
+            if (visit) hold = Mathf.Min(hold, visit.Hold);
             car.holdKmh = hold;
         }
 

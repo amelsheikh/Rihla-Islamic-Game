@@ -20,6 +20,7 @@
 | C1a (second part) — Jiddo's chest, Page 1, clue boxes, truer Qibli Mosque and Dome, breeze | Done 19 November 2026 | After the walk the child goes home: Jiddo opens the family chest, the child reads Zaynab's first page and solves her riddle on a map (Ariha), then the drive. Clues wait in floating boxes embroidered with tatreez; the Qibli Mosque has its seven-arched porch, raised nave and lead dome, the Dome of the Rock its drum and pointed dome; a breeze, rustling and blowing leaves, crickets at home. Same speed as the last prototype on the laptop today. See below |
 | C1b (first part) — Guidance on the drive | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19d.zip` on the Desktop. The road down to Ariha now has the walk's goal box and golden arrows: to the page at Khan al-Hatruri, to where the road goes below the sea, then to Ariha; back to the road, back to the car, Jiddo driving. 108 FPS with Jiddo driving. See below |
 | C1b (second part) — Jiddo's remarks, Khan al-Ahmar, the shepherd, a softer guide | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19e.zip` on the Desktop. The golden arrows on the road are replaced by one soft golden arrow in the air ahead with a pool of light under it; Jiddo talks about the land at nine places; a stop at the ruin of Khan al-Ahmar; a shepherd crosses with his flock and the child waits. 100 FPS with Jiddo driving. See below |
+| C1c (first part) — Ariha on foot; a more realistic car, road and roadside | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19f.zip` on the Desktop. Textured land and asphalt, edge lines, posts, rails, power lines, shrubs, palm groves and houses, a shaped car with real wheels; in Ariha the spring, Tell al-Sultan and its tower, three clues, Umm Khalil's dates, her question and Page 2. 47.5 FPS with Jiddo driving (was 100): see below |
 
 ## Phase 1a: what works
 
@@ -171,6 +172,55 @@ Palestine comes after Chapter 1, "then and now" is central, and the world should
 walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
+
+## C1c, first part: Ariha on foot, and a more realistic car, road and roadside (done 19 November 2026)
+
+The owner asked: "Ariha next, make the car, roads, around the roads more realistic please".
+
+**Realism** (`RihlaRoadside.cs`):
+- **The land**: the terrain now has real ground and rock (Poly Haven, CC0), recoloured to the pale stone and soil of
+  the wilderness, with darker watered ground around Ariha's oasis.
+- **The road**: cracked grey asphalt (Poly Haven), solid white lines along both edges as well as the dashed middle.
+- **Beside the road**: white reflector posts every 50 m, guard rails where the ground drops away, a line of power
+  poles with sagging wires, desert shrubs and stones. Nothing is placed where the road doubles back on itself.
+- **Ariha**: 1,341 date palms in groves on both sides of the road for the last kilometre, and 54 low flat-roofed
+  houses with water tanks among them.
+- **The car**: a four-door saloon of no real make, its body shaped from cross-sections with arches over the wheels,
+  dark glass, a painted roof, door lines and handles, mirrors, bumpers, a grille, head and tail lamps, plain plates,
+  and wheels with rounded tyres and five-spoke rims.
+- **The child on foot** is now Yusuf or Maryam (as in the walk), not a blue capsule; the old gold pillars over the
+  places are gone; there is a breeze in the air (`Soundscape`).
+
+**Ariha on foot** (`ArihaVisit.cs`, `RihlaAriha.cs`, `content/ariha.json`):
+1. Near Ariha, Jiddo: "Here we are: Ariha, the city of palms! Old towns are best seen on foot." The goal box says to
+   park by the golden light at the spring; then to press E and get out.
+2. With Jiddo walking beside the child, three glowing clue boxes, with golden arrows on the ground: **the spring of
+   Ein al-Sultan** in a stone basin with a channel to the fields; **the tower of Tell al-Sultan**, in the cut the
+   diggers made in the mound; **the date palms**, heavy with fruit. Each opens a short page; Jiddo adds a line.
+3. **Umm Khalil** at her fruit stall greets the child ("Ahlan wa sahlan... I am Umm Khalil"); Jiddo says her family
+   has sold fruit by this spring for generations. **Her task**: put the ripe brown dates in her basket and leave
+   the yellow ones ("Not yet! It needs more sun"). **Her question**: how old is Ariha? (about 100, 1,000 or 10,000
+   years); a wrong answer gets a hint about the tower.
+4. She gives **Page 2 of Zaynab's Rihla**, "At the oasis of Ariha", and its riddle: *"Follow the banners of spring to
+   the hill where people remember the one who spoke with Allah."* On the map: Al-Khalil, Maqam al-Nabi Musa, the Dead
+   Sea shore. The right answer: Maqam al-Nabi Musa, the Prophet Musa, peace be upon him. Jiddo: tomorrow, in sha
+   Allah, we follow Zaynab there. The goal box says Maqam al-Nabi Musa comes in the next part.
+- Everything has Arabic, with feminine forms for Maryam. Jiddo drives (autopilot) into the lay-by and parks; with
+  `-autopilot` the whole visit plays by itself, for tests.
+
+| Check | Result |
+|---|---|
+| Windows build, Jiddo driving from Bab al-Asbat for 15 minutes (`-newgame -drive -autopilot -quitafter 900`): the khan, the flock, sea level, then the whole Ariha visit to Page 2 | Everything in order, **no errors** |
+| Frame rate, same run | **47.5 FPS** average: 42-63 on the road, about 33 at Umm Khalil's stall among the palms. Before this step the road ran at about 100 FPS. The first try ran at 34.6; drawing shrubs, posts and rails only within 300 m and palms within 450 m, and fewer shadows, brought it to 47.5 |
+| In the editor, in Arabic as Maryam | The goals, Jiddo's and Umm Khalil's lines, the clue pages, the date task and Page 2, with feminine forms |
+| Pictures | `docs/screenshots/c1c-road.png`, `c1c-car.png`, `c1c-arrive.png` (Ariha's palms), `c1c-site.png` (the spring, the stall, the tell), `c1c-tower-clue.png`, `c1c-umm-khalil-ar.png`, `c1c-dates-ar.png`, `c1c-page2-ar.png` |
+
+Known issues:
+- The frame rate is about half what it was. The realism costs most among Ariha's palms. A "quality" choice (fewer
+  palms and textures on a laptop, everything on a graphics PC) would let both kinds of computer run well.
+- Not yet tried by hand at the keys. The tower stands in a cut whose walls are plain; the mound and the town are
+  the game's own layout, not a map (H23).
+- Maqam al-Nabi Musa and the Dead Sea (the rest of C1c) come next.
 
 ## C1b, second part: Jiddo's remarks, Khan al-Ahmar, the shepherd, and a softer guide (done 19 November 2026)
 

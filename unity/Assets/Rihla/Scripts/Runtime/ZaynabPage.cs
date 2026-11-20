@@ -25,9 +25,9 @@ namespace Rihla
         public bool Open => !closed;
 
         /// <param name="hint">Called with Jiddo's words when the child chooses a place.</param>
-        public ZaynabPage(RihlaUI ui, JObject book, Action<string> hint, Action done)
+        public ZaynabPage(RihlaUI ui, JObject book, Action<string> hint, Action done, JObject section = null)
         {
-            this.ui = ui; this.book = book; chest = (JObject)book["chest"]; this.hint = hint; this.done = done;
+            this.ui = ui; this.book = book; chest = section ?? (JObject)book["chest"]; this.hint = hint; this.done = done;
             layer = new VisualElement(); layer.style.position = Position.Absolute;
             layer.style.left = layer.style.right = layer.style.top = layer.style.bottom = 0;
             layer.style.alignItems = Align.Center; layer.style.justifyContent = Justify.Center;
