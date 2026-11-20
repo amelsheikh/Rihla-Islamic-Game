@@ -45,6 +45,7 @@ WALKING IN AL-QUDS
   C                choose Yusuf or Maryam
   G                back to the car
   L                English / Arabic
+  Q                picture: Fast (laptop) or Best (graphics card)
   Esc              close a page or the menu
 
 The box at the top of the screen always says what to do next. Golden arrows on
@@ -72,6 +73,7 @@ DRIVING
   C                       fly over Al-Quds today
   J                       journal
   L                       English / Arabic
+  Q                       picture: Fast (laptop) or Best (graphics card)
   Esc                     menu
   R                       back onto the road
 

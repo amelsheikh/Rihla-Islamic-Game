@@ -21,6 +21,7 @@
 | C1b (first part) — Guidance on the drive | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19d.zip` on the Desktop. The road down to Ariha now has the walk's goal box and golden arrows: to the page at Khan al-Hatruri, to where the road goes below the sea, then to Ariha; back to the road, back to the car, Jiddo driving. 108 FPS with Jiddo driving. See below |
 | C1b (second part) — Jiddo's remarks, Khan al-Ahmar, the shepherd, a softer guide | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19e.zip` on the Desktop. The golden arrows on the road are replaced by one soft golden arrow in the air ahead with a pool of light under it; Jiddo talks about the land at nine places; a stop at the ruin of Khan al-Ahmar; a shepherd crosses with his flock and the child waits. 100 FPS with Jiddo driving. See below |
 | C1c (first part) — Ariha on foot; a more realistic car, road and roadside | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19f.zip` on the Desktop. Textured land and asphalt, edge lines, posts, rails, power lines, shrubs, palm groves and houses, a shaped car with real wheels; in Ariha the spring, Tell al-Sultan and its tower, three clues, Umm Khalil's dates, her question and Page 2. 47.5 FPS with Jiddo driving (was 100): see below |
+| Picture setting: Fast or Best | Done 20 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-20.zip` on the Desktop. A button at the top (or Q) and Auto on first start. Fast on the laptop: **73.3 FPS** over the 15-minute drive (was 47.5); Best is for a graphics card: see below |
 
 ## Phase 1a: what works
 
@@ -172,6 +173,39 @@ Palestine comes after Chapter 1, "then and now" is central, and the world should
 walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
+
+## The picture setting: Fast or Best (done 20 November 2026)
+
+The owner said yes to "a quality setting so the laptop runs fast again" (`Quality.cs`).
+
+- A new button at the top, **Picture: Fast / Picture: Best** (الصورة: سريعة / أجمل), or the **Q** key. The choice is
+  saved. On the first start it is chosen from the graphics chip (Auto): Intel or AMD built-in graphics, or less than
+  3 GB of graphics memory, get Fast; a separate graphics card gets Best. `-fast` and `-best` set it for tests.
+- **Fast**: the screen drawn at 60%; the ground's full textures only within 60 m of the camera, a baked colour map
+  beyond; no ambient shading (SSAO); shadows within 40 m; every other palm in Ariha's groves, palms within 300 m;
+  shrubs, posts and rails within 200 m; a coarser terrain.
+- **Best**: the full resolution with smoother edges (MSAA x4), ambient shading, textured ground to 600 m, shadows to
+  120 m, every palm within 1,200 m, roadside things within 600 m, a finer terrain.
+- The goal box now sits below the buttons (the row of four buttons reached under it).
+
+What costs the most was measured, not guessed: five 200-second drives on the laptop (Intel HD Graphics), each with one
+thing switched off. Base 52.2 FPS; without the far roadside things 54.3; without shadows 55.9; **without ambient
+shading 72.9; without the close-up ground textures 81.4**. The ground textures and the shading were the cost, so Fast
+changes those. (Test switches `-cull0`, `-noshadows`, `-basemap0`, `-nossao` stay for later measurements.)
+
+| Check | Result |
+|---|---|
+| Windows build, Auto, Jiddo driving for 15 minutes: the khan, the flock, sea level, the whole Ariha visit to Page 2 | Auto chose **Fast**; everything in order, **no errors** |
+| Frame rate, same run | **73.3 FPS** average (was 47.5): 62-94 on the road, 51-59 at Umm Khalil's stall (was about 33) |
+| Best on the laptop, 200 s | 21 FPS: Best is meant for a graphics card, as expected. Not yet tried on a computer with one |
+| Final build, 2 minutes | 79.6 FPS, no errors |
+| Pictures | `docs/screenshots/q-fast.png`, `q-best.png`, `q-best-ar.png` (the button in Arabic) |
+
+Known issues:
+- In the editor, ambient shading stays on in both settings (switching it there would change the project's renderer);
+  in the game it follows the setting.
+- Starting a new game (`-newgame`) goes back to Auto.
+- Best has not been measured on a graphics card yet; the rented cloud PC would show it.
 
 ## C1c, first part: Ariha on foot, and a more realistic car, road and roadside (done 19 November 2026)
 

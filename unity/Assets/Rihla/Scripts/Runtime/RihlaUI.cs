@@ -9,7 +9,7 @@ namespace Rihla
     /// The game's interface in English and Arabic, built with UI Toolkit. Text uses the Advanced text generator,
     /// which joins Arabic letters and lays out right-to-left text properly, and the Amiri typeface. The whole
     /// layout mirrors when the language is Arabic. Controllers (Teaching, AlQudsFlyover) fill it every frame.
-    /// Keys: L language, J journal, H history, Esc or Enter closes a page.
+    /// Keys: L language, Q picture (Fast or Best), J journal, H history, Esc or Enter closes a page.
     /// </summary>
     public class RihlaUI : MonoBehaviour
     {
@@ -27,7 +27,7 @@ namespace Rihla
         VisualElement root, hud, buttons, banner, modal, sheet, body, subtitle, goal, fade;
         Label goalText, goalSub; float fadeFrom, fadeTo, fadeTime, fadeLength;
         Label speed, line1, line2, placeMain, placeSub, hint, fps, bannerTitle, bannerSub, subWho, subText;
-        Button langBtn, journalBtn, historyBtn, closeBtn;
+        Button langBtn, qualityBtn, journalBtn, historyBtn, closeBtn;
         float bannerTimer, subtitleTimer; Action onClose, rebuild; float savedTimeScale = 1f;
 
         void Awake()
@@ -48,7 +48,7 @@ namespace Rihla
         // The content library loads in its own Awake, so the button labels are filled again once it has.
         void Start() => Relayout();
 
-        void OnDestroy() { Lang.Changed -= Relayout; if (ModalOpen) Time.timeScale = 1f; if (Instance == this) Instance = null; }
+        void OnDestroy() { Lang.Changed -= Relayout; Quality.Changed -= Relayout; if (ModalOpen) Time.timeScale = 1f; if (Instance == this) Instance = null; }
 
         // ------------------------------------------------------------------ building blocks
 
@@ -106,9 +106,11 @@ namespace Rihla
             buttons = new VisualElement(); buttons.style.position = Position.Absolute; buttons.style.top = 10;
             buttons.style.flexDirection = FlexDirection.Row;
             langBtn = MakeButton("", Lang.Toggle);
+            qualityBtn = MakeButton("", Quality.Toggle);
+            Quality.Changed += Relayout;
             journalBtn = MakeButton("", () => OnJournal?.Invoke());
             historyBtn = MakeButton("", () => OnHistory?.Invoke());
-            buttons.Add(historyBtn); buttons.Add(journalBtn); buttons.Add(langBtn);
+            buttons.Add(historyBtn); buttons.Add(journalBtn); buttons.Add(qualityBtn); buttons.Add(langBtn);
             root.Add(buttons);
             SetJournalVisible(false); SetHistoryVisible(false);
 
@@ -151,7 +153,7 @@ namespace Rihla
             root.Add(modal);
 
             // The goal: what to do now, always shown at the top centre while walking.
-            goal = new VisualElement(); goal.style.position = Position.Absolute; goal.style.top = 12;
+            goal = new VisualElement(); goal.style.position = Position.Absolute; goal.style.top = 58; // below the buttons, which reach the middle on a narrow screen
             goal.style.left = new Length(50, LengthUnit.Percent); goal.style.translate = new Translate(new Length(-50, LengthUnit.Percent), 0);
             goal.style.maxWidth = 520; goal.style.alignItems = Align.Center;
             goal.style.backgroundColor = new Color(0.12f, 0.09f, 0.04f, 0.82f); Pad(goal, 7, 18); Round(goal, 10);
@@ -163,7 +165,7 @@ namespace Rihla
             goalText.style.unityTextAlign = goalSub.style.unityTextAlign = TextAnchor.MiddleCenter;
             goal.Add(goalText); goal.Add(goalSub); goal.style.display = DisplayStyle.None;
             root.Insert(root.IndexOf(banner), goal);
-            banner.style.top = 128;
+            banner.style.top = 172;
 
             // Black over everything, for fading between scenes.
             fade = new VisualElement(); fade.style.position = Position.Absolute;
@@ -209,6 +211,7 @@ namespace Rihla
             buttons.style.right = ar ? StyleKeyword.Auto : 10; buttons.style.left = ar ? 10 : StyleKeyword.Auto;
             buttons.style.flexDirection = ar ? FlexDirection.RowReverse : FlexDirection.Row;
             langBtn.text = ar ? "English" : "عربي";
+            qualityBtn.text = Lang.T(Quality.Best ? "q.best" : "q.fast");
             journalBtn.text = Lang.T("journal");
             historyBtn.text = Lang.T("history");
             root.Query<Label>().ForEach(l =>
@@ -380,10 +383,10 @@ namespace Rihla
             float dt = Time.unscaledDeltaTime; played += dt;
             logFrames++; logTimer += dt; sceneFrames++; sceneTime += dt;
             string scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-            if (logTimer >= 10f) { Debug.Log($"[Rihla] FPS {logFrames / logTimer:0.0} at {Screen.width}x{Screen.height} in {scene}"); logFrames = 0; logTimer = 0f; }
+            if (logTimer >= 10f) { Debug.Log($"[Rihla] FPS {logFrames / logTimer:0.0} at {Screen.width}x{Screen.height} in {scene} ({(Quality.Best ? "Best" : "Fast")})"); logFrames = 0; logTimer = 0f; }
             if (played > quitAfter)
             {
-                Debug.Log($"[Rihla] average FPS {sceneFrames / sceneTime:0.0} over {sceneTime:0} s in {scene}");
+                Debug.Log($"[Rihla] average FPS {sceneFrames / sceneTime:0.0} over {sceneTime:0} s in {scene} ({(Quality.Best ? "Best" : "Fast")})");
                 Application.Quit();
             }
         }
@@ -409,6 +412,7 @@ namespace Rihla
                 return;
             }
             if (kb.lKey.wasPressedThisFrame) Lang.Toggle();
+            if (kb.qKey.wasPressedThisFrame) Quality.Toggle();
             if (kb.jKey.wasPressedThisFrame && journalBtn.style.display == DisplayStyle.Flex) OnJournal?.Invoke();
             if (kb.hKey.wasPressedThisFrame && historyBtn.style.display == DisplayStyle.Flex) OnHistory?.Invoke();
         }

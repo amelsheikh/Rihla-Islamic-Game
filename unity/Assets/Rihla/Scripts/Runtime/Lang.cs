@@ -106,6 +106,8 @@ namespace Rihla
         public bool heroChosen;
         /// <summary>Stops and events on the road already seen (C1b): "khan-al-ahmar", "flock".</summary>
         public string[] stops = new string[0];
+        /// <summary>The picture setting: "" (chosen from the graphics chip), "fast" or "best" (see Quality).</summary>
+        public string quality = "";
         public bool hasPosition;
         public float x, y, z, yaw;
 
