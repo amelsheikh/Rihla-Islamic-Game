@@ -21,6 +21,7 @@
 | C1b (first part) — Guidance on the drive | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19d.zip` on the Desktop. The road down to Ariha now has the walk's goal box and golden arrows: to the page at Khan al-Hatruri, to where the road goes below the sea, then to Ariha; back to the road, back to the car, Jiddo driving. 108 FPS with Jiddo driving. See below |
 | C1b (second part) — Jiddo's remarks, Khan al-Ahmar, the shepherd, a softer guide | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19e.zip` on the Desktop. The golden arrows on the road are replaced by one soft golden arrow in the air ahead with a pool of light under it; Jiddo talks about the land at nine places; a stop at the ruin of Khan al-Ahmar; a shepherd crosses with his flock and the child waits. 100 FPS with Jiddo driving. See below |
 | C1c (first part) — Ariha on foot; a more realistic car, road and roadside | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19f.zip` on the Desktop. Textured land and asphalt, edge lines, posts, rails, power lines, shrubs, palm groves and houses, a shaped car with real wheels; in Ariha the spring, Tell al-Sultan and its tower, three clues, Umm Khalil's dates, her question and Page 2. 47.5 FPS with Jiddo driving (was 100): see below |
+| People: the game's own skeleton and movement | Done 21 November 2026 | Home 54.3 FPS, al-Quds walk 48 to 62, Maqam 65.4, no errors; see below |
 | C1c (second part): Maqam al-Nabi Musa; the menu and skipping; passing Jiddo; people, palms and stalls; sound and breeze | Done 20 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-20c.zip` on the Desktop. The whole of Chapter 1 up to the Dead Sea plays through: 72.3 FPS over 28 minutes with Jiddo driving, no errors; see below |
 | The box at the top can be made narrow | Done 20 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-20b.zip` on the Desktop. A small – / + button in its corner (or I) and saved; see below |
 | Picture setting: Fast or Best | Done 20 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-20.zip` on the Desktop. A button at the top (or Q) and Auto on first start. Fast on the laptop: **73.3 FPS** over the 15-minute drive (was 47.5); Best is for a graphics card: see below |
@@ -175,6 +176,41 @@ Palestine comes after Chapter 1, "then and now" is central, and the world should
 walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
+
+## People: the game's own skeleton and movement (done 21 November 2026)
+
+The owner first chose Mixamo for lifelike people, then asked instead: "can we build those skeletons and movements, I
+really want the game to be genuine". Nothing was downloaded from Mixamo; everything below is the game's own code
+(`FigureRig.cs`).
+
+- **A skeleton in every person**: hips, spine, chest, neck, head, shoulders, upper arms, forearms, hands, thighs, shins
+  and feet, placed inside the body that `FigureBody` builds. The robe, sleeves, head and headwear, hands and shoes are
+  joined into one body tied to the nearest bones, so joints bend smoothly instead of pieces swinging apart. A robe or
+  dress moves partly with the legs and partly with the hips, so it swings with the stride.
+- **Walking** follows how people walk: each foot is planted and rolls from heel to toe while the body passes over it,
+  then lifts and swings forward with the knee bending to clear the ground. The legs are solved from where the feet
+  must be, so a planted foot does not slide. The hips rise and fall twice a stride and turn with the forward leg, the
+  shoulders turn against them, the arms swing opposite the legs with the elbows bending as they come forward.
+- **Running** (the child): less time on each foot, knees higher, elbows bent, leaning forward. **The old** walk with
+  shorter, slower steps, a bent back, the head held up and the stick hand steadier.
+- **Standing**: breathing, the weight shifting slowly from foot to foot. **Talking**: whoever speaks a line moves
+  their hands as they talk (in bursts, with small beats) and nods; the speaker is found by name, or (when the names are
+  shown in Arabic) as the nearest person to the child. **Sitting** at home: the upper body breathes, holds and gestures.
+- People still turn their heads to look at the child. `-norig` brings back the old movement, for comparison.
+
+| Check | Result |
+|---|---|
+| Stage test: eight people side by side (standing, walking, the woman, the child running, the old man with a stick, the boy, the girl running, a man talking) | Feet planted while the body passes over, knees bend in the swing, robes swing with the stride, the old man walks slower and bent, the talker gestures (`docs/screenshots/rig-stage-*.png`) |
+| In the game, al-Quds walk | People walking in the streets swing their arms and step under their robes (`docs/screenshots/rig-alquds-*.png`) |
+| Exceptions (home, al-Quds walk, Maqam al-Nabi Musa, Windows build) | 0, 0, 0 |
+| FPS, home (with / without the new movement, `-norig`) | 54.3 / 57.1 (the rig costs about 3 FPS; the computer ran slower today than the earlier 63.6) |
+| FPS, al-Quds walk | 48 to 62 (52.1 before) |
+| FPS, Maqam al-Nabi Musa with autopilot | 65.4 (73 before) |
+
+Known issues:
+- Movement made by rules is natural but simpler than motion capture: no turning on the spot (people pivot), no
+  stepping up stairs, the same gait for everyone of a kind (it varies only with speed, age and size).
+- The faces and bodies are the same smooth shapes as before; only their movement is new.
 
 ## C1c, second part: Maqam al-Nabi Musa, the menu, skipping, more life (done 20 November 2026)
 

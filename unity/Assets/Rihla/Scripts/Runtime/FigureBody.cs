@@ -6,9 +6,11 @@ namespace Rihla
 {
     /// <summary>
     /// A person made from smooth shapes when the scene starts: a robe or shirt and trousers with soft folds, a head
-    /// with a kufiya, cap, headscarf or hair, a face (eyes, brows, nose, lips, painted when the game starts), hands,
-    /// arms that swing and feet that step as the person walks; the head turns to look at the child nearby (the owner,
-    /// 20 November 2026: "make the characters more realistic"). Prophets, the Companions and the Prophet's family are
+    /// with a kufiya, cap, headscarf or hair, a face (eyes, brows, nose, lips, painted when the game starts) and hands;
+    /// the head turns to look at the child nearby (the owner, 20 November 2026: "make the characters more realistic").
+    /// The pieces then become one body on the game's own skeleton, which walks, runs, stands, talks and sits by rules
+    /// written in <see cref="FigureRig"/> (21 November 2026: "I really want the game to be genuine"); with -norig the
+    /// old pieces stay and swing as before. Prophets, the Companions and the Prophet's family are
     /// never shown at all (brief section 5); ordinary people have faces. Every look is modest (brief section 5): long robes and dresses, headscarves for women, sleeves to the
     /// wrist. Which dress each person wears is an estimate for today's Old City (NEEDS_REVIEW H18). In the Time Lens's
     /// "then" view the townspeople wear the dress of about 1910 instead (see Period below; also an estimate, H18).
@@ -39,6 +41,29 @@ namespace Rihla
         bool culled;
         Renderer[] renderers;
         Transform figure;
+        /// <summary>The body's skeleton and movement (<see cref="FigureRig"/>), when it has one.</summary>
+        FigureRig rig;
+        /// <summary>Talking: the hands move as people's do when they speak (set by whoever is speaking).</summary>
+        public bool talking;
+        float talkUntil;
+        bool old;
+
+        /// <summary>Someone speaks a line (from <see cref="RihlaUI.Say"/>): the person of that name gestures while it
+        /// is shown; when no one has the name (the names are shown in Arabic too), the nearest person to the child.</summary>
+        public static void Speak(string who, float seconds)
+        {
+            FigureBody best = null; float bestD = 36f;
+            foreach (var f in all)
+            {
+                if (!f || !f.isActiveAndEnabled) continue;
+                var t = f.transform;
+                if (!string.IsNullOrEmpty(who) && (t.name == who || (t.parent && t.parent.name == who))) { best = f; break; }
+                if (f.hero || !heroBody) continue;
+                float d = (t.position - heroBody.transform.position).sqrMagnitude;
+                if (d < bestD) { bestD = d; best = f; }
+            }
+            if (best) best.talkUntil = Time.time + seconds * 0.85f;
+        }
 
         /// <summary>A built body, kept so a townsperson can switch between the dress of 1910 and of today without
         /// building it again (building all of them takes about 75 ms, a visible stutter).</summary>
@@ -48,6 +73,7 @@ namespace Rihla
             public Vector3 bodyBase, footLBase, footRBase;
             public Renderer[] renderers;
             public float scale, swingR;
+            public FigureRig rig;
         }
         Built thenBody, nowBody;
 
@@ -85,6 +111,7 @@ namespace Rihla
             {
                 figure = figure, bodyT = bodyT, headT = headT, armL = armL, armR = armR, legL = legL, legR = legR, footL = footL, footR = footR,
                 bodyBase = bodyBase, footLBase = footLBase, footRBase = footRBase, renderers = renderers, scale = scale, swingR = swingR,
+                rig = rig,
             };
             if (Then) nowBody = leaving; else thenBody = leaving;
             figure.gameObject.SetActive(false);
@@ -93,13 +120,13 @@ namespace Rihla
             {
                 figure = next.figure; bodyT = next.bodyT; headT = next.headT; armL = next.armL; armR = next.armR; legL = next.legL; legR = next.legR;
                 footL = next.footL; footR = next.footR; bodyBase = next.bodyBase; footLBase = next.footLBase; footRBase = next.footRBase;
-                renderers = next.renderers; scale = next.scale; swingR = next.swingR;
+                renderers = next.renderers; scale = next.scale; swingR = next.swingR; rig = next.rig;
                 figure.gameObject.SetActive(true);
                 foreach (var rd in renderers) rd.enabled = true;
             }
             else
             {
-                armL = armR = legL = legR = footL = footR = null;
+                armL = armR = legL = legR = footL = footR = null; rig = null;
                 Build(Then ? Period() : MakeSpec());
             }
             culled = false;
@@ -132,7 +159,7 @@ namespace Rihla
                 foreach (var mf in old.GetComponentsInChildren<MeshFilter>(true)) Destroy(mf.sharedMesh);
                 old.gameObject.SetActive(false); Destroy(old.gameObject);
             }
-            armL = armR = legL = legR = footL = footR = null;
+            armL = armR = legL = legR = footL = footR = null; rig = null;
             Build(Then && Townsperson ? Period() : MakeSpec());
             culled = false;
         }
@@ -443,6 +470,11 @@ namespace Rihla
                 }
             }
             swingR = s.stick ? 0.35f : 1f;
+            old = s.stick;
+            // The game's own skeleton and movement (FigureRig): the pieces become one body that bends.
+            rig = FigureRig.Make(root, new FigureRig.Pieces { body = bodyT, head = headT, armL = armL, armR = armR, legL = legL, legR = legR, footL = footL, footR = footR },
+                                 seed * 1.618f + transform.position.x * 0.37f);
+            if (rig != null) bodyT = headT = armL = armR = legL = legR = footL = footR = null;
             renderers = root.GetComponentsInChildren<Renderer>();
             foreach (var rd in renderers) { rd.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On; rd.receiveShadows = true; }
         }
@@ -530,6 +562,13 @@ namespace Rihla
                 if (far != culled) { culled = far; foreach (var rd in renderers) rd.enabled = !far; }
             }
             if (culled) return;
+            if (rig != null)
+            {
+                // The speed as if for a grown man, so a child's shorter legs take quicker steps.
+                TurnHead(dt);
+                rig.Animate(dt, speed / Mathf.Max(0.3f, scale), old, seated, armHold, talking || Time.time < talkUntil, headYaw);
+                return;
+            }
 
             if (seated)
             {
@@ -560,7 +599,7 @@ namespace Rihla
         /// and glance about a little now and then.</summary>
         void TurnHead(float dt)
         {
-            if (!headT) return;
+            if (!headT && rig == null) return;
             float want = 0f;
             var h = heroBody;
             if (!hero && h && h.isActiveAndEnabled && speed < 0.8f)
@@ -578,6 +617,7 @@ namespace Rihla
                 if (looking && !hero && speed < 0.5f) want = lookYaw;
             }
             headYaw = Mathf.Lerp(headYaw, want, 1f - Mathf.Exp(-3f * dt));
+            if (rig != null) return; // the rig turns the head
             headT.localRotation = Quaternion.Euler(Mathf.Sin(Time.time * 0.6f + seed) * 1.5f, headYaw, 0f);
         }
 

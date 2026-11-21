@@ -339,6 +339,7 @@ namespace Rihla
             subWho.text = who; subText.text = text;
             subtitle.style.display = DisplayStyle.Flex; subtitleTimer = seconds;
             Debug.Log($"[Rihla] says ({Lang.Current}): {who}: {text}");
+            FigureBody.Speak(who, seconds);
         }
 
         public void SetFps(float value) => fps.text = Lang.Num(value) + " fps";
