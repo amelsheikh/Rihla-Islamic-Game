@@ -12,6 +12,18 @@
       },
       "url": "https://unity.pkg.cesium.com"
     },
+    "com.rihla.core": {
+      "version": "file:com.rihla.core",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.unity.inputsystem": "1.20.0",
+        "com.unity.render-pipelines.universal": "17.6.0",
+        "com.unity.ugui": "2.6.0",
+        "com.unity.nuget.newtonsoft-json": "3.2.1",
+        "com.cesium.unity": "1.26.1"
+      }
+    },
     "com.unity.burst": {
       "version": "2.0.0",
       "depth": 2,

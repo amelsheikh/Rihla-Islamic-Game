@@ -17,18 +17,19 @@ namespace Rihla.EditorTools
     /// </summary>
     public static partial class RihlaWalkBuilder
     {
-        public const string ScenePath = "Assets/Scenes/E2_AlQuds_Walk.unity";
-        const string Built = "Assets/Rihla/Built/Walk/";
+        public static string ScenePath => CoreConfig.Scenes + "E2_AlQuds_Walk.unity";
+        static string Built => CoreConfig.Built + "Walk/";
         /// <summary>Height of the raised platform of the Dome of the Rock above the courtyard (estimate, H17).</summary>
         const float Platform = 4f;
         const float WallHeight = 12f, WallThickness = 3f;
         /// <summary>A gate or covered passage: 4.4 m wide, the pointed arch springing at 3.5 m, solid above 6.4 m (estimates, H17).</summary>
         const float ArchHalf = 2.2f, ArchSpring = 3.5f, ArchTop = 6.4f;
 
+        [MenuItem("Rihla/Build E2 walk (Al-Quds)", true)] static bool BuildOk() => RihlaMenus.Enabled;
         [MenuItem("Rihla/Build E2 walk (Al-Quds)")]
         public static void Build()
         {
-            var json = JObject.Parse(File.ReadAllText("Assets/Rihla/Generated/walk.json"));
+            var json = JObject.Parse(File.ReadAllText(CoreConfig.Generated + "walk.json"));
             Directory.CreateDirectory(Built);
             pending.Clear();
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -162,7 +163,7 @@ namespace Rihla.EditorTools
             // A photographed morning sky with clouds (Poly Haven, CC0), turned so its sun sits where the scene's
             // sun is: in the file the sun is at u = 0.5996 (35.9 degrees from the panorama's centre), the scene's
             // sun at -18 degrees, so the sky turns by -17.9 degrees.
-            const string hdr = Tex + "Sky/kloofendal_38d_partly_cloudy_puresky_2k.hdr";
+            string hdr = Tex + "Sky/kloofendal_38d_partly_cloudy_puresky_2k.hdr";
             var hdrImp = AssetImporter.GetAtPath(hdr) as TextureImporter;
             if (hdrImp && (hdrImp.mipmapEnabled || hdrImp.wrapModeV != TextureWrapMode.Clamp))
             {
@@ -1329,7 +1330,7 @@ namespace Rihla.EditorTools
             return northern ? zs.Max() : zs.Min();
         }
 
-        const string Tex = "Assets/Rihla/Textures/";
+        static string Tex => CoreConfig.Textures;
         /// <summary>Material name: texture (colour, normal), metres per repeat, and the tint over it.</summary>
         static readonly Dictionary<string, (string col, string nor, float metres, Color tint)> Textured = new Dictionary<string, (string, string, float, Color)>
         {

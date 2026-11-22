@@ -251,7 +251,7 @@ namespace Rihla.EditorTools
             return m;
         }
 
-        const string GenTex = "Assets/Rihla/Textures/Generated/";
+        static string GenTex => CoreConfig.Textures + "Generated/";
 
         /// <summary>A 512 x 512 texture of small leaves in varied greens on transparency, made once by code.</summary>
         static Texture2D LeafTexture()

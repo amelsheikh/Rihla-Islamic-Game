@@ -8,8 +8,8 @@ namespace Rihla.EditorTools
     /// <summary>Adds the content library and the bilingual interface (RihlaUI) to a scene being built.</summary>
     public static class RihlaUIBuilder
     {
-        const string UiDir = "Assets/Rihla/UI/";
-        const string Content = "Assets/Rihla/Content/";
+        static string UiDir => CoreConfig.UI;
+        static string Content => CoreConfig.Content;
 
         public static ContentLibrary AddContent()
         {
@@ -32,8 +32,8 @@ namespace Rihla.EditorTools
         {
             var ui = new GameObject("UI").AddComponent<RihlaUI>();
             ui.panelSettings = Panel();
-            ui.regular = AssetDatabase.LoadAssetAtPath<Font>("Assets/Rihla/Fonts/Amiri-Regular.ttf");
-            ui.bold = AssetDatabase.LoadAssetAtPath<Font>("Assets/Rihla/Fonts/Amiri-Bold.ttf");
+            ui.regular = AssetDatabase.LoadAssetAtPath<Font>(CoreConfig.Fonts + "Amiri-Regular.ttf");
+            ui.bold = AssetDatabase.LoadAssetAtPath<Font>(CoreConfig.Fonts + "Amiri-Bold.ttf");
             return ui;
         }
 

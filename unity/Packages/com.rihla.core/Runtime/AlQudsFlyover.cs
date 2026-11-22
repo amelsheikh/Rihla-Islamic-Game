@@ -28,7 +28,7 @@ namespace Rihla
         void Awake()
         {
             // A Cesium ion token (free account) comes first; a Google Map Tiles API key is the alternative.
-            string ion = ReadSecret("cesium_ion_token.txt"), key = ReadSecret("google_maps_key.txt");
+            string ion = ReadSecret(CoreConfig.Current.cesiumIonTokenFile), key = ReadSecret(CoreConfig.Current.googleMapsKeyFile);
             if (ion.Length > 0)
             {
                 tileset.ionAccessToken = ion;
@@ -42,7 +42,7 @@ namespace Rihla
             }
             else
             {
-                message = "No map key: put a Cesium ion token in StreamingAssets/cesium_ion_token.txt";
+                message = "No map key: put a Cesium ion token in StreamingAssets/" + CoreConfig.Current.cesiumIonTokenFile;
                 Debug.LogWarning("[Rihla] " + message);
             }
         }

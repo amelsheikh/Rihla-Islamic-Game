@@ -1,0 +1,15 @@
+{
+  "name": "com.rihla.core",
+  "displayName": "Rihla Core",
+  "version": "0.1.0",
+  "unity": "6000.6",
+  "description": "The shared engine of Rihla: Roads Without Borders and Road to AlQuds. Bilingual (English and Arabic, right to left) interface, content library, saving, picture settings, people, cars, walking, the Time Lens, Cesium flyovers and the scene builders. Configured per game by a RihlaCoreConfig asset in a Resources folder; without one it uses Rihla's own paths.",
+  "author": { "name": "amelsheikh" },
+  "dependencies": {
+    "com.unity.inputsystem": "1.20.0",
+    "com.unity.render-pipelines.universal": "17.6.0",
+    "com.unity.ugui": "2.6.0",
+    "com.unity.nuget.newtonsoft-json": "3.2.1",
+    "com.cesium.unity": "1.26.1"
+  }
+}

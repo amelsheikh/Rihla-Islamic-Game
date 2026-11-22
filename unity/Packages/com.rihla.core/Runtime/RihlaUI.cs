@@ -244,6 +244,15 @@ namespace Rihla
             Choice(Lang.T(SaveData.Current.hudSmall ? "u.hudBig" : "u.hudSmall"), () => { ToggleHudSize(); RefreshModal(); });
             if (journalBtn.style.display == DisplayStyle.Flex) Choice(Lang.T("journal"), () => { CloseModal(); OnJournal?.Invoke(); });
 
+            if (CoreConfig.Current.showJourneyInMenu) BuildJourney();
+
+            H2(Lang.T("m.keysTitle"));
+            P(Lang.T("m.keys"));
+            Choice(Lang.T("m.quit"), () => { SaveData.Save(); Application.Quit(); });
+        }
+
+        void BuildJourney()
+        {
             H2(Lang.T("m.journey"));
             P(Lang.T("m.journeyHelp"));
             string here = Journey.Current();
@@ -257,10 +266,6 @@ namespace Rihla
                 if (pp.id == here) { b.style.borderLeftWidth = b.style.borderRightWidth = 3; }
                 body.Add(b);
             }
-
-            H2(Lang.T("m.keysTitle"));
-            P(Lang.T("m.keys"));
-            Choice(Lang.T("m.quit"), () => { SaveData.Save(); Application.Quit(); });
         }
 
         /// <summary>Adds a full layer (such as the storybook) above the HUD and below pages and the fade.</summary>

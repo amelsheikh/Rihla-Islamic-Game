@@ -21,6 +21,7 @@
 | C1b (first part) — Guidance on the drive | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19d.zip` on the Desktop. The road down to Ariha now has the walk's goal box and golden arrows: to the page at Khan al-Hatruri, to where the road goes below the sea, then to Ariha; back to the road, back to the car, Jiddo driving. 108 FPS with Jiddo driving. See below |
 | C1b (second part) — Jiddo's remarks, Khan al-Ahmar, the shepherd, a softer guide | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19e.zip` on the Desktop. The golden arrows on the road are replaced by one soft golden arrow in the air ahead with a pool of light under it; Jiddo talks about the land at nine places; a stop at the ruin of Khan al-Ahmar; a shepherd crosses with his flock and the child waits. 100 FPS with Jiddo driving. See below |
 | C1c (first part) — Ariha on foot; a more realistic car, road and roadside | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19f.zip` on the Desktop. Textured land and asphalt, edge lines, posts, rails, power lines, shrubs, palm groves and houses, a shaped car with real wheels; in Ariha the spring, Tell al-Sultan and its tower, three clues, Umm Khalil's dates, her question and Page 2. 47.5 FPS with Jiddo driving (was 100): see below |
+| Shared core package (`com.rihla.core` v0.1.0) | Done 21 November 2026 | All game code moved into a Unity package shared with Road to AlQuds; Rihla plays as before: drive 80.4 FPS (80.6 before), walk 63.4, no errors; see below |
 | People: the game's own skeleton and movement | Done 21 November 2026 | Home 54.3 FPS, al-Quds walk 48 to 62, Maqam 65.4, no errors; see below |
 | C1c (second part): Maqam al-Nabi Musa; the menu and skipping; passing Jiddo; people, palms and stalls; sound and breeze | Done 20 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-20c.zip` on the Desktop. The whole of Chapter 1 up to the Dead Sea plays through: 72.3 FPS over 28 minutes with Jiddo driving, no errors; see below |
 | The box at the top can be made narrow | Done 20 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-20b.zip` on the Desktop. A small – / + button in its corner (or I) and saved; see below |
@@ -176,6 +177,33 @@ Palestine comes after Chapter 1, "then and now" is central, and the world should
 walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
+
+## Shared core package: com.rihla.core v0.1.0 (done 21 November 2026)
+
+The owner approved a sibling game, **Road to AlQuds** (github.com/amelsheikh/road-to-alquds), that shares Rihla's
+engine. All of Rihla's code now lives in a Unity package inside this repository, which Road to AlQuds pulls by git
+URL at a release tag. Rihla's gameplay, content and look are unchanged.
+
+- `unity/Packages/com.rihla.core` (embedded package, version 0.1.0): `Runtime/` (assembly `Rihla.Core.Runtime`)
+  and `Editor/` (assembly `Rihla.Core.Editor`, editor only). Every script and its `.meta` was moved with `git mv`,
+  so the GUIDs and every scene's references stayed the same (checked: 0 missing scripts in all four scenes).
+- **CoreConfig**: the paths and names that were written into the code (`Assets/Rihla/Content`, `UI`, `Fonts`,
+  `Generated`, `Built`, `Textures`, `Assets/Scenes`, the renderer, the Cesium token file names, the save key) now
+  come from a `RihlaCoreConfig` asset in a Resources folder. Rihla has none, so it uses its own values as before.
+  Another game can also hide Rihla's chapter list in the menu and grey out Rihla's scene-builder menus.
+- `RihlaBuild.BuildWindows(scenes, exe)` builds any game's scenes for Windows.
+- Releases are tagged `core-vX.Y.Z`; this one is `core-v0.1.0`.
+
+| Check | Result |
+|---|---|
+| Compile | 0 errors (two old warnings about `FindObjectsSortMode`) |
+| Rebuild from the menus: E0 road, Al-Quds today, E2 walk, C1 home | All built, no errors |
+| Play in the editor: the walk and the drive | Both play, no errors (`docs/screenshots/core-v0.1-walk.png`, `core-v0.1-drive.png`) |
+| Windows build, `-newgame -drive -autopilot -quitafter 70`, 1280 x 720 | **80.4 FPS**, no errors; the build from before the move, same run, same day: 80.6 |
+| Windows build, the walk (`-newgame -walk -autowalk -quitafter 60`) | 63.4 FPS, no errors |
+
+Not done yet: the textures, fonts, content and generated data stay in `Assets/Rihla/`; moving the shared ones (Amiri,
+Poly Haven textures, the sky) into the package is a later step. Log lines still begin with `[Rihla]`.
 
 ## People: the game's own skeleton and movement (done 21 November 2026)
 
