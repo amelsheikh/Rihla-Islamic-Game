@@ -13,3 +13,4 @@
 - Free assets come from Poly Haven (CC0); record every asset, free or bought, in `ASSETS.md`.
 - History content lives in `content/history.json`; list every date and claim in `NEEDS_REVIEW.md` until checked.
 - Reference works for checking history and places are listed in `docs/SOURCES.md` (among them the Palestinica the owner named).
+- Shared code lives in `unity/Packages/com.rihla.core` (assemblies Rihla.Core.Runtime and Rihla.Core.Editor), used by Road to AlQuds through a git URL; per-game paths come from `CoreConfig`. Tag each release `core-vX.Y.Z`.

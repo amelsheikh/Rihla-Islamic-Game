@@ -17,10 +17,11 @@ namespace Rihla.EditorTools
     /// </summary>
     public static class RihlaHomeBuilder
     {
-        public const string ScenePath = "Assets/Scenes/C1_Home.unity";
-        const string Built = "Assets/Rihla/Built/Home/";
+        public static string ScenePath => CoreConfig.Scenes + "C1_Home.unity";
+        static string Built => CoreConfig.Built + "Home/";
         const float W = 3.6f, D = 3.1f, H = 2.9f, Rise = 0.9f; // half width (x), half depth (z), wall height, vault rise
 
+        [MenuItem("Rihla/Build C1 home (the opening)", true)] static bool BuildOk() => RihlaMenus.Enabled;
         [MenuItem("Rihla/Build C1 home (the opening)")]
         public static void Build()
         {
@@ -355,8 +356,8 @@ namespace Rihla.EditorTools
             m.SetColor("_BaseColor", c); m.SetFloat("_Smoothness", smooth); m.SetFloat("_Metallic", metal);
             if (polyHaven != null)
             {
-                m.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/Rihla/Textures/PolyHaven/{polyHaven}_diff_1k.jpg"));
-                var nor = AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/Rihla/Textures/PolyHaven/{polyHaven}_nor_gl_1k.jpg");
+                m.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{CoreConfig.Textures}PolyHaven/{polyHaven}_diff_1k.jpg"));
+                var nor = AssetDatabase.LoadAssetAtPath<Texture2D>($"{CoreConfig.Textures}PolyHaven/{polyHaven}_nor_gl_1k.jpg");
                 if (nor) { m.SetTexture("_BumpMap", nor); m.EnableKeyword("_NORMALMAP"); }
                 m.mainTextureScale = Vector2.one / metres;
             }

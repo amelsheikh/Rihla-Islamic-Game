@@ -10,22 +10,30 @@ namespace Rihla.EditorTools
     /// <summary>Windows build and screenshots. Batch mode: -executeMethod Rihla.EditorTools.RihlaBuild.Windows (or .Screenshots).</summary>
     public static class RihlaBuild
     {
+        [MenuItem("Rihla/Build for Windows", true)] static bool WindowsOk() => RihlaMenus.Enabled;
         [MenuItem("Rihla/Build for Windows")]
-        public static void Windows()
+        public static void Windows() =>
+            BuildWindows(new[] { RihlaHomeBuilder.ScenePath, RihlaSceneBuilder.ScenePath, RihlaCesiumBuilder.ScenePath, RihlaWalkBuilder.ScenePath },
+                "../Builds/Windows/Rihla.exe");
+
+        /// <summary>A 64-bit Windows build of the given scenes (those that exist, the first opening first), for any
+        /// game that uses the shared core. In batch mode the editor then quits with 0 on success.</summary>
+        public static BuildReport BuildWindows(string[] scenes, string exePath)
         {
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
-                scenes = new[] { RihlaHomeBuilder.ScenePath, RihlaSceneBuilder.ScenePath, RihlaCesiumBuilder.ScenePath, RihlaWalkBuilder.ScenePath }
-                    .Where(File.Exists).ToArray(),
-                locationPathName = "../Builds/Windows/Rihla.exe",
+                scenes = scenes.Where(File.Exists).ToArray(),
+                locationPathName = exePath,
                 target = BuildTarget.StandaloneWindows64,
                 options = BuildOptions.None,
             });
-            Debug.Log($"[Rihla] Windows build: {report.summary.result}, {report.summary.totalSize / 1e6:0.0} MB, {report.summary.totalTime}");
+            Debug.Log($"[{CoreConfig.Current.gameName}] Windows build: {report.summary.result}, {report.summary.totalSize / 1e6:0.0} MB, {report.summary.totalTime}");
             if (Application.isBatchMode) EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
+            return report;
         }
 
         /// <summary>Renders views along the road to docs/screenshots/e0-*.png from the E0 scene's camera.</summary>
+        [MenuItem("Rihla/Take E0 screenshots", true)] static bool ScreenshotsOk() => RihlaMenus.Enabled;
         [MenuItem("Rihla/Take E0 screenshots")]
         public static void Screenshots()
         {

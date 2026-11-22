@@ -12,11 +12,12 @@ namespace Rihla.EditorTools
     /// </summary>
     public static class RihlaCesiumBuilder
     {
-        public const string ScenePath = "Assets/Scenes/E0_AlQuds_Cesium.unity";
+        public static string ScenePath => CoreConfig.Scenes + "E0_AlQuds_Cesium.unity";
         // Old City of Al-Quds, about its centre (listed in NEEDS_REVIEW.md). Google's tiles use heights above
         // the WGS84 ellipsoid; the Old City lies roughly 740-780 m above it, so the origin sits near the ground.
         const double Latitude = 31.7767, Longitude = 35.2345, Height = 780.0;
 
+        [MenuItem("Rihla/Build E0 Cesium scene (Al-Quds today)", true)] static bool BuildOk() => RihlaMenus.Enabled;
         [MenuItem("Rihla/Build E0 Cesium scene (Al-Quds today)")]
         public static void Build()
         {

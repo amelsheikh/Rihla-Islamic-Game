@@ -16,11 +16,12 @@ namespace Rihla.EditorTools
     /// </summary>
     public static partial class RihlaSceneBuilder
     {
-        const string Gen = "Assets/Rihla/Generated/";
-        const string Built = "Assets/Rihla/Built/";
-        const string Content = "Assets/Rihla/Content/";
-        public const string ScenePath = "Assets/Scenes/E0_JerichoRoad.unity";
+        static string Gen => CoreConfig.Generated;
+        static string Built => CoreConfig.Built;
+        static string Content => CoreConfig.Content;
+        public static string ScenePath => CoreConfig.Scenes + "E0_JerichoRoad.unity";
 
+        [MenuItem("Rihla/Build E0 scene", true)] static bool BuildOk() => RihlaMenus.Enabled;
         [MenuItem("Rihla/Build E0 scene")]
         public static void Build()
         {

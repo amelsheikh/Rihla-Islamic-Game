@@ -113,7 +113,7 @@ namespace Rihla
         public bool hasPosition;
         public float x, y, z, yaw;
 
-        const string Key = "rihla.save.v1";
+        static string Key => CoreConfig.Current.saveKey;
         static SaveData current;
         public static SaveData Current => current ??= Load();
 

@@ -14,7 +14,7 @@ namespace Rihla.EditorTools
     /// </summary>
     public static partial class RihlaSceneBuilder
     {
-        const string PH = "Assets/Rihla/Textures/PolyHaven/";
+        static string PH => CoreConfig.Textures + "PolyHaven/";
 
         static Texture2D PHTex(string name, bool normal)
         {

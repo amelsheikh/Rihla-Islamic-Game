@@ -8,7 +8,7 @@ namespace Rihla.EditorTools
     /// <summary>Project-wide rendering settings that make the stone read well: screen-space ambient occlusion.</summary>
     public static class RihlaRenderSetup
     {
-        const string RendererPath = "Assets/Settings/PC_Renderer.asset";
+        static string RendererPath => CoreConfig.Current.rendererPath;
 
         /// <summary>Adds (or updates) SSAO on the Windows renderer, at half resolution to stay cheap on integrated graphics.</summary>
         [MenuItem("Rihla/Ambient occlusion (SSAO) on")]
