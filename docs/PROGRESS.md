@@ -21,6 +21,7 @@
 | C1b (first part) — Guidance on the drive | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19d.zip` on the Desktop. The road down to Ariha now has the walk's goal box and golden arrows: to the page at Khan al-Hatruri, to where the road goes below the sea, then to Ariha; back to the road, back to the car, Jiddo driving. 108 FPS with Jiddo driving. See below |
 | C1b (second part) — Jiddo's remarks, Khan al-Ahmar, the shepherd, a softer guide | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19e.zip` on the Desktop. The golden arrows on the road are replaced by one soft golden arrow in the air ahead with a pool of light under it; Jiddo talks about the land at nine places; a stop at the ruin of Khan al-Ahmar; a shepherd crosses with his flock and the child waits. 100 FPS with Jiddo driving. See below |
 | C1c (first part) — Ariha on foot; a more realistic car, road and roadside | Done 19 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-19f.zip` on the Desktop. Textured land and asphalt, edge lines, posts, rails, power lines, shrubs, palm groves and houses, a shaped car with real wheels; in Ariha the spring, Tell al-Sultan and its tower, three clues, Umm Khalil's dates, her question and Page 2. 47.5 FPS with Jiddo driving (was 100): see below |
+| Shared core 0.2 (`core-v0.2.0`) | Done 22 November 2026 | The home room kit is public for Road to AlQuds; long storybook pages get smaller letters. Rihla unchanged; see below |
 | Shared core package (`com.rihla.core` v0.1.0) | Done 21 November 2026 | All game code moved into a Unity package shared with Road to AlQuds; Rihla plays as before: drive 80.4 FPS (80.6 before), walk 63.4, no errors; see below |
 | People: the game's own skeleton and movement | Done 21 November 2026 | Home 54.3 FPS, al-Quds walk 48 to 62, Maqam 65.4, no errors; see below |
 | C1c (second part): Maqam al-Nabi Musa; the menu and skipping; passing Jiddo; people, palms and stalls; sound and breeze | Done 20 November 2026 | Prototype `Builds/Rihla-prototype-2026-11-20c.zip` on the Desktop. The whole of Chapter 1 up to the Dead Sea plays through: 72.3 FPS over 28 minutes with Jiddo driving, no errors; see below |
@@ -177,6 +178,18 @@ Palestine comes after Chapter 1, "then and now" is central, and the world should
 walking and flying.
 
 Waiting for the owner: to choose and set up the cloud PC, and a Google Maps API key for flying over real cities.
+
+## Shared core 0.2 (done 22 November 2026, tag `core-v0.2.0`)
+
+For Road to AlQuds M1 (the home and Nana's book), two small changes in `unity/Packages/com.rihla.core`; Rihla plays as
+before:
+
+- **The home room kit is public**: `RihlaHomeBuilder.Person`, `Quad`, `Box`, `Prim`, `Mat`, `Save`, `TileTexture`,
+  `RugTexture`, `ClothTexture`, `SkyTexture` and `Look`, and `RihlaWalkBuilder.TatreezTexture`, so another game can build
+  rooms with them (its files go to its own `CoreConfig.Built`). Only their visibility changed.
+- **StoryBook**: a page whose words are long (a verse and its meaning under the text) is set in smaller letters (24 up to
+  240 characters, then 20, 17, 15) so it fits. Rihla's storybook pages are at most 154 characters, so they keep 24.
+- `package.json` version 0.2.0.
 
 ## Shared core package: com.rihla.core v0.1.0 (done 21 November 2026)
 

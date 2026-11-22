@@ -15,6 +15,10 @@ namespace Rihla.EditorTools
     /// of the Rock far off. Jiddo sits with his old book; Teta beside him; Yusuf and Maryam on cushions before them.
     /// The room is an imagined family home, not a particular house (NEEDS_REVIEW.md H19).
     /// </summary>
+    /// <remarks>
+    /// Since core 0.2 the room kit (Person, Quad, Box, Prim, Mat, Save, the tile, rug, cloth and sky textures and the
+    /// evening Look) is public, so another game can build its own rooms with it; files go to CoreConfig.Built + "Home/".
+    /// </remarks>
     public static class RihlaHomeBuilder
     {
         public static string ScenePath => CoreConfig.Scenes + "C1_Home.unity";
@@ -198,7 +202,7 @@ namespace Rihla.EditorTools
         /// A seated figure: hips at <paramref name="seat"/>, legs forward (trousers) or hidden in the seat (robes),
         /// with a lap of the robe's cloth over the knees so it reads as sitting.
         /// </summary>
-        static Transform Person(Transform parent, string name, FigureBody.Look look, Vector3 at, float yaw, float seat, float scale, float armHold, Color? lap)
+        public static Transform Person(Transform parent, string name, FigureBody.Look look, Vector3 at, float yaw, float seat, float scale, float armHold, Color? lap)
         {
             var root = new GameObject(name).transform; root.SetParent(parent);
             root.SetPositionAndRotation(at, Quaternion.Euler(0f, yaw, 0f));
@@ -307,7 +311,7 @@ namespace Rihla.EditorTools
         static readonly Vector3 Centre = new Vector3(0f, 1.4f, 0f);
 
         /// <summary>A quad whose front faces <paramref name="toward"/> (the room's centre unless given).</summary>
-        static GameObject Quad(Transform parent, string name, Material m, Vector3 a, Vector3 b, Vector3 c, Vector3 d, bool shadows, Vector3? toward = null)
+        public static GameObject Quad(Transform parent, string name, Material m, Vector3 a, Vector3 b, Vector3 c, Vector3 d, bool shadows, Vector3? toward = null)
         {
             var mesh = new Mesh { name = name };
             mesh.vertices = new[] { a, b, c, d };
@@ -324,10 +328,10 @@ namespace Rihla.EditorTools
             return go;
         }
 
-        static Transform Box(Transform parent, string name, Material m, Vector3 at, Vector3 size) =>
+        public static Transform Box(Transform parent, string name, Material m, Vector3 at, Vector3 size) =>
             Prim(PrimitiveType.Cube, parent, name, m, at, size);
 
-        static Transform Prim(PrimitiveType type, Transform parent, string name, Material m, Vector3 at, Vector3 size)
+        public static Transform Prim(PrimitiveType type, Transform parent, string name, Material m, Vector3 at, Vector3 size)
         {
             var go = GameObject.CreatePrimitive(type); go.name = name;
             Object.DestroyImmediate(go.GetComponent<Collider>());
@@ -338,7 +342,7 @@ namespace Rihla.EditorTools
 
         // ------------------------------------------------------------------ materials and textures
 
-        static Material Mat(string name, Color c, float smooth, string polyHaven = null, float metres = 1f, Color? emission = null, float metal = 0f)
+        public static Material Mat(string name, Color c, float smooth, string polyHaven = null, float metres = 1f, Color? emission = null, float metal = 0f)
         {
             string p = Built + name.Replace(' ', '_') + ".mat";
             var m = AssetDatabase.LoadAssetAtPath<Material>(p);
@@ -366,7 +370,7 @@ namespace Rihla.EditorTools
             return m;
         }
 
-        static Texture2D Save(Texture2D t, string name, bool repeat = true)
+        public static Texture2D Save(Texture2D t, string name, bool repeat = true)
         {
             string path = Built + name + ".png";
             File.WriteAllBytes(path, t.EncodeToPNG()); Object.DestroyImmediate(t);
@@ -380,7 +384,7 @@ namespace Rihla.EditorTools
         /// Patterned cement tiles, as in many old houses of the Levant: 2 x 2 tiles of 20 cm, each a four-fold
         /// motif of a star and petals in terracotta, green and black on cream (an imagined pattern, not copied).
         /// </summary>
-        static Texture2D TileTexture()
+        public static Texture2D TileTexture()
         {
             const int S = 256; var t = new Texture2D(S, S, TextureFormat.RGB24, true);
             Color cream = new Color(0.86f, 0.8f, 0.68f), terra = new Color(0.64f, 0.3f, 0.2f), green = new Color(0.25f, 0.36f, 0.3f), black = new Color(0.16f, 0.14f, 0.13f);
@@ -405,7 +409,7 @@ namespace Rihla.EditorTools
         }
 
         /// <summary>A woven rug: a deep red field, a dark blue border with a cream band, and rows of small diamonds.</summary>
-        static Texture2D RugTexture()
+        public static Texture2D RugTexture()
         {
             const int S = 512; var t = new Texture2D(S, S, TextureFormat.RGB24, true);
             Color red = new Color(0.5f, 0.1f, 0.08f), blue = new Color(0.12f, 0.15f, 0.3f), cream = new Color(0.85f, 0.76f, 0.58f), gold = new Color(0.72f, 0.5f, 0.2f);
@@ -434,7 +438,7 @@ namespace Rihla.EditorTools
         }
 
         /// <summary>Majlis cloth: red with black and gold stripes and a cross-stitch band (an imagined weave).</summary>
-        static Texture2D ClothTexture()
+        public static Texture2D ClothTexture()
         {
             const int S = 256; var t = new Texture2D(S, S, TextureFormat.RGB24, true);
             Color red = new Color(0.55f, 0.12f, 0.1f), black = new Color(0.12f, 0.1f, 0.1f), gold = new Color(0.75f, 0.55f, 0.22f), green = new Color(0.2f, 0.35f, 0.25f);
@@ -451,7 +455,7 @@ namespace Rihla.EditorTools
         }
 
         /// <summary>The evening sky through the window: deep blue above, warm at the horizon, the city's roofs, and the Dome far off.</summary>
-        static Texture2D SkyTexture()
+        public static Texture2D SkyTexture()
         {
             const int Wd = 256, Ht = 340; var t = new Texture2D(Wd, Ht, TextureFormat.RGB24, true);
             Color top = new Color(0.14f, 0.22f, 0.48f), low = new Color(0.95f, 0.6f, 0.42f), city = new Color(0.07f, 0.07f, 0.12f), gold = new Color(1f, 0.75f, 0.32f);
@@ -486,7 +490,7 @@ namespace Rihla.EditorTools
             return Save(t, "dome_picture", false);
         }
 
-        static void Look()
+        public static void Look()
         {
             string path = Built + "Look.asset";
             AssetDatabase.DeleteAsset(path);

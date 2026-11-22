@@ -112,6 +112,9 @@ namespace Rihla
             name.text = Lang.Pick(p["name"]);
             other.text = (string)p["name"]?[ar ? "en" : "ar"];
             text.text = Lang.Pick(p["text"]);
+            // Long pages (a verse with its meaning under the words) get smaller letters so they fit on the page.
+            int len = text.text.Length;
+            text.style.fontSize = len <= 240 ? 24 : len <= 380 ? 20 : len <= 520 ? 17 : 15;
             text.style.unityTextAlign = ar ? TextAnchor.UpperRight : TextAnchor.UpperLeft;
             int ch = (int?)p["chapter"] ?? -1;
             when.text = ch == 1 ? Lang.Pick(Ui("chapter1")) : ch == 2 ? Lang.Pick(Ui("chapter2")) : ch == 0 ? Lang.Pick(Ui("later")) : "";

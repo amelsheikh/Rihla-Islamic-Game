@@ -1006,7 +1006,7 @@ namespace Rihla.EditorTools
         /// Cross-stitch embroidery in the manner of Palestinian tatreez: red stitches on cream linen, an eight-pointed
         /// star in the middle with a dark heart, and a border of small triangles. Invented for the game (H21).
         /// </summary>
-        internal static Texture2D TatreezTexture()
+        public static Texture2D TatreezTexture()
         {
             string texPath = Built + "tatreez.png";
             Directory.CreateDirectory(Built);
